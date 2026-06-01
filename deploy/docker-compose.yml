@@ -1,0 +1,12 @@
+services:
+  frigate-face-bridge:
+    build:
+      context: ../frigate-face-bridge
+    container_name: frigate-face-bridge
+    restart: unless-stopped
+    ports:
+      - "8099:8099"
+    volumes:
+      - ./data:/data
+    environment:
+      ADDON_VERSION: "0.1.0"

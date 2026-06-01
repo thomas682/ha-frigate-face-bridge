@@ -1,0 +1,27 @@
+{
+  "demo_mode": true,
+  "log_level": "info",
+  "event_interval_seconds": 10,
+  "mqtt": {
+    "enabled": false,
+    "host": "core-mosquitto",
+    "port": 1883,
+    "username": "",
+    "password": "",
+    "topic_prefix": "ha/frigate_face_bridge"
+  },
+  "camera": {
+    "name": "garage_g3_flex",
+    "host": "192.168.2.241",
+    "rtsp_url": "",
+    "snapshot_url": "",
+    "detect_width": 640,
+    "detect_height": 360,
+    "detect_fps": 5
+  },
+  "known_faces": [
+    {"name": "Thomas", "enabled": true},
+    {"name": "Birgit", "enabled": true},
+    {"name": "Marie", "enabled": true}
+  ]
+}

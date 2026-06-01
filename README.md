@@ -56,3 +56,7 @@ Das Add-on ersetzt Frigate nicht. Frigate, Double Take, CompreFace oder eine lok
 - Betreiber sind fuer rechtliche Zulassung, Kennzeichnung und Einwilligungen verantwortlich.
 
 Weitere Details stehen in `frigate-face-bridge/DOCS.md`.
+
+## Docker-Deployment ausserhalb von Home Assistant
+
+Fuer einen bestehenden Docker-Host liegt unter `deploy/` eine Compose-Vorlage. Vor dem Start `deploy/data/options.json.example` nach `deploy/data/options.json` kopieren und lokal anpassen. Keine echten Passwoerter committen.
