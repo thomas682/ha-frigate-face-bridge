@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+### Added
+
+- Kamera-Parameter koennen ueber die Weboberflaeche gespeichert werden.
+- Snapshot-Vorschau zum Testen von HTTP/HTTPS-Kamerabildern ergaenzt.
+- REST-Endpunkte fuer Kamera-Konfiguration und Snapshot-Abruf hinzugefuegt.
+
 ## 0.1.0
 
 ### Initial

@@ -16,6 +16,7 @@ LOG = logging.getLogger("frigate_face_bridge.config")
 APP_DIR = Path(__file__).resolve().parent
 ADDON_CONFIG_FILE = Path(os.environ.get("ADDON_CONFIG_FILE", APP_DIR / "addon_config.yaml"))
 OPTIONS_FILE = Path(os.environ.get("OPTIONS_FILE", "/data/options.json"))
+CAMERA_FIELDS = {"name", "host", "rtsp_url", "snapshot_url", "detect_width", "detect_height", "detect_fps"}
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -101,6 +102,11 @@ def _load_options() -> dict[str, Any]:
     return {}
 
 
+def _write_options(options: dict[str, Any]) -> None:
+    OPTIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OPTIONS_FILE.write_text(json.dumps(options, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def _as_int(value: Any, default: int, minimum: int | None = None) -> int:
     try:
         parsed = int(value)
@@ -169,3 +175,50 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
 
 def load_config() -> dict[str, Any]:
     return validate_config(_deep_merge(_defaults_from_addon_config(), _load_options()))
+
+
+def _validate_url(value: str, allowed_schemes: set[str]) -> str:
+    value = value.strip()
+    if not value:
+        return ""
+    parts = urlsplit(value)
+    if parts.scheme.lower() not in allowed_schemes or not parts.netloc:
+        raise ValueError(f"URL scheme must be one of: {', '.join(sorted(allowed_schemes))}")
+    return value
+
+
+def sanitize_camera_update(payload: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise ValueError("payload must be a JSON object")
+    camera = payload.get("camera", payload)
+    if not isinstance(camera, dict):
+        raise ValueError("camera must be a JSON object")
+
+    out: dict[str, Any] = {}
+    if "name" in camera:
+        name = re.sub(r"[^A-Za-z0-9_-]+", "_", str(camera.get("name") or "camera")).strip("_") or "camera"
+        out["name"] = name
+    if "host" in camera:
+        host = str(camera.get("host") or "").strip()
+        if host and not re.fullmatch(r"[A-Za-z0-9_.:-]+", host):
+            raise ValueError("host contains invalid characters")
+        out["host"] = host
+    if "rtsp_url" in camera:
+        out["rtsp_url"] = _validate_url(str(camera.get("rtsp_url") or ""), {"rtsp", "rtsps", "http", "https"})
+    if "snapshot_url" in camera:
+        out["snapshot_url"] = _validate_url(str(camera.get("snapshot_url") or ""), {"http", "https"})
+    for key in ("detect_width", "detect_height", "detect_fps"):
+        if key in camera:
+            out[key] = _as_int(camera.get(key), 640 if key == "detect_width" else 360 if key == "detect_height" else 5, 1)
+
+    if not out:
+        raise ValueError("no camera fields supplied")
+    return out
+
+
+def save_camera_config(camera_update: dict[str, Any]) -> dict[str, Any]:
+    options = _load_options()
+    camera = options.get("camera") if isinstance(options.get("camera"), dict) else {}
+    options["camera"] = {**camera, **sanitize_camera_update(camera_update)}
+    _write_options(options)
+    return load_config()

@@ -9,11 +9,14 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.error import URLError
+from urllib.parse import urlsplit
+from urllib.request import Request, urlopen
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, Response, jsonify, request, send_from_directory
 
 from camera import camera_status
-from config_loader import load_config, safe_config
+from config_loader import load_config, redact_url, safe_config, save_camera_config
 from detector import create_detector
 from face_recognition import known_face_status
 from mqtt_client import MqttPublisher
@@ -53,7 +56,7 @@ def _status() -> dict[str, Any]:
         event_count = state.get("event_count", 0)
     return {
         "ok": True,
-        "version": os.environ.get("ADDON_VERSION", "0.1.0"),
+        "version": os.environ.get("ADDON_VERSION", "0.2.0"),
         "started_at": STARTED_AT,
         "demo_mode": bool(config.get("demo_mode", True)),
         "event_count": event_count,
@@ -110,6 +113,53 @@ def api_config():
     return jsonify({"ok": True, "config": safe_config(config)})
 
 
+@app.post("/api/config/camera")
+def api_update_camera():
+    global detector
+    try:
+        updated = save_camera_config(request.get_json(silent=True) or {})
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    except Exception:
+        LOG.exception("could not save camera configuration")
+        return jsonify({"ok": False, "error": "could not save camera configuration"}), 500
+
+    config.clear()
+    config.update(updated)
+    detector = create_detector(config)
+    LOG.info("camera configuration updated: %s", camera_status(config))
+    return jsonify({"ok": True, "camera": camera_status(config), "config_errors": config.get("config_errors", [])})
+
+
+@app.get("/api/camera/snapshot")
+def api_camera_snapshot():
+    camera = config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+    snapshot_url = str(camera.get("snapshot_url") or "").strip()
+    if not snapshot_url:
+        return jsonify({"ok": False, "error": "snapshot_url is not configured"}), 400
+    parts = urlsplit(snapshot_url)
+    if parts.scheme.lower() not in {"http", "https"} or not parts.netloc:
+        return jsonify({"ok": False, "error": "snapshot_url must use http or https"}), 400
+
+    try:
+        req = Request(snapshot_url, headers={"User-Agent": "frigate-face-bridge/0.2"})
+        with urlopen(req, timeout=8) as response:
+            content_type = response.headers.get("Content-Type", "image/jpeg").split(";", 1)[0]
+            if not content_type.startswith("image/"):
+                return jsonify({"ok": False, "error": "snapshot response is not an image"}), 502
+            data = response.read(5 * 1024 * 1024 + 1)
+    except URLError as exc:
+        LOG.warning("snapshot fetch failed url=%s error=%s", redact_url(snapshot_url), exc)
+        return jsonify({"ok": False, "error": "snapshot fetch failed"}), 502
+    except Exception as exc:
+        LOG.warning("snapshot fetch failed url=%s error=%s", redact_url(snapshot_url), exc)
+        return jsonify({"ok": False, "error": "snapshot fetch failed"}), 502
+
+    if len(data) > 5 * 1024 * 1024:
+        return jsonify({"ok": False, "error": "snapshot is too large"}), 502
+    return Response(data, mimetype=content_type, headers={"Cache-Control": "no-store"})
+
+
 def shutdown(signum: int, frame: Any) -> None:
     LOG.info("shutdown requested signal=%s", signum)
     with state_lock:
@@ -119,7 +169,7 @@ def shutdown(signum: int, frame: Any) -> None:
 
 
 def main() -> None:
-    LOG.info("Frigate Face Bridge starting version=%s", os.environ.get("ADDON_VERSION", "0.1.0"))
+    LOG.info("Frigate Face Bridge starting version=%s", os.environ.get("ADDON_VERSION", "0.2.0"))
     LOG.info("camera config: %s", camera_status(config))
     publisher.connect()
     thread = threading.Thread(target=event_loop, daemon=True)

@@ -48,8 +48,39 @@
     </section>
 
     <section class="panel">
+      <h2>Kamera konfigurieren</h2>
+      <form id="camera-form" class="config-form">
+        <label>
+          Kameraname
+          <input id="camera-name" name="name" autocomplete="off" placeholder="garage_g3_flex">
+        </label>
+        <label>
+          IP-Adresse / Host
+          <input id="camera-host" name="host" autocomplete="off" placeholder="192.168.2.241">
+        </label>
+        <label>
+          RTSP URL
+          <input id="camera-rtsp" name="rtsp_url" autocomplete="off" placeholder="rtsp://192.168.2.241:7447/...">
+        </label>
+        <label>
+          Snapshot URL
+          <input id="camera-snapshot" name="snapshot_url" autocomplete="off" placeholder="http://192.168.2.241/snapshot.jpg">
+        </label>
+        <div class="actions">
+          <button type="submit">Speichern</button>
+          <button type="button" id="snapshot-button">Vorschau laden</button>
+        </div>
+        <p id="config-message" class="message" role="status"></p>
+      </form>
+      <div class="preview">
+        <img id="snapshot-preview" alt="Kamera-Vorschau" hidden>
+        <p id="snapshot-message" class="message">Fuer die Vorschau muss eine HTTP/HTTPS Snapshot URL gesetzt sein. URL-Credentials werden nicht im Formular angezeigt.</p>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>Hinweise</h2>
-      <p>Version 0.1.0 erzeugt im Demo-Modus simulierte Events. Reale Kamera-, Frigate- und Face-Recognition-Adapter sind vorbereitet und werden spaeter ergaenzt.</p>
+      <p>Version 0.2.0 erzeugt im Demo-Modus simulierte Events. Kamera-Parameter koennen im Docker-Betrieb gespeichert werden. Die Vorschau nutzt eine HTTP/HTTPS Snapshot URL.</p>
       <pre id="debug"></pre>
     </section>
   </main>
