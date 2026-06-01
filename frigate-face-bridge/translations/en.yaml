@@ -1,0 +1,19 @@
+configuration:
+  demo_mode:
+    name: Demo mode
+    description: Generate simulated detection events without a real camera.
+  log_level:
+    name: Log level
+    description: Runtime logging verbosity.
+  event_interval_seconds:
+    name: Event interval
+    description: Seconds between generated or detected events.
+  mqtt:
+    name: MQTT
+    description: MQTT broker settings.
+  camera:
+    name: Camera
+    description: UniFi camera and stream settings.
+  known_faces:
+    name: Known faces
+    description: People prepared for later face recognition.

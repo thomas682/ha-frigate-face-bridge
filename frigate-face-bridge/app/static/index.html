@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frigate Face Bridge</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">Home Assistant Add-on</p>
+      <h1>Frigate Face Bridge</h1>
+      <p>Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mit MQTT-Ausgabe.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <span>Status</span>
+        <strong id="status">lade...</strong>
+        <small id="started"></small>
+      </article>
+      <article class="card">
+        <span>Kamera</span>
+        <strong id="camera">-</strong>
+        <small id="camera-details"></small>
+      </article>
+      <article class="card">
+        <span>MQTT</span>
+        <strong id="mqtt">-</strong>
+        <small id="mqtt-topic"></small>
+      </article>
+      <article class="card accent">
+        <span>Personen</span>
+        <strong id="person-count">0</strong>
+        <small id="event-time">noch kein Event</small>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Letztes Event</h2>
+      <dl>
+        <dt>Bekannte Gesichter</dt><dd id="known-faces">-</dd>
+        <dt>Unbekannte Gesichter</dt><dd id="unknown-faces">-</dd>
+        <dt>Demo-Modus</dt><dd id="demo-mode">-</dd>
+        <dt>Events</dt><dd id="event-count">0</dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Hinweise</h2>
+      <p>Version 0.1.0 erzeugt im Demo-Modus simulierte Events. Reale Kamera-, Frigate- und Face-Recognition-Adapter sind vorbereitet und werden spaeter ergaenzt.</p>
+      <pre id="debug"></pre>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
