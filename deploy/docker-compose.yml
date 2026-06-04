@@ -9,4 +9,4 @@ services:
     volumes:
       - ./data:/data
     environment:
-      ADDON_VERSION: "0.11.0"
+      ADDON_VERSION: "0.12.0"

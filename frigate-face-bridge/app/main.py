@@ -140,7 +140,7 @@ def _status() -> dict[str, Any]:
         ][-60:]
     return {
         "ok": True,
-        "version": os.environ.get("ADDON_VERSION", "0.11.0"),
+        "version": os.environ.get("ADDON_VERSION", "0.12.0"),
         "started_at": STARTED_AT,
         "demo_mode": bool(config.get("demo_mode", True)),
         "event_count": event_count,
@@ -355,7 +355,7 @@ def shutdown(signum: int, frame: Any) -> None:
 
 
 def main() -> None:
-    LOG.info("Frigate Face Bridge starting version=%s", os.environ.get("ADDON_VERSION", "0.11.0"))
+    LOG.info("Frigate Face Bridge starting version=%s", os.environ.get("ADDON_VERSION", "0.12.0"))
     LOG.info("camera config: %s", camera_status(config))
     publisher.connect()
     thread = threading.Thread(target=event_loop, daemon=True)

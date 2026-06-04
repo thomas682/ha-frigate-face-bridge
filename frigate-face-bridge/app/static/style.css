@@ -1,33 +1,55 @@
 :root {
-  color-scheme: light dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f4f7fb;
-  color: #172033;
+  color-scheme: light;
+  --ha-primary: #03a9f4;
+  --ha-primary-dark: #0288d1;
+  --ha-accent: #ff9800;
+  --ha-success: #43a047;
+  --ha-warning: #fb8c00;
+  --ha-error: #db4437;
+  --ha-background: #f5f5f5;
+  --ha-card-background: #ffffff;
+  --ha-dialog-background: #ffffff;
+  --ha-text: #212121;
+  --ha-secondary-text: #727272;
+  --ha-divider: #e0e0e0;
+  --ha-input-background: #fafafa;
+  --ha-shadow: 0 2px 6px rgba(0, 0, 0, .16);
+  font-family: Roboto, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--ha-background);
+  color: var(--ha-text);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top left, #e4f1ff 0, #f7f9fd 34%, #eef2f7 100%);
+  min-height: 100vh;
+  background: var(--ha-background);
+  color: var(--ha-text);
+  font-size: 15px;
+  line-height: 1.45;
 }
 
 .shell {
-  width: min(1120px, calc(100% - 32px));
+  width: min(1180px, calc(100% - 24px));
   margin: 0 auto;
-  padding: 28px 0 40px;
+  padding: 16px 0 32px;
 }
 
 .hero {
-  border: 1px solid rgba(33, 80, 135, .14);
-  border-radius: 24px;
-  padding: 28px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .96), rgba(219, 238, 255, .86));
-  box-shadow: 0 18px 48px rgba(43, 78, 118, .16);
+  border-radius: 4px;
+  padding: 20px 24px;
+  background: var(--ha-dialog-background);
+  border-top: 4px solid var(--ha-primary);
+  box-shadow: var(--ha-shadow);
 }
 
 .eyebrow {
-  margin: 0 0 8px;
-  color: #1b6ed0;
-  font-size: 13px;
+  margin: 0 0 6px;
+  color: var(--ha-primary-dark);
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -38,98 +60,151 @@ h1, h2, p {
 }
 
 h1 {
-  margin-bottom: 10px;
-  font-size: clamp(32px, 7vw, 64px);
-  line-height: .95;
+  margin-bottom: 8px;
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+h2 {
+  margin-bottom: 18px;
+  color: var(--ha-text);
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.hero p:last-child,
+.panel p:last-child {
+  margin-bottom: 0;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-  margin: 18px 0;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
 }
 
 .card, .panel {
-  border: 1px solid rgba(32, 61, 96, .12);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, .88);
-  padding: 18px;
-  box-shadow: 0 10px 26px rgba(39, 65, 94, .08);
+  border: 1px solid var(--ha-divider);
+  border-radius: 4px;
+  background: var(--ha-card-background);
+  box-shadow: var(--ha-shadow);
+}
+
+.card {
+  min-height: 112px;
+  padding: 16px;
+  border-left: 4px solid var(--ha-primary);
 }
 
 .card span {
   display: block;
-  color: #5f6f86;
+  color: var(--ha-secondary-text);
   font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 
 .card strong {
   display: block;
   margin: 8px 0;
-  font-size: 26px;
+  color: var(--ha-text);
+  font-size: 28px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
 .card small {
-  color: #66758a;
+  color: var(--ha-secondary-text);
 }
 
 .accent {
-  background: linear-gradient(135deg, rgba(222, 255, 239, .95), rgba(255, 255, 255, .9));
+  border-left-color: var(--ha-success);
+  background: #f7fff8;
 }
 
 .panel {
   margin-top: 14px;
+  padding: 20px 24px;
 }
 
 dl {
   display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 10px 18px;
-  margin-bottom: 0;
+  grid-template-columns: minmax(170px, 260px) minmax(0, 1fr);
+  gap: 0;
+  margin: 0;
+  border: 1px solid var(--ha-divider);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+dt, dd {
+  min-height: 42px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ha-divider);
 }
 
 dt {
-  color: #607087;
+  color: var(--ha-secondary-text);
+  background: #fafafa;
+  font-weight: 500;
 }
 
 dd {
   margin: 0;
+  color: var(--ha-text);
+  overflow-wrap: anywhere;
+}
+
+dt:nth-last-of-type(1),
+dt:nth-last-of-type(1) + dd {
+  border-bottom: 0;
 }
 
 .config-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .config-form label {
   display: grid;
-  gap: 6px;
-  color: #33445c;
-  font-size: 14px;
+  gap: 7px;
+  min-height: 78px;
+  padding: 12px;
+  border: 1px solid var(--ha-divider);
+  border-radius: 4px;
+  background: #ffffff;
+  color: var(--ha-secondary-text);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .config-form input, .config-form select {
   width: 100%;
-  box-sizing: border-box;
-  border: 1px solid rgba(73, 91, 116, .22);
-  border-radius: 12px;
-  padding: 12px 13px;
-  background: #ffffff;
-  color: #172033;
+  border: 1px solid #bdbdbd;
+  border-radius: 4px;
+  padding: 10px 11px;
+  background: var(--ha-input-background);
+  color: var(--ha-text);
   font: inherit;
+  font-size: 15px;
 }
 
 .config-form input[type="checkbox"] {
-  width: auto;
+  width: 22px;
+  height: 22px;
+  margin-top: 6px;
+  accent-color: var(--ha-primary);
   justify-self: start;
-  transform: scale(1.2);
 }
 
 .config-form input:focus, .config-form select:focus {
-  outline: 2px solid rgba(142, 197, 255, .45);
-  border-color: rgba(142, 197, 255, .65);
+  outline: 2px solid rgba(3, 169, 244, .28);
+  border-color: var(--ha-primary);
+  background: #ffffff;
 }
 
 .actions {
@@ -137,28 +212,39 @@ dd {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  padding-top: 4px;
 }
 
 button {
+  min-height: 40px;
   border: 0;
-  border-radius: 999px;
-  padding: 11px 16px;
-  background: #1769d1;
+  border-radius: 4px;
+  padding: 10px 18px;
+  background: var(--ha-primary);
   color: #ffffff;
   font: inherit;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .22);
+}
+
+button:hover, button:focus {
+  background: var(--ha-primary-dark);
 }
 
 button[type="button"] {
-  background: #e5edf8;
-  color: #173452;
+  background: #eeeeee;
+  color: var(--ha-text);
+}
+
+button[type="button"]:hover, button[type="button"]:focus {
+  background: #e0e0e0;
 }
 
 .message {
   grid-column: 1 / -1;
   margin: 0;
-  color: #65758b;
+  color: var(--ha-secondary-text);
   overflow-wrap: anywhere;
 }
 
@@ -171,15 +257,23 @@ button[type="button"] {
   width: min(100%, 760px);
   max-height: 460px;
   object-fit: contain;
-  border: 1px solid rgba(73, 91, 116, .18);
-  border-radius: 16px;
-  background: #ffffff;
+  border: 1px solid var(--ha-divider);
+  border-radius: 4px;
+  background: #000000;
 }
 
 pre {
+  max-height: 260px;
+  margin: 14px 0 0;
+  padding: 12px;
+  overflow: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  color: #40516a;
+  border: 1px solid var(--ha-divider);
+  border-radius: 4px;
+  background: #263238;
+  color: #eceff1;
+  font-size: 12px;
 }
 
 #faces-list {
@@ -195,10 +289,10 @@ pre {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border: 1px solid rgba(73, 91, 116, .12);
-  border-radius: 14px;
+  border: 1px solid var(--ha-divider);
+  border-radius: 4px;
   padding: 10px 12px;
-  background: rgba(247, 250, 254, .86);
+  background: #fafafa;
 }
 
 .chart {
@@ -206,19 +300,19 @@ pre {
   align-items: end;
   gap: 5px;
   height: 170px;
-  border: 1px solid rgba(73, 91, 116, .14);
-  border-radius: 16px;
+  border: 1px solid var(--ha-divider);
+  border-radius: 4px;
   padding: 14px;
-  background: linear-gradient(180deg, rgba(247, 250, 254, .95), rgba(231, 239, 250, .86));
-  color: #65758b;
+  background: #fafafa;
+  color: var(--ha-secondary-text);
 }
 
 .chart span {
   position: relative;
   flex: 1;
   min-width: 6px;
-  border-radius: 999px 999px 4px 4px;
-  background: linear-gradient(180deg, #1769d1, #7bbcff);
+  border-radius: 2px 2px 0 0;
+  background: var(--ha-primary);
 }
 
 .chart span::after {
@@ -227,7 +321,7 @@ pre {
   left: 50%;
   bottom: 100%;
   transform: translateX(-50%);
-  color: #40516a;
+  color: var(--ha-secondary-text);
   font-size: 11px;
 }
 
@@ -239,100 +333,28 @@ pre {
 }
 
 .history-table th, .history-table td {
-  border-bottom: 1px solid rgba(73, 91, 116, .13);
-  padding: 9px 8px;
+  border-bottom: 1px solid var(--ha-divider);
+  padding: 10px 8px;
   text-align: left;
+  vertical-align: top;
 }
 
 .history-table th {
-  color: #40516a;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    background: #10131a;
-    color: #edf2ff;
-  }
-
-  body {
-    background: #10131a;
-  }
-
-  .hero {
-    border-color: rgba(255,255,255,.12);
-    background: linear-gradient(135deg, rgba(41, 121, 255, .28), rgba(0, 180, 120, .12));
-    box-shadow: 0 20px 80px rgba(0,0,0,.25);
-  }
-
-  .eyebrow {
-    color: #8ec5ff;
-  }
-
-  .card, .panel {
-    border-color: rgba(255,255,255,.12);
-    background: rgba(255,255,255,.06);
-    box-shadow: none;
-  }
-
-  .card span, dt {
-    color: #9aa8c7;
-  }
-
-  .card small, .message {
-    color: #aeb8d2;
-  }
-
-  .accent {
-    background: linear-gradient(135deg, rgba(0, 200, 120, .22), rgba(255,255,255,.08));
-  }
-
-  .config-form label, pre {
-    color: #b8c7ea;
-  }
-
-  .config-form input, .config-form select {
-    border-color: rgba(255,255,255,.16);
-    background: rgba(8, 11, 18, .65);
-    color: #edf2ff;
-  }
-
-  .chart {
-    border-color: rgba(255,255,255,.12);
-    background: rgba(255,255,255,.06);
-    color: #aeb8d2;
-  }
-
-  .chart span::after, .history-table th {
-    color: #b8c7ea;
-  }
-
-  .history-table th, .history-table td {
-    border-bottom-color: rgba(255,255,255,.12);
-  }
-
-  button {
-    background: #8ec5ff;
-    color: #07101e;
-  }
-
-  button[type="button"] {
-    background: rgba(255,255,255,.13);
-    color: #edf2ff;
-  }
-
-  #snapshot-preview {
-    border-color: rgba(255,255,255,.14);
-    background: #05070d;
-  }
-
-  #faces-list li {
-    border-color: rgba(255,255,255,.1);
-    background: rgba(8, 11, 18, .36);
-  }
+  color: var(--ha-secondary-text);
+  font-weight: 500;
 }
 
 @media (max-width: 860px) {
-  .grid {
+  .shell {
+    width: min(100% - 16px, 1180px);
+    padding-top: 8px;
+  }
+
+  .hero, .panel {
+    padding: 16px;
+  }
+
+  .grid, .config-form {
     grid-template-columns: 1fr;
   }
 
@@ -340,7 +362,17 @@ pre {
     grid-template-columns: 1fr;
   }
 
-  .config-form {
-    grid-template-columns: 1fr;
+  dt {
+    border-bottom: 0;
+    padding-bottom: 3px;
+  }
+
+  dd {
+    padding-top: 3px;
+  }
+
+  .history-table {
+    display: block;
+    overflow-x: auto;
   }
 }

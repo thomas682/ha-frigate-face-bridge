@@ -4,7 +4,7 @@ Dieses Repository stellt das Home-Assistant-Add-on `Frigate Face Bridge` bereit.
 
 ## Zweck
 
-Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.11.0` liefert eine stabile Add-on-Basis mit Demo-Modus, REST-API, ausgebauter heller Web-UI, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
+Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.12.0` liefert eine stabile Add-on-Basis mit Demo-Modus, REST-API, ausgebauter Home-Assistant-lesbarer Web-UI, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
 
 ## Architektur
 
@@ -28,11 +28,17 @@ Das Add-on ersetzt Frigate nicht. Frigate, Double Take, CompreFace oder eine lok
 
 ## Aktueller Stand
 
-Aktuelle Add-on-Version: `0.11.0`.
+Aktuelle Add-on-Version: `0.12.0`.
 
 Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. Bis dahin bleibt `demo_mode: true` der sichere Standard.
 
 Die weiteren Ausbaustufen stehen in `ROADMAP.md`.
+
+## Version 0.12.0
+
+- Web-UI im Home-Assistant-Ingress auf helles HA-aehnliches Kartendesign umgestellt
+- Kontraste, Schriftgroessen, Formulare, Buttons und Tabellen fuer bessere Lesbarkeit angepasst
+- Dark-Mode-Abdunklung entfernt, damit die Seitenleistenansicht stabil hell bleibt
 
 ## Version 0.11.0
 

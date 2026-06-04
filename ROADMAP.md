@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 12 abgeschlossen**.
+Aktueller Stand: **Stufe 13 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.11.0`.
+Aktuelle Add-on-Version: `0.12.0`.
 
 ## Stufe 1 - Add-on-Basis
 
@@ -269,6 +269,24 @@ Abnahme:
 
 - Home Assistant kann die drei Felder als MQTT-Entities anlegen.
 - Der Zustand kann ueber `POST /api/config` gesetzt und per `/api/status` gelesen werden.
+
+## Stufe 13 - Home-Assistant-lesbare Ingress-UI
+
+Status: **abgeschlossen**
+
+Ziel: Der Seitenleisten-Eintrag `Face Bridge` soll im Home-Assistant-Ingress besser lesbar sein und sich farblich an Standarddialogen von Home Assistant orientieren.
+
+Umgesetzt:
+
+- Helles HA-aehnliches Kartendesign fuer Status, Panels und Formulare
+- Bessere Kontraste, groessere lesbare Typografie und klare Input-Zustaende
+- Dunkelmodus-Uebersteuerung entfernt, damit die UI im HA-Ingress nicht ungewollt zu dunkel wird
+- Version auf `0.12.0` angehoben
+
+Abnahme:
+
+- Die Web-UI ist im HA-Seitenleistenpanel lesbar.
+- Status, Konfiguration, History und Debug bleiben erreichbar.
 
 ## Laufende Sicherheitsregeln
 

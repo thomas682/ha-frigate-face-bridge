@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0
+
+### Changed
+
+- Web-UI fuer das Home-Assistant-Ingress-Panel auf helles HA-aehnliches Kartendesign umgestellt.
+- Kontraste, Formulare, Buttons, Tabellen und Debug-Ausgabe fuer bessere Lesbarkeit angepasst.
+- Dark-Mode-Abdunklung entfernt, damit die Seitenleistenansicht stabil hell bleibt.
+
 ## 0.11.0
 
 ### Added
