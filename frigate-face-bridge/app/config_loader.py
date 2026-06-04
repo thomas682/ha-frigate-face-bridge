@@ -17,6 +17,7 @@ APP_DIR = Path(__file__).resolve().parent
 ADDON_CONFIG_FILE = Path(os.environ.get("ADDON_CONFIG_FILE", APP_DIR / "addon_config.yaml"))
 OPTIONS_FILE = Path(os.environ.get("OPTIONS_FILE", "/data/options.json"))
 CAMERA_FIELDS = {"name", "host", "rtsp_url", "snapshot_url", "detect_width", "detect_height", "detect_fps"}
+LOG_LEVELS = {"trace", "debug", "info", "warning", "error"}
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -34,11 +35,11 @@ def redact_url(value: str) -> str:
         return ""
     try:
         parts = urlsplit(value)
-        if parts.username or parts.password:
+        if parts.scheme and parts.netloc:
             host = parts.hostname or ""
             if parts.port:
                 host = f"{host}:{parts.port}"
-            return urlunsplit((parts.scheme, f"***:***@{host}", parts.path, parts.query, parts.fragment))
+            return urlunsplit((parts.scheme, host, "/***", "", ""))
     except Exception:
         pass
     return re.sub(r"//[^/@\s]+@", "//***:***@", value)
@@ -80,7 +81,9 @@ def _defaults_from_addon_config() -> dict[str, Any]:
         "demo_mode": True,
         "log_level": "info",
         "event_interval_seconds": 10,
-        "mqtt": {"enabled": False, "host": "core-mosquitto", "port": 1883, "username": "", "password": "", "topic_prefix": "ha/frigate_face_bridge"},
+        "mqtt": {"enabled": False, "host": "core-mosquitto", "port": 1883, "username": "", "password": "", "topic_prefix": "ha/frigate_face_bridge", "discovery": True, "discovery_prefix": "homeassistant"},
+        "frigate": {"enabled": False, "events_topic": "frigate/events", "camera_name": "", "api_url": "", "person_count_enabled": True, "person_count_interval_seconds": 5, "dog_name": "Maja"},
+        "face_recognition": {"enabled": False, "events_topic": "face_recognition/events", "min_confidence": 0.7},
         "camera": {"name": "garage_g3_flex", "host": "192.168.2.241", "rtsp_url": "", "snapshot_url": "", "detect_width": 640, "detect_height": 360, "detect_fps": 5},
         "known_faces": [{"name": "Thomas", "enabled": True}, {"name": "Birgit", "enabled": True}, {"name": "Marie", "enabled": True}],
     }
@@ -121,7 +124,7 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
     config["demo_mode"] = bool(config.get("demo_mode", True))
     level = str(config.get("log_level") or "info").lower()
-    if level not in {"trace", "debug", "info", "warning", "error"}:
+    if level not in LOG_LEVELS:
         errors.append("log_level is invalid; using info")
         level = "info"
     config["log_level"] = level
@@ -137,9 +140,54 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     mqtt["username"] = str(mqtt.get("username") or "")
     mqtt["password"] = str(mqtt.get("password") or "")
     mqtt["topic_prefix"] = str(mqtt.get("topic_prefix") or "ha/frigate_face_bridge").strip().strip("/")
+    mqtt["discovery"] = bool(mqtt.get("discovery", True))
+    mqtt["discovery_prefix"] = str(mqtt.get("discovery_prefix") or "homeassistant").strip().strip("/")
     if mqtt["enabled"] and not mqtt["host"]:
         errors.append("mqtt.host is required when MQTT is enabled")
         mqtt["enabled"] = False
+    if mqtt["discovery"] and not mqtt["discovery_prefix"]:
+        errors.append("mqtt.discovery_prefix is required when MQTT Discovery is enabled")
+        mqtt["discovery"] = False
+
+    frigate = config.setdefault("frigate", {})
+    if not isinstance(frigate, dict):
+        frigate = config["frigate"] = {}
+        errors.append("frigate must be an object; using defaults")
+    frigate["enabled"] = bool(frigate.get("enabled", False))
+    frigate["events_topic"] = str(frigate.get("events_topic") or "frigate/events").strip().strip("/")
+    frigate["camera_name"] = re.sub(r"[^A-Za-z0-9_-]+", "_", str(frigate.get("camera_name") or "")).strip("_")
+    frigate["api_url"] = str(frigate.get("api_url") or "").strip().rstrip("/")
+    frigate["person_count_enabled"] = bool(frigate.get("person_count_enabled", True))
+    frigate["person_count_interval_seconds"] = _as_int(frigate.get("person_count_interval_seconds"), 5, 1)
+    frigate["dog_name"] = re.sub(r"[^A-Za-z0-9 _-]+", "", str(frigate.get("dog_name") or "Maja")).strip() or "Maja"
+    if frigate["api_url"]:
+        parts = urlsplit(frigate["api_url"])
+        if parts.scheme.lower() not in {"http", "https"} or not parts.netloc:
+            errors.append("frigate.api_url must be an http or https URL")
+            frigate["api_url"] = ""
+    if frigate["enabled"] and not mqtt["enabled"]:
+        errors.append("frigate.enabled requires mqtt.enabled")
+    if frigate["enabled"] and not frigate["events_topic"]:
+        errors.append("frigate.events_topic is required when Frigate import is enabled")
+        frigate["enabled"] = False
+
+    face_recognition = config.setdefault("face_recognition", {})
+    if not isinstance(face_recognition, dict):
+        face_recognition = config["face_recognition"] = {}
+        errors.append("face_recognition must be an object; using defaults")
+    face_recognition["enabled"] = bool(face_recognition.get("enabled", False))
+    face_recognition["events_topic"] = str(face_recognition.get("events_topic") or "face_recognition/events").strip().strip("/")
+    try:
+        min_confidence = float(face_recognition.get("min_confidence", 0.7))
+    except (TypeError, ValueError):
+        min_confidence = 0.7
+        errors.append("face_recognition.min_confidence is invalid; using 0.7")
+    face_recognition["min_confidence"] = min(max(min_confidence, 0.0), 1.0)
+    if face_recognition["enabled"] and not mqtt["enabled"]:
+        errors.append("face_recognition.enabled requires mqtt.enabled")
+    if face_recognition["enabled"] and not face_recognition["events_topic"]:
+        errors.append("face_recognition.events_topic is required when Face Recognition import is enabled")
+        face_recognition["enabled"] = False
 
     camera = config.setdefault("camera", {})
     if not isinstance(camera, dict):
@@ -220,5 +268,131 @@ def save_camera_config(camera_update: dict[str, Any]) -> dict[str, Any]:
     options = _load_options()
     camera = options.get("camera") if isinstance(options.get("camera"), dict) else {}
     options["camera"] = {**camera, **sanitize_camera_update(camera_update)}
+    _write_options(options)
+    return load_config()
+
+
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
+
+
+def _validate_topic(value: str, default: str = "") -> str:
+    topic = str(value or default).strip().strip("/")
+    if topic and not re.fullmatch(r"[A-Za-z0-9_./-]+", topic):
+        raise ValueError("MQTT topic contains invalid characters")
+    return topic
+
+
+def _validate_host(value: str) -> str:
+    host = str(value or "").strip()
+    if host and not re.fullmatch(r"[A-Za-z0-9_.:-]+", host):
+        raise ValueError("mqtt.host contains invalid characters")
+    return host
+
+
+def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any] | None = None) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise ValueError("payload must be a JSON object")
+    current_options = current_options if isinstance(current_options, dict) else {}
+
+    out: dict[str, Any] = {}
+    if "demo_mode" in payload:
+        out["demo_mode"] = _as_bool(payload.get("demo_mode"))
+    if "log_level" in payload:
+        level = str(payload.get("log_level") or "info").strip().lower()
+        if level not in LOG_LEVELS:
+            raise ValueError("log_level is invalid")
+        out["log_level"] = level
+    if "event_interval_seconds" in payload:
+        out["event_interval_seconds"] = _as_int(payload.get("event_interval_seconds"), 10, 1)
+
+    mqtt_payload = payload.get("mqtt")
+    if mqtt_payload is not None:
+        if not isinstance(mqtt_payload, dict):
+            raise ValueError("mqtt must be a JSON object")
+        mqtt: dict[str, Any] = {}
+        if "enabled" in mqtt_payload:
+            mqtt["enabled"] = _as_bool(mqtt_payload.get("enabled"))
+        if "host" in mqtt_payload:
+            mqtt["host"] = _validate_host(str(mqtt_payload.get("host") or ""))
+        if "port" in mqtt_payload:
+            mqtt["port"] = _as_int(mqtt_payload.get("port"), 1883, 1)
+        if "username" in mqtt_payload:
+            mqtt["username"] = str(mqtt_payload.get("username") or "")
+        if "password" in mqtt_payload:
+            password = str(mqtt_payload.get("password") or "")
+            if "***" not in password:
+                mqtt["password"] = password
+        if "topic_prefix" in mqtt_payload:
+            mqtt["topic_prefix"] = _validate_topic(str(mqtt_payload.get("topic_prefix") or "ha/frigate_face_bridge"), "ha/frigate_face_bridge")
+        if "discovery" in mqtt_payload:
+            mqtt["discovery"] = _as_bool(mqtt_payload.get("discovery"))
+        if "discovery_prefix" in mqtt_payload:
+            mqtt["discovery_prefix"] = _validate_topic(str(mqtt_payload.get("discovery_prefix") or "homeassistant"), "homeassistant")
+        if mqtt:
+            out["mqtt"] = mqtt
+
+    frigate_payload = payload.get("frigate")
+    if frigate_payload is not None:
+        if not isinstance(frigate_payload, dict):
+            raise ValueError("frigate must be a JSON object")
+        frigate: dict[str, Any] = {}
+        if "enabled" in frigate_payload:
+            frigate["enabled"] = _as_bool(frigate_payload.get("enabled"))
+        if "events_topic" in frigate_payload:
+            frigate["events_topic"] = _validate_topic(str(frigate_payload.get("events_topic") or "frigate/events"), "frigate/events")
+        if "camera_name" in frigate_payload:
+            frigate["camera_name"] = re.sub(r"[^A-Za-z0-9_-]+", "_", str(frigate_payload.get("camera_name") or "")).strip("_")
+        if "api_url" in frigate_payload:
+            api_url = str(frigate_payload.get("api_url") or "").strip().rstrip("/")
+            if api_url:
+                parts = urlsplit(api_url)
+                if parts.scheme.lower() not in {"http", "https"} or not parts.netloc:
+                    raise ValueError("frigate.api_url must be an http or https URL")
+            frigate["api_url"] = api_url
+        if "person_count_enabled" in frigate_payload:
+            frigate["person_count_enabled"] = _as_bool(frigate_payload.get("person_count_enabled"))
+        if "person_count_interval_seconds" in frigate_payload:
+            frigate["person_count_interval_seconds"] = _as_int(frigate_payload.get("person_count_interval_seconds"), 5, 1)
+        if "dog_name" in frigate_payload:
+            frigate["dog_name"] = re.sub(r"[^A-Za-z0-9 _-]+", "", str(frigate_payload.get("dog_name") or "Maja")).strip() or "Maja"
+        if frigate:
+            out["frigate"] = frigate
+
+    face_payload = payload.get("face_recognition")
+    if face_payload is not None:
+        if not isinstance(face_payload, dict):
+            raise ValueError("face_recognition must be a JSON object")
+        face: dict[str, Any] = {}
+        if "enabled" in face_payload:
+            face["enabled"] = _as_bool(face_payload.get("enabled"))
+        if "events_topic" in face_payload:
+            face["events_topic"] = _validate_topic(str(face_payload.get("events_topic") or "face_recognition/events"), "face_recognition/events")
+        if "min_confidence" in face_payload:
+            try:
+                face["min_confidence"] = min(max(float(face_payload.get("min_confidence")), 0.0), 1.0)
+            except (TypeError, ValueError):
+                raise ValueError("face_recognition.min_confidence is invalid")
+        if face:
+            out["face_recognition"] = face
+
+    if not out:
+        raise ValueError("no application settings supplied")
+    return out
+
+
+def save_app_config(update: dict[str, Any]) -> dict[str, Any]:
+    options = _load_options()
+    sanitized = sanitize_app_update(update, options)
+    for key, value in sanitized.items():
+        if isinstance(value, dict):
+            existing = options.get(key) if isinstance(options.get(key), dict) else {}
+            options[key] = {**existing, **value}
+        else:
+            options[key] = value
     _write_options(options)
     return load_config()

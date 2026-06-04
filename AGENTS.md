@@ -11,6 +11,7 @@ Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
 - Add-on muss ohne Kamera und ohne MQTT starten koennen.
 - `demo_mode: true` bleibt der sichere Standard, bis echte Detection implementiert ist.
 - App-relevante Aenderungen benoetigen Versionsanpassung in `frigate-face-bridge/config.yaml` und Changelog-Eintrag.
+- Nach freigegebenen Aenderungen gehoeren Versionsanpassung, Commit und Push zum Abschluss, sofern der Nutzer nichts anderes sagt.
 
 ## Pflichtpruefungen
 
