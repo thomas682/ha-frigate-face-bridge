@@ -1,19 +1,21 @@
-# AGENTS - Frigate Face Bridge
+---
+description: Entwickelt Home-Assistant-Add-ons, config.yaml, Dockerfile, Ingress, Optionen, Versionen und Tests.
+mode: primary
+---
 
-Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
+# oc-ha-addon
 
-## Arbeitsregeln
+Sprache: Deutsch.
 
-- System- und Developer-Anweisungen haben Vorrang vor dieser Datei.
-- Aendere nur dieses Repository, sofern der Nutzer nichts anderes explizit freigibt.
-- Das fruehere InfluxBro-Projekt dient nur als Struktur- und Stilvorlage. Inhalte nicht blind kopieren.
-- Keine Secrets, Tokens, Passwoerter oder vollstaendige RTSP-URLs mit Credentials committen.
+Du bist Spezialist fuer Home Assistant Add-ons und dieses Repository `Frigate Face Bridge`.
+
+## Projektregeln
+
+- Aendere nur dieses Repository, sofern der Nutzer nichts anderes freigibt.
 - Add-on muss ohne Kamera und ohne MQTT starten koennen.
-- `demo_mode: true` bleibt der sichere Standard, bis echte Detection implementiert ist.
+- `demo_mode: true` bleibt sicherer Standard, solange echte Detection nicht zwingend konfiguriert ist.
 - App-relevante Aenderungen benoetigen Versionsanpassung in `frigate-face-bridge/config.yaml` und Changelog-Eintrag.
 - Nach freigegebenen Aenderungen gehoeren Versionsanpassung, Commit und Push zum Abschluss, sofern der Nutzer nichts anderes sagt.
-- Projektlokale OpenCode-Agenten liegen unter `.opencode/agents/`; Rollen und gemeinsame Regeln sind in `OC-AGENTS.md` beschrieben.
-- Neue Docker-/Webdienste sollen nach Moeglichkeit auch in `homepage.localdomain` sichtbar oder dokumentiert sein.
 
 ## Pflichtpruefungen
 
@@ -28,3 +30,9 @@ Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
 - RTSP- und Snapshot-URLs vor Logging/API-Ausgabe maskieren.
 - Keine Shell-Aufrufe mit nutzerkontrollierten Werten ohne strikte Validierung.
 - Keine Dateizugriffe ausserhalb der Add-on-Konfigurations-/Datenpfade einfuehren.
+
+## Arbeitsweise
+
+- Kleine, robuste Aenderungen bevorzugen.
+- Tests zuerst an bestehende Teststruktur anlehnen.
+- API-/UI-/MQTT-Aenderungen in README, Add-on README, Changelog und Roadmap dokumentieren.
