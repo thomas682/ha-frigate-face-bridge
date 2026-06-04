@@ -92,7 +92,22 @@ def handle_face_event(payload: bytes | dict[str, Any]) -> dict[str, Any] | None:
 publisher = MqttPublisher(config, handle_frigate_event, handle_face_event)
 
 
+def terrace_door_status(event: dict[str, Any] | None = None) -> dict[str, Any]:
+    settings = config.get("terrace_door", {}) if isinstance(config.get("terrace_door"), dict) else {}
+    event = event or {}
+    return {
+        "enabled": bool(settings.get("enabled", False)),
+        "open": bool(event.get("terrace_door_open", settings.get("open", False))),
+        "confidence": float(event.get("terrace_door_confidence", settings.get("confidence", 0.0)) or 0.0),
+        "last_changed": str(event.get("terrace_door_last_changed", settings.get("last_changed") or "")),
+    }
+
+
 def record_event(event: dict[str, Any]) -> None:
+    door = terrace_door_status(event)
+    event["terrace_door_open"] = door["open"]
+    event["terrace_door_confidence"] = door["confidence"]
+    event["terrace_door_last_changed"] = door["last_changed"]
     entry = {
         "timestamp": event.get("timestamp"),
         "camera": event.get("camera"),
@@ -102,6 +117,9 @@ def record_event(event: dict[str, Any]) -> None:
         "maja_present": bool(event.get("maja_present")),
         "known_faces": event.get("known_faces") or [],
         "recognized_entities": event.get("recognized_entities") or event.get("known_faces") or [],
+        "terrace_door_open": door["open"],
+        "terrace_door_confidence": door["confidence"],
+        "terrace_door_last_changed": door["last_changed"],
         "status": event.get("status"),
     }
     history.append(entry)
@@ -122,7 +140,7 @@ def _status() -> dict[str, Any]:
         ][-60:]
     return {
         "ok": True,
-        "version": os.environ.get("ADDON_VERSION", "0.10.0"),
+        "version": os.environ.get("ADDON_VERSION", "0.11.0"),
         "started_at": STARTED_AT,
         "demo_mode": bool(config.get("demo_mode", True)),
         "event_count": event_count,
@@ -135,6 +153,7 @@ def _status() -> dict[str, Any]:
         "camera": camera_status(config),
         "mqtt": publisher.status(),
         "known_faces": known_face_status(config),
+        "terrace_door": terrace_door_status(),
         "config_errors": config.get("config_errors", []),
     }
 
@@ -309,7 +328,7 @@ def api_camera_snapshot():
         return jsonify({"ok": False, "error": "snapshot_url must use http or https"}), 400
 
     try:
-        req = Request(snapshot_url, headers={"User-Agent": "frigate-face-bridge/0.10"})
+        req = Request(snapshot_url, headers={"User-Agent": "frigate-face-bridge/0.11"})
         with urlopen(req, timeout=8) as response:
             content_type = response.headers.get("Content-Type", "image/jpeg").split(";", 1)[0]
             if not content_type.startswith("image/"):
@@ -336,7 +355,7 @@ def shutdown(signum: int, frame: Any) -> None:
 
 
 def main() -> None:
-    LOG.info("Frigate Face Bridge starting version=%s", os.environ.get("ADDON_VERSION", "0.10.0"))
+    LOG.info("Frigate Face Bridge starting version=%s", os.environ.get("ADDON_VERSION", "0.11.0"))
     LOG.info("camera config: %s", camera_status(config))
     publisher.connect()
     thread = threading.Thread(target=event_loop, daemon=True)

@@ -80,7 +80,7 @@ def active_object_count_event(config: dict[str, Any]) -> dict[str, Any] | None:
     active_by_label: dict[str, list[dict[str, Any]]] = {label: [] for label in labels}
     for label in labels:
         query = urlencode({"camera": camera, "label": label, "in_progress": "1"})
-        req = Request(f"{base_url}/api/events?{query}", headers={"User-Agent": "frigate-face-bridge/0.10"})
+        req = Request(f"{base_url}/api/events?{query}", headers={"User-Agent": "frigate-face-bridge/0.11"})
         with urlopen(req, timeout=8) as response:
             events = json.loads(response.read(512 * 1024).decode("utf-8"))
         if not isinstance(events, list):

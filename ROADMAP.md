@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 11 abgeschlossen**.
+Aktueller Stand: **Stufe 12 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.10.0`.
+Aktuelle Add-on-Version: `0.11.0`.
 
 ## Stufe 1 - Add-on-Basis
 
@@ -233,6 +233,42 @@ Abnahme:
 
 - Wenn Frigate mehrere aktive Personen im Bild erkennt, veroeffentlicht Face Bridge diese Anzahl als `person_count`.
 - Bei `0` aktiven Personen wird ebenfalls `person_count: 0` veroeffentlicht.
+
+## Stufe 11 - Hund, Maja und History
+
+Status: **abgeschlossen**
+
+Ziel: Neben Personen soll auch der Hund im Wohnzimmer sichtbar werden und die Web-UI soll Verlauf und Personenanzahl als Graph anzeigen.
+
+Umgesetzt:
+
+- Frigate-API-Zaehler fuer aktive `dog`-Events
+- MQTT Topics und Discovery fuer `dog_count`, `maja_present` und `recognized_entities`
+- History-API `GET /api/history`
+- Web-UI mit Verlauf und Personen-Graph
+
+Abnahme:
+
+- `dog_count` und `maja_present` werden per MQTT und API veroeffentlicht.
+- Die UI zeigt History und Personenserie an.
+
+## Stufe 12 - Terrassentuer-Felder
+
+Status: **abgeschlossen**
+
+Ziel: Face Bridge soll vorbereitete MQTT-/API-Felder fuer den spaeteren Terrassentuer-Zustand bereitstellen.
+
+Umgesetzt:
+
+- Konfiguration `terrace_door.enabled`, `open`, `confidence`, `last_changed`
+- MQTT Topics `terrace_door_open`, `terrace_door_confidence`, `terrace_door_last_changed`
+- MQTT Discovery fuer die drei Terrassentuer-Felder
+- Web-UI-Konfiguration und Statusanzeige
+
+Abnahme:
+
+- Home Assistant kann die drei Felder als MQTT-Entities anlegen.
+- Der Zustand kann ueber `POST /api/config` gesetzt und per `/api/status` gelesen werden.
 
 ## Laufende Sicherheitsregeln
 

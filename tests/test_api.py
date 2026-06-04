@@ -364,8 +364,29 @@ def test_mqtt_discovery_configs_reference_existing_topics():
     assert payloads["frigate_face_bridge_garage_g3_flex_person_count"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/person_count"
     assert payloads["frigate_face_bridge_garage_g3_flex_dog_count"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/dog_count"
     assert payloads["frigate_face_bridge_garage_g3_flex_maja_present"]["value_template"] == "{{ 'on' if value_json.maja_present else 'off' }}"
+    assert payloads["frigate_face_bridge_garage_g3_flex_terrace_door_open"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/terrace_door_open"
+    assert payloads["frigate_face_bridge_garage_g3_flex_terrace_door_confidence"]["value_template"] == "{{ value_json.terrace_door_confidence }}"
     assert payloads["frigate_face_bridge_garage_g3_flex_unknown_faces"]["value_template"] == "{{ value_json.unknown_faces }}"
     assert payloads["frigate_face_bridge_garage_g3_flex_bridge_status"]["availability"]["topic"] == "ha/frigate_face_bridge/status"
+
+
+def test_mqtt_publish_event_includes_terrace_door_fields():
+    publisher = mqtt_client.MqttPublisher(
+        {
+            "mqtt": {"enabled": True, "topic_prefix": "ha/frigate_face_bridge"},
+            "terrace_door": {"open": True, "confidence": 0.87, "last_changed": "2026-06-04T12:00:00Z"},
+        }
+    )
+    published = []
+    publisher.client = object()
+    publisher.publish_raw = lambda topic, payload, retain=False: published.append((topic, payload))
+
+    publisher.publish_event({"camera": "garage", "timestamp": "2026-06-04T12:00:01Z", "person_count": 1})
+
+    payloads = {topic: payload for topic, payload in published}
+    assert payloads["ha/frigate_face_bridge/garage/terrace_door_open"]["terrace_door_open"] is True
+    assert payloads["ha/frigate_face_bridge/garage/terrace_door_confidence"]["terrace_door_confidence"] == 0.87
+    assert payloads["ha/frigate_face_bridge/garage/last_event"]["terrace_door_last_changed"] == "2026-06-04T12:00:00Z"
 
 
 def test_mqtt_discovery_can_be_disabled():
@@ -436,6 +457,23 @@ def test_update_app_config_accepts_frigate_api_person_count(tmp_path, monkeypatc
     assert data["config"]["frigate"]["person_count_enabled"] is True
     assert data["config"]["frigate"]["person_count_interval_seconds"] == 3
     assert data["config"]["frigate"]["dog_name"] == "Maja"
+
+
+def test_update_app_config_accepts_terrace_door_fields(tmp_path, monkeypatch):
+    monkeypatch.setattr(config_loader, "OPTIONS_FILE", tmp_path / "options.json")
+    client = module.app.test_client()
+
+    response = client.post(
+        "/api/config",
+        json={"terrace_door": {"enabled": True, "open": True, "confidence": 0.91, "last_changed": "2026-06-04T12:00:00Z"}},
+    )
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["config"]["terrace_door"]["enabled"] is True
+    assert data["config"]["terrace_door"]["open"] is True
+    assert data["config"]["terrace_door"]["confidence"] == 0.91
+    assert data["status"]["terrace_door"]["last_changed"] == "2026-06-04T12:00:00Z"
 
 
 def test_update_app_config_rejects_invalid_topic(tmp_path, monkeypatch):

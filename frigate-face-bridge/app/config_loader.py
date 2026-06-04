@@ -84,6 +84,7 @@ def _defaults_from_addon_config() -> dict[str, Any]:
         "mqtt": {"enabled": False, "host": "core-mosquitto", "port": 1883, "username": "", "password": "", "topic_prefix": "ha/frigate_face_bridge", "discovery": True, "discovery_prefix": "homeassistant"},
         "frigate": {"enabled": False, "events_topic": "frigate/events", "camera_name": "", "api_url": "", "person_count_enabled": True, "person_count_interval_seconds": 5, "dog_name": "Maja"},
         "face_recognition": {"enabled": False, "events_topic": "face_recognition/events", "min_confidence": 0.7},
+        "terrace_door": {"enabled": False, "open": False, "confidence": 0.0, "last_changed": ""},
         "camera": {"name": "garage_g3_flex", "host": "192.168.2.241", "rtsp_url": "", "snapshot_url": "", "detect_width": 640, "detect_height": 360, "detect_fps": 5},
         "known_faces": [{"name": "Thomas", "enabled": True}, {"name": "Birgit", "enabled": True}, {"name": "Marie", "enabled": True}],
     }
@@ -188,6 +189,20 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     if face_recognition["enabled"] and not face_recognition["events_topic"]:
         errors.append("face_recognition.events_topic is required when Face Recognition import is enabled")
         face_recognition["enabled"] = False
+
+    terrace_door = config.setdefault("terrace_door", {})
+    if not isinstance(terrace_door, dict):
+        terrace_door = config["terrace_door"] = {}
+        errors.append("terrace_door must be an object; using defaults")
+    terrace_door["enabled"] = bool(terrace_door.get("enabled", False))
+    terrace_door["open"] = bool(terrace_door.get("open", False))
+    try:
+        door_confidence = float(terrace_door.get("confidence", 0.0))
+    except (TypeError, ValueError):
+        door_confidence = 0.0
+        errors.append("terrace_door.confidence is invalid; using 0.0")
+    terrace_door["confidence"] = min(max(door_confidence, 0.0), 1.0)
+    terrace_door["last_changed"] = str(terrace_door.get("last_changed") or "")
 
     camera = config.setdefault("camera", {})
     if not isinstance(camera, dict):
@@ -379,6 +394,25 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
                 raise ValueError("face_recognition.min_confidence is invalid")
         if face:
             out["face_recognition"] = face
+
+    door_payload = payload.get("terrace_door")
+    if door_payload is not None:
+        if not isinstance(door_payload, dict):
+            raise ValueError("terrace_door must be a JSON object")
+        door: dict[str, Any] = {}
+        if "enabled" in door_payload:
+            door["enabled"] = _as_bool(door_payload.get("enabled"))
+        if "open" in door_payload:
+            door["open"] = _as_bool(door_payload.get("open"))
+        if "confidence" in door_payload:
+            try:
+                door["confidence"] = min(max(float(door_payload.get("confidence")), 0.0), 1.0)
+            except (TypeError, ValueError):
+                raise ValueError("terrace_door.confidence is invalid")
+        if "last_changed" in door_payload:
+            door["last_changed"] = str(door_payload.get("last_changed") or "")
+        if door:
+            out["terrace_door"] = door
 
     if not out:
         raise ValueError("no application settings supplied")

@@ -49,6 +49,9 @@
         <dt>Erkannte Namen/Tiere</dt><dd id="recognized-entities">-</dd>
         <dt>Unbekannte Gesichter</dt><dd id="unknown-faces">-</dd>
         <dt>Hunde</dt><dd id="last-dog-count">0</dd>
+        <dt>Terrassentuer offen</dt><dd id="terrace-door-open">-</dd>
+        <dt>Terrassentuer Confidence</dt><dd id="terrace-door-confidence">-</dd>
+        <dt>Terrassentuer geaendert</dt><dd id="terrace-door-last-changed">-</dd>
         <dt>Demo-Modus</dt><dd id="demo-mode">-</dd>
         <dt>Events</dt><dd id="event-count">0</dd>
         <dt>Frigate-Events</dt><dd id="frigate-event-count">0</dd>
@@ -149,6 +152,22 @@
           Mindest-Confidence
           <input id="setting-face-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.7">
         </label>
+        <label>
+          Terrassentuer-Entity aktiv
+          <input id="setting-door-enabled" type="checkbox">
+        </label>
+        <label>
+          Terrassentuer offen
+          <input id="setting-door-open" type="checkbox">
+        </label>
+        <label>
+          Terrassentuer Confidence
+          <input id="setting-door-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.0">
+        </label>
+        <label>
+          Terrassentuer letzte Aenderung
+          <input id="setting-door-last-changed" autocomplete="off" placeholder="2026-06-04T12:00:00Z">
+        </label>
         <div class="actions">
           <button type="submit">Betrieb speichern</button>
         </div>
@@ -217,7 +236,7 @@
 
     <section class="panel">
       <h2>Hinweise</h2>
-      <p>Version 0.10.0 erzeugt im Demo-Modus simulierte Events. Im Nicht-Demo-Modus kann Face Bridge aktive Frigate-Personen und Hunde ueber die Frigate-API zaehlen, optionale Frigate-MQTT-Events importieren, bekannte Personen und Maja anzeigen und MQTT Discovery legt Home-Assistant-Sensoren an. Die wichtigsten Betriebswerte sind direkt in der hellen Web-UI konfigurierbar.</p>
+      <p>Version 0.11.0 erzeugt im Demo-Modus simulierte Events. Im Nicht-Demo-Modus kann Face Bridge aktive Frigate-Personen und Hunde ueber die Frigate-API zaehlen, optionale Frigate-MQTT-Events importieren, bekannte Personen und Maja anzeigen, Terrassentuer-Felder publizieren und MQTT Discovery legt Home-Assistant-Sensoren an. Die wichtigsten Betriebswerte sind direkt in der hellen Web-UI konfigurierbar.</p>
       <pre id="debug"></pre>
     </section>
   </main>

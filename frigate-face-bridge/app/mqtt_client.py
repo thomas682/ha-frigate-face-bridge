@@ -115,7 +115,18 @@ class MqttPublisher:
         self.publish_raw(f"{self.topic_prefix}/{camera}/known_faces", {"camera": camera, "known_faces": event.get("known_faces", []), "timestamp": event.get("timestamp")})
         self.publish_raw(f"{self.topic_prefix}/{camera}/recognized_entities", {"camera": camera, "recognized_entities": event.get("recognized_entities", event.get("known_faces", [])), "timestamp": event.get("timestamp")})
         self.publish_raw(f"{self.topic_prefix}/{camera}/unknown_faces", {"camera": camera, "unknown_faces": event.get("unknown_faces", 0), "timestamp": event.get("timestamp")})
-        self.publish_raw(f"{self.topic_prefix}/{camera}/last_event", event)
+        terrace_door = self.config.get("terrace_door", {}) if isinstance(self.config.get("terrace_door"), dict) else {}
+        door_open = bool(event.get("terrace_door_open", terrace_door.get("open", False)))
+        door_confidence = float(event.get("terrace_door_confidence", terrace_door.get("confidence", 0.0)) or 0.0)
+        door_last_changed = str(event.get("terrace_door_last_changed", terrace_door.get("last_changed") or event.get("timestamp") or ""))
+        event_payload = dict(event)
+        event_payload["terrace_door_open"] = door_open
+        event_payload["terrace_door_confidence"] = door_confidence
+        event_payload["terrace_door_last_changed"] = door_last_changed
+        self.publish_raw(f"{self.topic_prefix}/{camera}/terrace_door_open", {"camera": camera, "terrace_door_open": door_open, "timestamp": event.get("timestamp"), "source": "frigate_face_bridge"})
+        self.publish_raw(f"{self.topic_prefix}/{camera}/terrace_door_confidence", {"camera": camera, "terrace_door_confidence": door_confidence, "timestamp": event.get("timestamp"), "source": "frigate_face_bridge"})
+        self.publish_raw(f"{self.topic_prefix}/{camera}/terrace_door_last_changed", {"camera": camera, "terrace_door_last_changed": door_last_changed, "timestamp": event.get("timestamp"), "source": "frigate_face_bridge"})
+        self.publish_raw(f"{self.topic_prefix}/{camera}/last_event", event_payload)
 
     def discovery_configs(self) -> list[tuple[str, dict[str, Any]]]:
         if not bool(self.settings.get("discovery", True)):
@@ -147,6 +158,9 @@ class MqttPublisher:
             ("known_faces", "Bekannte Gesichter", f"{base}/known_faces", "{{ value_json.known_faces | join(', ') }}", "mdi:face-recognition"),
             ("recognized_entities", "Erkannte Personen und Tiere", f"{base}/recognized_entities", "{{ value_json.recognized_entities | join(', ') }}", "mdi:account-eye"),
             ("unknown_faces", "Unbekannte Gesichter", f"{base}/unknown_faces", "{{ value_json.unknown_faces }}", "mdi:account-question"),
+            ("terrace_door_open", "Terrassentuer offen", f"{base}/terrace_door_open", "{{ 'on' if value_json.terrace_door_open else 'off' }}", "mdi:door-sliding-open"),
+            ("terrace_door_confidence", "Terrassentuer Confidence", f"{base}/terrace_door_confidence", "{{ value_json.terrace_door_confidence }}", "mdi:gauge"),
+            ("terrace_door_last_changed", "Terrassentuer letzte Aenderung", f"{base}/terrace_door_last_changed", "{{ value_json.terrace_door_last_changed }}", "mdi:clock-outline"),
             ("last_event_source", "Letzte Event-Quelle", f"{base}/last_event", "{{ value_json.source }}", "mdi:timeline-clock"),
             ("bridge_status", "Bridge Status", f"{self.topic_prefix}/status", "{{ value_json.status }}", "mdi:connection"),
         ]

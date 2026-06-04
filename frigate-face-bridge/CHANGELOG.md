@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.0
+
+### Added
+
+- Terrassentuer-Felder `terrace_door_open`, `terrace_door_confidence` und `terrace_door_last_changed` ergaenzt.
+- MQTT Topics und MQTT Discovery fuer Terrassentuer-Status, Confidence und letzte Aenderung hinzugefuegt.
+- Web-UI und `POST /api/config` um Terrassentuer-Konfiguration erweitert.
+- Tests fuer Terrassentuer-Konfiguration und MQTT-Ausgabe ergaenzt.
+
 ## 0.10.0
 
 ### Added

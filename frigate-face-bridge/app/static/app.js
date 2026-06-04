@@ -43,6 +43,12 @@ function appConfigFromForm() {
       events_topic: value('setting-face-topic'),
       min_confidence: Number(value('setting-face-confidence') || 0.7),
     },
+    terrace_door: {
+      enabled: checkbox('setting-door-enabled'),
+      open: checkbox('setting-door-open'),
+      confidence: Number(value('setting-door-confidence') || 0),
+      last_changed: value('setting-door-last-changed'),
+    },
   };
 }
 
@@ -72,6 +78,7 @@ function populateAppForm(config) {
   const mqtt = config.mqtt || {};
   const frigate = config.frigate || {};
   const face = config.face_recognition || {};
+  const door = config.terrace_door || {};
   document.getElementById('setting-demo-mode').checked = Boolean(config.demo_mode);
   document.getElementById('setting-event-interval').value = config.event_interval_seconds || 10;
   document.getElementById('setting-log-level').value = config.log_level || 'info';
@@ -93,6 +100,10 @@ function populateAppForm(config) {
   document.getElementById('setting-face-enabled').checked = Boolean(face.enabled);
   document.getElementById('setting-face-topic').value = face.events_topic || 'face_recognition/events';
   document.getElementById('setting-face-confidence').value = face.min_confidence ?? 0.7;
+  document.getElementById('setting-door-enabled').checked = Boolean(door.enabled);
+  document.getElementById('setting-door-open').checked = Boolean(door.open);
+  document.getElementById('setting-door-confidence').value = door.confidence ?? 0;
+  document.getElementById('setting-door-last-changed').value = door.last_changed || '';
   formState.appPopulated = true;
 }
 
@@ -180,11 +191,15 @@ async function refreshStatus() {
   document.getElementById('recognized-entities').textContent = (event.recognized_entities || event.known_faces || []).join(', ') || 'keine';
   document.getElementById('unknown-faces').textContent = event.unknown_faces ?? 0;
   document.getElementById('last-dog-count').textContent = event.dog_count ?? 0;
+  const door = data.terrace_door || {};
+  document.getElementById('terrace-door-open').textContent = door.open ? 'offen' : 'geschlossen';
+  document.getElementById('terrace-door-confidence').textContent = door.confidence ?? 0;
+  document.getElementById('terrace-door-last-changed').textContent = door.last_changed || '-';
   document.getElementById('demo-mode').textContent = data.demo_mode ? 'aktiv' : 'aus';
   document.getElementById('event-count').textContent = data.event_count ?? 0;
   document.getElementById('frigate-event-count').textContent = data.frigate_event_count ?? 0;
   document.getElementById('face-event-count').textContent = data.face_event_count ?? 0;
-  document.getElementById('debug').textContent = JSON.stringify({ config_errors: data.config_errors || [], mqtt: data.mqtt, frigate: safeConfig.frigate, frigate_active_count: data.frigate_active_count, face_recognition: safeConfig.face_recognition }, null, 2);
+  document.getElementById('debug').textContent = JSON.stringify({ config_errors: data.config_errors || [], mqtt: data.mqtt, frigate: safeConfig.frigate, frigate_active_count: data.frigate_active_count, face_recognition: safeConfig.face_recognition, terrace_door: safeConfig.terrace_door }, null, 2);
   renderPersonChart(data.person_count_series || []);
   renderHistory(data.history || []);
   renderFaces(data.known_faces || []);

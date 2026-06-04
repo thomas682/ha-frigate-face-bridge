@@ -70,7 +70,7 @@ class SnapshotDetector:
             return self._base_event("snapshot_url must use http or https")
 
         try:
-            req = Request(snapshot_url, headers={"User-Agent": "frigate-face-bridge/0.10"})
+            req = Request(snapshot_url, headers={"User-Agent": "frigate-face-bridge/0.11"})
             with urlopen(req, timeout=8) as response:
                 content_type = response.headers.get("Content-Type", "image/jpeg").split(";", 1)[0].lower()
                 if not content_type.startswith("image/"):
