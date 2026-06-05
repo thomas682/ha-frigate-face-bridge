@@ -48,6 +48,8 @@
         <dt>Bekannte Gesichter</dt><dd id="known-faces">-</dd>
         <dt>Erkannte Namen/Tiere</dt><dd id="recognized-entities">-</dd>
         <dt>Unbekannte Gesichter</dt><dd id="unknown-faces">-</dd>
+        <dt>Ansagetext</dt><dd id="announcement-text">-</dd>
+        <dt>Ansagestatus</dt><dd id="announcement-state">-</dd>
         <dt>Hunde</dt><dd id="last-dog-count">0</dd>
         <dt>Terrassentuer offen</dt><dd id="terrace-door-open">-</dd>
         <dt>Terrassentuer Confidence</dt><dd id="terrace-door-confidence">-</dd>
@@ -153,6 +155,42 @@
           <input id="setting-face-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.7">
         </label>
         <label>
+          Sprachausgaben aktiv
+          <input id="setting-announcements-enabled" type="checkbox">
+        </label>
+        <label>
+          Bekannte Personen ansagen
+          <input id="setting-announcements-known" type="checkbox">
+        </label>
+        <label>
+          Unbekannte Personen ansagen
+          <input id="setting-announcements-unknown" type="checkbox">
+        </label>
+        <label>
+          Hund ansagen
+          <input id="setting-announcements-dog" type="checkbox">
+        </label>
+        <label>
+          Zufallstexte verwenden
+          <input id="setting-announcements-random" type="checkbox">
+        </label>
+        <label>
+          Globale Ansage-Sperre Sekunden
+          <input id="setting-announcements-global-cooldown" type="number" min="0" step="1" placeholder="60">
+        </label>
+        <label>
+          Sperre pro Person/Tier Sekunden
+          <input id="setting-announcements-entity-cooldown" type="number" min="0" step="1" placeholder="300">
+        </label>
+        <label>
+          Nicht ansagen, kommagetrennt
+          <input id="setting-announcements-disabled" autocomplete="off" placeholder="Thomas, unknown, Maja">
+        </label>
+        <label class="wide">
+          Eigene Ansagetexte je Zeile: Name=Text
+          <textarea id="setting-announcements-custom-texts" rows="5" placeholder="Thomas=Thomas ist im Wohnzimmer erkannt worden.&#10;Maja=Maja ist im Haus.&#10;unknown=Achtung, unbekannte Person erkannt.&#10;multiple={names} wurden erkannt."></textarea>
+        </label>
+        <label>
           Terrassentuer-Entity aktiv
           <input id="setting-door-enabled" type="checkbox">
         </label>
@@ -226,17 +264,17 @@
       <div class="chart" id="person-chart" aria-label="Personen gleichzeitig im Wohnzimmer"></div>
       <table class="history-table">
         <thead>
-          <tr><th>Zeit</th><th>Personen</th><th>Hund</th><th>Erkannt</th><th>Quelle</th></tr>
+          <tr><th>Zeit</th><th>Personen</th><th>Hund</th><th>Erkannt</th><th>Ansage/Log</th><th>Quelle</th></tr>
         </thead>
         <tbody id="history-body">
-          <tr><td colspan="5">Noch keine History geladen.</td></tr>
+          <tr><td colspan="6">Noch keine History geladen.</td></tr>
         </tbody>
       </table>
     </section>
 
     <section class="panel">
       <h2>Hinweise</h2>
-      <p>Version 0.12.1 erzeugt im Demo-Modus simulierte Events. Im Nicht-Demo-Modus kann Face Bridge aktive Frigate-Personen und Hunde ueber die Frigate-API zaehlen, optionale Frigate-MQTT-Events importieren, bekannte Personen und Maja anzeigen, Terrassentuer-Felder publizieren und MQTT Discovery legt Home-Assistant-Sensoren an. Die Web-UI ist fuer das Home-Assistant-Ingress-Panel im hellen HA-Stil optimiert und zeigt den Personen-Verlauf als Kurvendiagramm.</p>
+      <p>Version 0.13.0 erzeugt im Demo-Modus simulierte Events. Im Nicht-Demo-Modus kann Face Bridge aktive Frigate-Personen und Hunde ueber die Frigate-API zaehlen, optionale Frigate-MQTT-Events importieren, bekannte Personen und Maja anzeigen, Ansagetexte mit Cooldowns erzeugen, Terrassentuer-Felder publizieren und MQTT Discovery legt Home-Assistant-Sensoren an. Die Web-UI ist fuer das Home-Assistant-Ingress-Panel im hellen HA-Stil optimiert und zeigt den Personen-Verlauf als Kurvendiagramm.</p>
       <pre id="debug"></pre>
     </section>
   </main>

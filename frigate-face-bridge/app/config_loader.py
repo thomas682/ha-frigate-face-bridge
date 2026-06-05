@@ -84,6 +84,7 @@ def _defaults_from_addon_config() -> dict[str, Any]:
         "mqtt": {"enabled": False, "host": "core-mosquitto", "port": 1883, "username": "", "password": "", "topic_prefix": "ha/frigate_face_bridge", "discovery": True, "discovery_prefix": "homeassistant"},
         "frigate": {"enabled": False, "events_topic": "frigate/events", "camera_name": "", "api_url": "", "person_count_enabled": True, "person_count_interval_seconds": 5, "dog_name": "Maja"},
         "face_recognition": {"enabled": False, "events_topic": "face_recognition/events", "min_confidence": 0.7},
+        "announcements": {"enabled": True, "announce_known": True, "announce_unknown": True, "announce_dog": True, "random_texts_enabled": True, "global_cooldown_seconds": 60, "entity_cooldown_seconds": 300, "disabled_entities": "", "custom_texts": ""},
         "terrace_door": {"enabled": False, "open": False, "confidence": 0.0, "last_changed": ""},
         "camera": {"name": "garage_g3_flex", "host": "192.168.2.241", "rtsp_url": "", "snapshot_url": "", "detect_width": 640, "detect_height": 360, "detect_fps": 5},
         "known_faces": [{"name": "Thomas", "enabled": True}, {"name": "Birgit", "enabled": True}, {"name": "Marie", "enabled": True}],
@@ -189,6 +190,20 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     if face_recognition["enabled"] and not face_recognition["events_topic"]:
         errors.append("face_recognition.events_topic is required when Face Recognition import is enabled")
         face_recognition["enabled"] = False
+
+    announcements = config.setdefault("announcements", {})
+    if not isinstance(announcements, dict):
+        announcements = config["announcements"] = {}
+        errors.append("announcements must be an object; using defaults")
+    announcements["enabled"] = bool(announcements.get("enabled", True))
+    announcements["announce_known"] = bool(announcements.get("announce_known", True))
+    announcements["announce_unknown"] = bool(announcements.get("announce_unknown", True))
+    announcements["announce_dog"] = bool(announcements.get("announce_dog", True))
+    announcements["random_texts_enabled"] = bool(announcements.get("random_texts_enabled", True))
+    announcements["global_cooldown_seconds"] = _as_int(announcements.get("global_cooldown_seconds"), 60, 0)
+    announcements["entity_cooldown_seconds"] = _as_int(announcements.get("entity_cooldown_seconds"), 300, 0)
+    announcements["disabled_entities"] = str(announcements.get("disabled_entities") or "")[:1000]
+    announcements["custom_texts"] = str(announcements.get("custom_texts") or "")[:5000]
 
     terrace_door = config.setdefault("terrace_door", {})
     if not isinstance(terrace_door, dict):
@@ -413,6 +428,25 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
             door["last_changed"] = str(door_payload.get("last_changed") or "")
         if door:
             out["terrace_door"] = door
+
+    announcement_payload = payload.get("announcements")
+    if announcement_payload is not None:
+        if not isinstance(announcement_payload, dict):
+            raise ValueError("announcements must be a JSON object")
+        announcements: dict[str, Any] = {}
+        for key in ("enabled", "announce_known", "announce_unknown", "announce_dog", "random_texts_enabled"):
+            if key in announcement_payload:
+                announcements[key] = _as_bool(announcement_payload.get(key))
+        if "global_cooldown_seconds" in announcement_payload:
+            announcements["global_cooldown_seconds"] = _as_int(announcement_payload.get("global_cooldown_seconds"), 60, 0)
+        if "entity_cooldown_seconds" in announcement_payload:
+            announcements["entity_cooldown_seconds"] = _as_int(announcement_payload.get("entity_cooldown_seconds"), 300, 0)
+        if "disabled_entities" in announcement_payload:
+            announcements["disabled_entities"] = str(announcement_payload.get("disabled_entities") or "")[:1000]
+        if "custom_texts" in announcement_payload:
+            announcements["custom_texts"] = str(announcement_payload.get("custom_texts") or "")[:5000]
+        if announcements:
+            out["announcements"] = announcements
 
     if not out:
         raise ValueError("no application settings supplied")

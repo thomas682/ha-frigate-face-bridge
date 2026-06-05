@@ -182,7 +182,7 @@ dt:nth-last-of-type(1) + dd {
   font-weight: 500;
 }
 
-.config-form input, .config-form select {
+.config-form input, .config-form select, .config-form textarea {
   width: 100%;
   border: 1px solid #bdbdbd;
   border-radius: 4px;
@@ -201,7 +201,16 @@ dt:nth-last-of-type(1) + dd {
   justify-self: start;
 }
 
-.config-form input:focus, .config-form select:focus {
+.config-form textarea {
+  min-height: 118px;
+  resize: vertical;
+}
+
+.config-form .wide {
+  grid-column: 1 / -1;
+}
+
+.config-form input:focus, .config-form select:focus, .config-form textarea:focus {
   outline: 2px solid rgba(3, 169, 244, .28);
   border-color: var(--ha-primary);
   background: #ffffff;

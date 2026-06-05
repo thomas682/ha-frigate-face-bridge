@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.0
+
+### Added
+
+- Konfigurierbare Ansageereignisse fuer bekannte Personen, unbekannte Personen und Hund hinzugefuegt.
+- Globale und entitaetsbezogene Cooldowns gegen wiederholte Sprachausgaben ergaenzt.
+- 20 gespeicherte Zufallstexte sowie eigene Texte und Sperrliste fuer Ansagen hinzugefuegt.
+- MQTT Topics und MQTT Discovery fuer `announcement_text`, `announcement_should_speak`, `announcement_entities` und `recognition_log` ergaenzt.
+- Web-UI um Ansage-Konfiguration, Ansagestatus und Ansage-/Erkennungslog erweitert.
+
 ## 0.12.1
 
 ### Changed

@@ -115,6 +115,11 @@ class MqttPublisher:
         self.publish_raw(f"{self.topic_prefix}/{camera}/known_faces", {"camera": camera, "known_faces": event.get("known_faces", []), "timestamp": event.get("timestamp")})
         self.publish_raw(f"{self.topic_prefix}/{camera}/recognized_entities", {"camera": camera, "recognized_entities": event.get("recognized_entities", event.get("known_faces", [])), "timestamp": event.get("timestamp")})
         self.publish_raw(f"{self.topic_prefix}/{camera}/unknown_faces", {"camera": camera, "unknown_faces": event.get("unknown_faces", 0), "timestamp": event.get("timestamp")})
+        announcement = event.get("announcement") if isinstance(event.get("announcement"), dict) else {}
+        self.publish_raw(f"{self.topic_prefix}/{camera}/announcement_text", {"camera": camera, "text": announcement.get("text", ""), "should_speak": bool(announcement.get("should_speak")), "timestamp": announcement.get("timestamp") or event.get("timestamp")})
+        self.publish_raw(f"{self.topic_prefix}/{camera}/announcement_should_speak", {"camera": camera, "should_speak": bool(announcement.get("should_speak")), "timestamp": announcement.get("timestamp") or event.get("timestamp")})
+        self.publish_raw(f"{self.topic_prefix}/{camera}/announcement_entities", {"camera": camera, "entities": announcement.get("entities", []), "timestamp": announcement.get("timestamp") or event.get("timestamp")})
+        self.publish_raw(f"{self.topic_prefix}/{camera}/recognition_log", {"camera": camera, "text": announcement.get("log_text", ""), "spoken": bool(announcement.get("should_speak")), "entities": announcement.get("entities", []), "suppressed_reason": announcement.get("suppressed_reason", ""), "timestamp": announcement.get("timestamp") or event.get("timestamp")})
         terrace_door = self.config.get("terrace_door", {}) if isinstance(self.config.get("terrace_door"), dict) else {}
         door_open = bool(event.get("terrace_door_open", terrace_door.get("open", False)))
         door_confidence = float(event.get("terrace_door_confidence", terrace_door.get("confidence", 0.0)) or 0.0)
@@ -158,6 +163,10 @@ class MqttPublisher:
             ("known_faces", "Bekannte Gesichter", f"{base}/known_faces", "{{ value_json.known_faces | join(', ') }}", "mdi:face-recognition"),
             ("recognized_entities", "Erkannte Personen und Tiere", f"{base}/recognized_entities", "{{ value_json.recognized_entities | join(', ') }}", "mdi:account-eye"),
             ("unknown_faces", "Unbekannte Gesichter", f"{base}/unknown_faces", "{{ value_json.unknown_faces }}", "mdi:account-question"),
+            ("announcement_text", "Ansagetext", f"{base}/announcement_text", "{{ value_json.text }}", "mdi:text-to-speech"),
+            ("announcement_should_speak", "Ansage ausloesen", f"{base}/announcement_should_speak", "{{ 'on' if value_json.should_speak else 'off' }}", "mdi:bullhorn"),
+            ("announcement_entities", "Ansage Entitaeten", f"{base}/announcement_entities", "{{ value_json.entities | join(', ') }}", "mdi:account-voice"),
+            ("recognition_log", "Erkennungslog", f"{base}/recognition_log", "{{ value_json.text }}", "mdi:clipboard-text-clock"),
             ("terrace_door_open", "Terrassentuer offen", f"{base}/terrace_door_open", "{{ 'on' if value_json.terrace_door_open else 'off' }}", "mdi:door-sliding-open"),
             ("terrace_door_confidence", "Terrassentuer Confidence", f"{base}/terrace_door_confidence", "{{ value_json.terrace_door_confidence }}", "mdi:gauge"),
             ("terrace_door_last_changed", "Terrassentuer letzte Aenderung", f"{base}/terrace_door_last_changed", "{{ value_json.terrace_door_last_changed }}", "mdi:clock-outline"),

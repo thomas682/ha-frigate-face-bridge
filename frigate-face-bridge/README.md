@@ -6,7 +6,7 @@ Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mi
 
 Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-Events, MQTT-Ausgabe, REST-API und eine einfache Web-UI. Es ist als Grundlage fuer spaetere Integrationen mit Frigate, Double Take, CompreFace oder einer lokalen Face-Recognition-Engine gedacht.
 
-## Funktionsumfang 0.12.1
+## Funktionsumfang 0.13.0
 
 - Startfaehig ohne Kamera
 - Startfaehig ohne MQTT
@@ -23,6 +23,9 @@ Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-
 - aktiver Frigate-Personenzaehler ueber die Frigate-API fuer aktuelle Personen im Bild
 - aktiver Hund-Zaehler fuer Frigate-Objekt `dog` mit `Maja`-Status
 - History und Zeitreihen-Kurvendiagramm fuer Personen gleichzeitig im Wohnzimmer
+- konfigurierbare Ansageereignisse fuer bekannte Personen, unbekannte Personen und Hund
+- Anti-Spam-Cooldowns, Zufallstexte, eigene Texte und Sperrliste fuer Ansagen
+- Erkennungslog mit Zeitpunkt, Text, Entitaeten und Sperrgrund
 - Terrassentuer-Statusfelder fuer MQTT/API/UI: offen, Confidence und letzte Aenderung
 - lokale Face-Registry fuer bekannte Personen unter `/data/faces.json`
 - API zum Anlegen, Aktivieren und Deaktivieren bekannter Personen
@@ -62,6 +65,16 @@ face_recognition:
   enabled: false
   events_topic: face_recognition/events
   min_confidence: 0.7
+announcements:
+  enabled: true
+  announce_known: true
+  announce_unknown: true
+  announce_dog: true
+  random_texts_enabled: true
+  global_cooldown_seconds: 60
+  entity_cooldown_seconds: 300
+  disabled_entities: ""
+  custom_texts: ""
 terrace_door:
   enabled: false
   open: false
@@ -109,6 +122,10 @@ known_faces:
 - `ha/frigate_face_bridge/<camera>/known_faces`
 - `ha/frigate_face_bridge/<camera>/recognized_entities`
 - `ha/frigate_face_bridge/<camera>/unknown_faces`
+- `ha/frigate_face_bridge/<camera>/announcement_text`
+- `ha/frigate_face_bridge/<camera>/announcement_should_speak`
+- `ha/frigate_face_bridge/<camera>/announcement_entities`
+- `ha/frigate_face_bridge/<camera>/recognition_log`
 - `ha/frigate_face_bridge/<camera>/terrace_door_open`
 - `ha/frigate_face_bridge/<camera>/terrace_door_confidence`
 - `ha/frigate_face_bridge/<camera>/terrace_door_last_changed`
@@ -124,6 +141,10 @@ known_faces:
 - `homeassistant/sensor/frigate_face_bridge_<camera>_known_faces/config`
 - `homeassistant/sensor/frigate_face_bridge_<camera>_recognized_entities/config`
 - `homeassistant/sensor/frigate_face_bridge_<camera>_unknown_faces/config`
+- `homeassistant/sensor/frigate_face_bridge_<camera>_announcement_text/config`
+- `homeassistant/sensor/frigate_face_bridge_<camera>_announcement_should_speak/config`
+- `homeassistant/sensor/frigate_face_bridge_<camera>_announcement_entities/config`
+- `homeassistant/sensor/frigate_face_bridge_<camera>_recognition_log/config`
 - `homeassistant/sensor/frigate_face_bridge_<camera>_terrace_door_open/config`
 - `homeassistant/sensor/frigate_face_bridge_<camera>_terrace_door_confidence/config`
 - `homeassistant/sensor/frigate_face_bridge_<camera>_terrace_door_last_changed/config`
@@ -159,6 +180,21 @@ frigate:
 
 Der Zaehler nutzt Frigates aktive Events (`in_progress=1`) und veroeffentlicht die Anzahl auf `person_count`, `dog_count`, `maja_present`, `recognized_entities` und `last_event`.
 
+## Ansageereignisse
+
+Face Bridge erzeugt pro Erkennung ein `announcement`-Objekt mit sprechbarem Text, `should_speak`, erkannten Entitaeten und Sperrgrund. Home Assistant kann `sensor.frigate_face_bridge_ansage_ausloesen` als Trigger/Bedingung und `sensor.frigate_face_bridge_ansagetext` als TTS-Text verwenden. Globale und entitaetsbezogene Cooldowns verhindern wiederholte Ansagen derselben Person im Sekundentakt.
+
+Eigene Texte werden zeilenweise gepflegt:
+
+```text
+Thomas=Thomas ist im Wohnzimmer erkannt worden.
+Maja=Maja ist im Haus.
+unknown=Achtung, unbekannte Person erkannt.
+multiple={names} wurden erkannt.
+```
+
+Ohne eigenen Text waehlt die Bridge zufaellig aus 20 gespeicherten Ansagetexten.
+
 ## Terrassentuer-Felder
 
 Face Bridge stellt vorbereitete Terrassentuer-Felder bereit, damit eine spaetere Frigate-Klassifizierung oder ein anderer lokaler Sensor dieselben MQTT-Entities nutzen kann:
@@ -177,4 +213,4 @@ Diese Werte werden auf `terrace_door_open`, `terrace_door_confidence`, `terrace_
 
 Frigate Face Bridge ersetzt Frigate nicht. Frigate kann spaeter Personendetektionen liefern. Double Take oder CompreFace koennen spaeter Gesichtserkennung liefern. Dieses Add-on stellt Konfiguration, Statuslogik, API, Web-UI und Home-Assistant-MQTT-Anbindung bereit.
 
-Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.12.0` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.
+Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.13.0` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.

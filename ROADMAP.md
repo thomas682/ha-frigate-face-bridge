@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 13 abgeschlossen**.
+Aktueller Stand: **Stufe 14 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.12.0`.
+Aktuelle Add-on-Version: `0.13.0`.
 
 ## Stufe 1 - Add-on-Basis
 

@@ -43,6 +43,17 @@ function appConfigFromForm() {
       events_topic: value('setting-face-topic'),
       min_confidence: Number(value('setting-face-confidence') || 0.7),
     },
+    announcements: {
+      enabled: checkbox('setting-announcements-enabled'),
+      announce_known: checkbox('setting-announcements-known'),
+      announce_unknown: checkbox('setting-announcements-unknown'),
+      announce_dog: checkbox('setting-announcements-dog'),
+      random_texts_enabled: checkbox('setting-announcements-random'),
+      global_cooldown_seconds: Number(value('setting-announcements-global-cooldown') || 60),
+      entity_cooldown_seconds: Number(value('setting-announcements-entity-cooldown') || 300),
+      disabled_entities: value('setting-announcements-disabled'),
+      custom_texts: document.getElementById('setting-announcements-custom-texts').value.trim(),
+    },
     terrace_door: {
       enabled: checkbox('setting-door-enabled'),
       open: checkbox('setting-door-open'),
@@ -78,6 +89,7 @@ function populateAppForm(config) {
   const mqtt = config.mqtt || {};
   const frigate = config.frigate || {};
   const face = config.face_recognition || {};
+  const announcements = config.announcements || {};
   const door = config.terrace_door || {};
   document.getElementById('setting-demo-mode').checked = Boolean(config.demo_mode);
   document.getElementById('setting-event-interval').value = config.event_interval_seconds || 10;
@@ -100,6 +112,15 @@ function populateAppForm(config) {
   document.getElementById('setting-face-enabled').checked = Boolean(face.enabled);
   document.getElementById('setting-face-topic').value = face.events_topic || 'face_recognition/events';
   document.getElementById('setting-face-confidence').value = face.min_confidence ?? 0.7;
+  document.getElementById('setting-announcements-enabled').checked = announcements.enabled !== false;
+  document.getElementById('setting-announcements-known').checked = announcements.announce_known !== false;
+  document.getElementById('setting-announcements-unknown').checked = announcements.announce_unknown !== false;
+  document.getElementById('setting-announcements-dog').checked = announcements.announce_dog !== false;
+  document.getElementById('setting-announcements-random').checked = announcements.random_texts_enabled !== false;
+  document.getElementById('setting-announcements-global-cooldown').value = announcements.global_cooldown_seconds ?? 60;
+  document.getElementById('setting-announcements-entity-cooldown').value = announcements.entity_cooldown_seconds ?? 300;
+  document.getElementById('setting-announcements-disabled').value = announcements.disabled_entities || '';
+  document.getElementById('setting-announcements-custom-texts').value = announcements.custom_texts || '';
   document.getElementById('setting-door-enabled').checked = Boolean(door.enabled);
   document.getElementById('setting-door-open').checked = Boolean(door.open);
   document.getElementById('setting-door-confidence').value = door.confidence ?? 0;
@@ -207,13 +228,14 @@ function renderHistory(items) {
   const rows = (items || []).slice(-20).reverse();
   body.innerHTML = '';
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="5">Noch keine History vorhanden.</td></tr>';
+    body.innerHTML = '<tr><td colspan="6">Noch keine History vorhanden.</td></tr>';
     return;
   }
   for (const item of rows) {
     const row = document.createElement('tr');
     const recognized = (item.recognized_entities || item.known_faces || []).join(', ') || '-';
-    row.innerHTML = `<td>${item.timestamp || '-'}</td><td>${item.person_count ?? 0}</td><td>${item.maja_present ? 'Maja' : (item.dog_count || 0)}</td><td>${recognized}</td><td>${item.source || '-'}</td>`;
+    const announcement = item.announcement_log_text || item.announcement_text || '-';
+    row.innerHTML = `<td>${item.timestamp || '-'}</td><td>${item.person_count ?? 0}</td><td>${item.maja_present ? 'Maja' : (item.dog_count || 0)}</td><td>${recognized}</td><td>${announcement}</td><td>${item.source || '-'}</td>`;
     body.appendChild(row);
   }
 }
@@ -264,6 +286,9 @@ async function refreshStatus() {
   document.getElementById('known-faces').textContent = (event.known_faces || []).join(', ') || 'keine';
   document.getElementById('recognized-entities').textContent = (event.recognized_entities || event.known_faces || []).join(', ') || 'keine';
   document.getElementById('unknown-faces').textContent = event.unknown_faces ?? 0;
+  const announcement = event.announcement || {};
+  document.getElementById('announcement-text').textContent = announcement.text || '-';
+  document.getElementById('announcement-state').textContent = announcement.should_speak ? 'wird angesagt' : (announcement.suppressed_reason || 'keine Ansage');
   document.getElementById('last-dog-count').textContent = event.dog_count ?? 0;
   const door = data.terrace_door || {};
   document.getElementById('terrace-door-open').textContent = door.open ? 'offen' : 'geschlossen';
@@ -273,7 +298,7 @@ async function refreshStatus() {
   document.getElementById('event-count').textContent = data.event_count ?? 0;
   document.getElementById('frigate-event-count').textContent = data.frigate_event_count ?? 0;
   document.getElementById('face-event-count').textContent = data.face_event_count ?? 0;
-  document.getElementById('debug').textContent = JSON.stringify({ config_errors: data.config_errors || [], mqtt: data.mqtt, frigate: safeConfig.frigate, frigate_active_count: data.frigate_active_count, face_recognition: safeConfig.face_recognition, terrace_door: safeConfig.terrace_door }, null, 2);
+  document.getElementById('debug').textContent = JSON.stringify({ config_errors: data.config_errors || [], mqtt: data.mqtt, frigate: safeConfig.frigate, frigate_active_count: data.frigate_active_count, face_recognition: safeConfig.face_recognition, announcements: safeConfig.announcements, terrace_door: safeConfig.terrace_door }, null, 2);
   renderPersonChart(data.person_count_series || []);
   renderHistory(data.history || []);
   renderFaces(data.known_faces || []);

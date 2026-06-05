@@ -16,6 +16,7 @@ from urllib.request import Request, urlopen
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
+from announcements import AnnouncementManager
 from camera import camera_status
 from config_loader import load_config, redact_url, safe_config, save_app_config, save_camera_config
 from detector import create_detector
@@ -32,6 +33,7 @@ app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="/static")
 HISTORY_LIMIT = 500
 state_lock = threading.RLock()
 history: deque[dict[str, Any]] = deque(maxlen=HISTORY_LIMIT)
+announcement_history: deque[dict[str, Any]] = deque(maxlen=HISTORY_LIMIT)
 state: dict[str, Any] = {
     "started_at": STARTED_AT,
     "last_event": None,
@@ -55,6 +57,7 @@ def configure_logging() -> None:
 configure_logging()
 LOG = logging.getLogger("frigate_face_bridge")
 detector = create_detector(config)
+announcement_manager = AnnouncementManager()
 
 
 def handle_frigate_event(payload: bytes) -> None:
@@ -105,6 +108,8 @@ def terrace_door_status(event: dict[str, Any] | None = None) -> dict[str, Any]:
 
 def record_event(event: dict[str, Any]) -> None:
     door = terrace_door_status(event)
+    announcement = announcement_manager.build(event, config)
+    event["announcement"] = announcement
     event["terrace_door_open"] = door["open"]
     event["terrace_door_confidence"] = door["confidence"]
     event["terrace_door_last_changed"] = door["last_changed"]
@@ -117,12 +122,25 @@ def record_event(event: dict[str, Any]) -> None:
         "maja_present": bool(event.get("maja_present")),
         "known_faces": event.get("known_faces") or [],
         "recognized_entities": event.get("recognized_entities") or event.get("known_faces") or [],
+        "unknown_faces": int(event.get("unknown_faces") or 0),
+        "announcement_text": announcement.get("text") or "",
+        "announcement_should_speak": bool(announcement.get("should_speak")),
+        "announcement_log_text": announcement.get("log_text") or "",
+        "announcement_suppressed_reason": announcement.get("suppressed_reason") or "",
         "terrace_door_open": door["open"],
         "terrace_door_confidence": door["confidence"],
         "terrace_door_last_changed": door["last_changed"],
         "status": event.get("status"),
     }
     history.append(entry)
+    announcement_history.append({
+        "timestamp": entry["timestamp"],
+        "camera": entry["camera"],
+        "text": announcement.get("log_text") or "",
+        "spoken": bool(announcement.get("should_speak")),
+        "entities": announcement.get("entities") or [],
+        "suppressed_reason": announcement.get("suppressed_reason") or "",
+    })
 
 
 def _status() -> dict[str, Any]:
@@ -133,6 +151,7 @@ def _status() -> dict[str, Any]:
         frigate_active_count = state.get("frigate_active_count", 0)
         face_event_count = state.get("face_event_count", 0)
         recent_history = list(history)[-50:]
+        recent_announcements = list(announcement_history)[-50:]
         person_count_series = [
             {"timestamp": item.get("timestamp"), "person_count": item.get("person_count", 0)}
             for item in recent_history
@@ -149,6 +168,7 @@ def _status() -> dict[str, Any]:
         "face_event_count": face_event_count,
         "last_event": last_event,
         "history": recent_history,
+        "announcement_history": recent_announcements,
         "person_count_series": person_count_series,
         "camera": camera_status(config),
         "mqtt": publisher.status(),

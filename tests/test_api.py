@@ -12,6 +12,7 @@ os.environ.setdefault("OPTIONS_FILE", str(ROOT / "tests" / "missing-options.json
 sys.path.insert(0, str(APP_DIR))
 
 import config_loader
+import announcements
 import detector
 import face_recognition
 import frigate_api
@@ -261,6 +262,7 @@ def test_frigate_handler_updates_status_and_publishes(monkeypatch):
 
 def test_history_endpoint_returns_recorded_events():
     module.history.clear()
+    module.announcement_history.clear()
     module.record_event({"timestamp": "2026-06-04T12:00:00Z", "camera": "garage", "source": "test", "person_count": 2, "dog_count": 1, "maja_present": True, "recognized_entities": ["Thomas", "Maja"]})
     client = module.app.test_client()
 
@@ -270,6 +272,35 @@ def test_history_endpoint_returns_recorded_events():
     data = response.get_json()
     assert data["history"][-1]["dog_count"] == 1
     assert data["history"][-1]["recognized_entities"] == ["Thomas", "Maja"]
+    assert "announcement_history" in module._status()
+
+
+def test_announcement_manager_speaks_new_entities_and_cools_down(monkeypatch):
+    monkeypatch.setattr(announcements.random, "choice", lambda items: "Hallo {names}.")
+    manager = announcements.AnnouncementManager()
+    config = {"frigate": {"dog_name": "Maja"}, "announcements": {"enabled": True, "global_cooldown_seconds": 0, "entity_cooldown_seconds": 300}}
+
+    first = manager.build({"timestamp": "2026-06-04T12:00:00Z", "known_faces": ["Thomas"], "unknown_faces": 1, "dog_count": 1}, config, now=1000)
+    second = manager.build({"timestamp": "2026-06-04T12:00:05Z", "known_faces": ["Thomas"], "unknown_faces": 1, "dog_count": 1}, config, now=1005)
+    third = manager.build({"timestamp": "2026-06-04T12:01:00Z", "known_faces": ["Thomas", "Birgit"], "unknown_faces": 0, "dog_count": 0}, config, now=1060)
+
+    assert first["should_speak"] is True
+    assert first["text"] == "Hallo Thomas, Maja und eine unbekannte Person."
+    assert second["should_speak"] is False
+    assert second["suppressed_reason"] == "entity_cooldown"
+    assert third["should_speak"] is True
+    assert third["spoken_entities"] == ["Birgit"]
+
+
+def test_announcement_manager_uses_custom_text_and_disabled_entities():
+    manager = announcements.AnnouncementManager()
+    config = {"frigate": {"dog_name": "Maja"}, "announcements": {"enabled": True, "disabled_entities": "Maja", "custom_texts": "Thomas=Thomas ist da."}}
+
+    event = manager.build({"known_faces": ["Thomas"], "dog_count": 1, "unknown_faces": 0}, config, now=1000)
+
+    assert event["should_speak"] is True
+    assert event["text"] == "Thomas ist da."
+    assert event["entities"] == ["Thomas"]
 
 
 def test_faces_api_creates_local_face(tmp_path, monkeypatch):
@@ -367,6 +398,9 @@ def test_mqtt_discovery_configs_reference_existing_topics():
     assert payloads["frigate_face_bridge_garage_g3_flex_terrace_door_open"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/terrace_door_open"
     assert payloads["frigate_face_bridge_garage_g3_flex_terrace_door_confidence"]["value_template"] == "{{ value_json.terrace_door_confidence }}"
     assert payloads["frigate_face_bridge_garage_g3_flex_unknown_faces"]["value_template"] == "{{ value_json.unknown_faces }}"
+    assert payloads["frigate_face_bridge_garage_g3_flex_announcement_text"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/announcement_text"
+    assert payloads["frigate_face_bridge_garage_g3_flex_announcement_should_speak"]["value_template"] == "{{ 'on' if value_json.should_speak else 'off' }}"
+    assert payloads["frigate_face_bridge_garage_g3_flex_recognition_log"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/recognition_log"
     assert payloads["frigate_face_bridge_garage_g3_flex_bridge_status"]["availability"]["topic"] == "ha/frigate_face_bridge/status"
 
 
@@ -381,12 +415,15 @@ def test_mqtt_publish_event_includes_terrace_door_fields():
     publisher.client = object()
     publisher.publish_raw = lambda topic, payload, retain=False: published.append((topic, payload))
 
-    publisher.publish_event({"camera": "garage", "timestamp": "2026-06-04T12:00:01Z", "person_count": 1})
+    publisher.publish_event({"camera": "garage", "timestamp": "2026-06-04T12:00:01Z", "person_count": 1, "announcement": {"text": "Thomas ist da.", "should_speak": True, "entities": ["Thomas"], "log_text": "Thomas ist da.", "timestamp": "2026-06-04T12:00:01Z"}})
 
     payloads = {topic: payload for topic, payload in published}
     assert payloads["ha/frigate_face_bridge/garage/terrace_door_open"]["terrace_door_open"] is True
     assert payloads["ha/frigate_face_bridge/garage/terrace_door_confidence"]["terrace_door_confidence"] == 0.87
     assert payloads["ha/frigate_face_bridge/garage/last_event"]["terrace_door_last_changed"] == "2026-06-04T12:00:00Z"
+    assert payloads["ha/frigate_face_bridge/garage/announcement_text"]["text"] == "Thomas ist da."
+    assert payloads["ha/frigate_face_bridge/garage/announcement_should_speak"]["should_speak"] is True
+    assert payloads["ha/frigate_face_bridge/garage/recognition_log"]["text"] == "Thomas ist da."
 
 
 def test_mqtt_discovery_can_be_disabled():
@@ -474,6 +511,24 @@ def test_update_app_config_accepts_terrace_door_fields(tmp_path, monkeypatch):
     assert data["config"]["terrace_door"]["open"] is True
     assert data["config"]["terrace_door"]["confidence"] == 0.91
     assert data["status"]["terrace_door"]["last_changed"] == "2026-06-04T12:00:00Z"
+
+
+def test_update_app_config_accepts_announcement_fields(tmp_path, monkeypatch):
+    monkeypatch.setattr(config_loader, "OPTIONS_FILE", tmp_path / "options.json")
+    client = module.app.test_client()
+
+    response = client.post(
+        "/api/config",
+        json={"announcements": {"enabled": True, "announce_unknown": False, "global_cooldown_seconds": 30, "entity_cooldown_seconds": 120, "disabled_entities": "Klaus", "custom_texts": "Thomas=Hallo Thomas."}},
+    )
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["config"]["announcements"]["announce_unknown"] is False
+    assert data["config"]["announcements"]["global_cooldown_seconds"] == 30
+    assert data["config"]["announcements"]["entity_cooldown_seconds"] == 120
+    assert data["config"]["announcements"]["disabled_entities"] == "Klaus"
+    assert data["config"]["announcements"]["custom_texts"] == "Thomas=Hallo Thomas."
 
 
 def test_update_app_config_rejects_invalid_topic(tmp_path, monkeypatch):
