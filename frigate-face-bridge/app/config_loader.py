@@ -18,6 +18,7 @@ ADDON_CONFIG_FILE = Path(os.environ.get("ADDON_CONFIG_FILE", APP_DIR / "addon_co
 OPTIONS_FILE = Path(os.environ.get("OPTIONS_FILE", "/data/options.json"))
 CAMERA_FIELDS = {"name", "host", "rtsp_url", "snapshot_url", "detect_width", "detect_height", "detect_fps"}
 LOG_LEVELS = {"trace", "debug", "info", "warning", "error"}
+DEFAULT_DEMO_MODE = False
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -78,7 +79,7 @@ def _defaults_from_addon_config() -> dict[str, Any]:
     except Exception as exc:
         LOG.warning("could not read add-on defaults: %s", exc)
     return {
-        "demo_mode": True,
+        "demo_mode": DEFAULT_DEMO_MODE,
         "log_level": "info",
         "event_interval_seconds": 10,
         "mqtt": {"enabled": False, "host": "core-mosquitto", "port": 1883, "username": "", "password": "", "topic_prefix": "ha/frigate_face_bridge", "discovery": True, "discovery_prefix": "homeassistant"},
@@ -124,7 +125,7 @@ def _as_int(value: Any, default: int, minimum: int | None = None) -> int:
 
 def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
-    config["demo_mode"] = bool(config.get("demo_mode", True))
+    config["demo_mode"] = _as_bool(config.get("demo_mode", DEFAULT_DEMO_MODE))
     level = str(config.get("log_level") or "info").lower()
     if level not in LOG_LEVELS:
         errors.append("log_level is invalid; using info")
@@ -251,8 +252,17 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     return config
 
 
+def load_raw_options() -> dict[str, Any]:
+    return deepcopy(_load_options())
+
+
+def load_runtime_config(raw_options: dict[str, Any] | None = None) -> dict[str, Any]:
+    options = raw_options if isinstance(raw_options, dict) else _load_options()
+    return validate_config(_deep_merge(_defaults_from_addon_config(), options))
+
+
 def load_config() -> dict[str, Any]:
-    return validate_config(_deep_merge(_defaults_from_addon_config(), _load_options()))
+    return load_runtime_config()
 
 
 def _validate_url(value: str, allowed_schemes: set[str]) -> str:
@@ -463,4 +473,4 @@ def save_app_config(update: dict[str, Any]) -> dict[str, Any]:
         else:
             options[key] = value
     _write_options(options)
-    return load_config()
+    return load_runtime_config(options)

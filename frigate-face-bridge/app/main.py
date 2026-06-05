@@ -18,7 +18,7 @@ from flask import Flask, Response, jsonify, request, send_from_directory
 
 from announcements import AnnouncementManager
 from camera import camera_status
-from config_loader import load_config, redact_url, safe_config, save_app_config, save_camera_config
+from config_loader import load_config, load_raw_options, redact_url, safe_config, save_app_config, save_camera_config
 from detector import create_detector
 from face_recognition import known_face_status, parse_face_match_event, save_face, set_face_enabled
 from frigate_api import active_person_count_event
@@ -161,7 +161,7 @@ def _status() -> dict[str, Any]:
         "ok": True,
         "version": os.environ.get("ADDON_VERSION", "0.12.0"),
         "started_at": STARTED_AT,
-        "demo_mode": bool(config.get("demo_mode", True)),
+        "demo_mode": bool(config.get("demo_mode", False)),
         "event_count": event_count,
         "frigate_event_count": frigate_event_count,
         "frigate_active_count": frigate_active_count,
@@ -185,7 +185,7 @@ def event_loop() -> None:
     LOG.info("event loop started demo_mode=%s interval=%ss camera=%s", config.get("demo_mode"), interval, camera_status(config).get("name"))
     while state.get("running"):
         frigate = config.get("frigate", {}) if isinstance(config.get("frigate"), dict) else {}
-        if not bool(config.get("demo_mode", True)) and bool(frigate.get("enabled")) and bool(frigate.get("person_count_enabled", True)) and str(frigate.get("api_url") or "").strip():
+        if not bool(config.get("demo_mode", False)) and bool(frigate.get("enabled")) and bool(frigate.get("person_count_enabled", True)) and str(frigate.get("api_url") or "").strip():
             time.sleep(interval)
             continue
         event = detector.detect()
@@ -255,7 +255,7 @@ def api_history():
 
 @app.get("/api/config")
 def api_config():
-    return jsonify({"ok": True, "config": safe_config(config)})
+    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options())})
 
 
 @app.post("/api/config")
@@ -278,7 +278,7 @@ def api_update_config():
     if bool(config.get("mqtt", {}).get("enabled")):
         publisher.connect()
     LOG.info("application configuration updated")
-    return jsonify({"ok": True, "config": safe_config(config), "status": _status()})
+    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options()), "status": _status()})
 
 
 @app.get("/api/faces")

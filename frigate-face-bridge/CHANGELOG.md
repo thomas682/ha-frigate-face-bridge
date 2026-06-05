@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.1
+
+### Changed
+
+- Parameterverwaltungsregel dokumentiert und gespeicherte Rohoptionen von Runtime-Konfiguration getrennt ([#7](https://github.com/thomas682/ha-frigate-face-bridge/issues/7)).
+- `demo_mode` fuer fehlende/neue Werte auf `false` gesetzt, ohne bestehende Nutzerwerte zu ueberschreiben.
+- `/api/config` liefert zusaetzlich `raw_config`, damit UI und API gespeicherte Werte von Runtime-Fallbacks unterscheiden koennen.
+
 ## 0.14.0
 
 ### Added

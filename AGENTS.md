@@ -16,7 +16,8 @@ Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
 - Das fruehere InfluxBro-Projekt dient nur als Struktur- und Stilvorlage. Inhalte nicht blind kopieren.
 - Keine Secrets, Tokens, Passwoerter oder vollstaendige RTSP-URLs mit Credentials committen.
 - Add-on muss ohne Kamera und ohne MQTT starten koennen.
-- `demo_mode: true` darf beim ersten Installieren der sichere Standard sein. Bei Updates darf ein bestehender Nutzerwert fuer `demo_mode` niemals automatisch ueberschrieben werden.
+- `demo_mode` darf nicht automatisch aktiviert werden. Bestehende Nutzerwerte fuer `demo_mode` und andere Parameter duerfen bei Start, Neustart oder Update niemals automatisch ueberschrieben, normalisiert oder als Defaults persistiert werden.
+- Die Parameterverwaltungsregel in `docs/PARAMETER_MANAGEMENT.md` ist fuer neue Optionen und Config-Migrationen zu beachten.
 - Jede freigegebene Aenderung benoetigt eine Versionsanpassung in `frigate-face-bridge/config.yaml` und einen Changelog-Eintrag, sofern der Nutzer nichts anderes explizit sagt.
 - Vor Aenderungen ein GitHub-Issue mit Ziel, Umfang und Akzeptanzkriterien erstellen und die Arbeit gegen dieses Issue abschliessen.
 - Issue-Bodies muessen den Abschnitt `## Urspruengliche Nutzeranweisung` enthalten; relevante Nutzeranweisungen dort moeglichst wortgetreu, chronologisch und in Originalsprache erfassen. Sensible Daten vorher maskieren.

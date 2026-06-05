@@ -2,7 +2,7 @@
 
 ## Add-on-Start
 
-Das Add-on startet im Standardzustand ohne echte Kamera, weil `demo_mode: true` gesetzt ist. Dadurch kann Installation, Web-UI, REST-API und MQTT-Ausgabe getestet werden, bevor ein RTSP-Stream verfuegbar ist.
+Das Add-on startet im Standardzustand ohne automatisch aktivierten Demo-Modus. `demo_mode` muss bewusst aktiviert werden, wenn simulierte Events gewuenscht sind. Bereits gespeicherte Parameterwerte werden bei Start, Neustart oder Update nicht automatisch ueberschrieben.
 
 ## Kamera 192.168.2.241 vorbereiten
 
@@ -16,7 +16,7 @@ Vorgehensweise fuer UniFi Protect / G3 Flex:
 4. Falls UniFi Protect Zugangsdaten verlangt, einen dedizierten Nutzer mit minimalen Leserechten erstellen.
 5. RTSP-URL in VLC, `ffprobe` oder `ffmpeg` testen.
 6. Erst danach die URL in der Add-on-Konfiguration unter `camera.rtsp_url` eintragen.
-7. `demo_mode` erst auf `false` setzen, wenn der Stream verifiziert ist und eine echte Detection-Integration implementiert wurde.
+7. `demo_mode` nur bewusst aktivieren, wenn simulierte Events zum Testen gewuenscht sind.
 
 Beispiel ohne Zugangsdaten:
 

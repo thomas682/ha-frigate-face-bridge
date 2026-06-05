@@ -88,6 +88,6 @@ class SnapshotDetector:
 
 
 def create_detector(config: dict[str, Any]) -> DemoDetector | SnapshotDetector:
-    if config.get("demo_mode", True):
+    if config.get("demo_mode", False):
         return DemoDetector(config)
     return SnapshotDetector(config)

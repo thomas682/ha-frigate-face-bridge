@@ -422,6 +422,7 @@ async function refreshStatus() {
   const data = await statusResponse.json();
   const configData = await configResponse.json();
   const safeConfig = configData.config || {};
+  const rawConfig = configData.raw_config || safeConfig;
   const event = data.last_event || {};
   document.getElementById('status').textContent = data.ok ? 'online' : 'fehler';
   document.getElementById('started').textContent = `Start: ${data.started_at || '-'}`;
@@ -477,7 +478,7 @@ async function refreshStatus() {
   renderTopicList(data.mqtt_output_topics || []);
   renderFaces(data.known_faces || []);
   populateCameraForm(data.camera);
-  populateAppForm(safeConfig);
+  populateAppForm(rawConfig);
 }
 
 async function saveAppConfig(event) {

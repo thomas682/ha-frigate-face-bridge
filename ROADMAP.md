@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 15 abgeschlossen**.
+Aktueller Stand: **Stufe 16 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.14.0`.
+Aktuelle Add-on-Version: `0.14.1`.
 
 ## Stufe 1 - Add-on-Basis
 
@@ -20,7 +20,7 @@ Umgesetzt:
 - Dockerfile und `run.sh`
 - Python/Flask-App auf Port `8099`
 - Konfiguration ueber `/data/options.json`
-- sicherer Standard `demo_mode: true`
+- sicherer Standard `demo_mode: false`
 - Start ohne Kamera und ohne MQTT moeglich
 
 Abnahme:
@@ -322,10 +322,28 @@ Abnahme:
 - Die Web-UI zeigt Live-Daten und MQTT-Nachrichten ohne Secrets.
 - Bestehende Konfiguration und Verlauf bleiben erreichbar.
 
+## Stufe 16 - Parameterverwaltung ohne Update-Ueberschreibung
+
+Status: **abgeschlossen**
+
+Ziel: Parametrierte Nutzerwerte sollen bei Start, Neustart und Update nicht automatisch initialisiert, ueberschrieben, normalisiert oder als Defaults persistiert werden.
+
+Umgesetzt:
+
+- Wiederverwendbare Regel in `docs/PARAMETER_MANAGEMENT.md`
+- Trennung zwischen gespeicherten Rohoptionen und Runtime-Konfiguration
+- `demo_mode` fuer fehlende/neue Werte standardmaessig aus
+- `/api/config` liefert `raw_config` zusaetzlich zur Runtime-Konfiguration
+
+Abnahme:
+
+- Fehlende neue Optionen funktionieren zur Laufzeit, ohne automatisch in `/data/options.json` geschrieben zu werden.
+- Bestehende Nutzerwerte fuer `demo_mode` bleiben true oder false, wie gespeichert.
+
 ## Laufende Sicherheitsregeln
 
 - Keine Secrets, Tokens, Passwoerter oder vollstaendige RTSP-URLs mit Credentials committen.
 - MQTT-Passwoerter maskieren.
 - RTSP- und Snapshot-URLs vor Logging/API-Ausgabe maskieren.
 - Add-on muss ohne Kamera und ohne MQTT starten koennen.
-- `demo_mode: true` bleibt der sichere Standard, bis echte Detection implementiert ist.
+- `demo_mode` wird nicht automatisch aktiviert; gespeicherte Nutzerwerte bleiben erhalten.

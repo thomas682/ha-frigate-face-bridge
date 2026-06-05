@@ -467,6 +467,46 @@ def test_config_validates_mqtt_discovery_defaults():
     assert config["mqtt"]["discovery_prefix"] == "homeassistant"
 
 
+def test_missing_demo_mode_runtime_default_is_false(tmp_path, monkeypatch):
+    options_file = tmp_path / "options.json"
+    options_file.write_text(json.dumps({"mqtt": {"topic_prefix": "/custom/prefix/"}}), encoding="utf-8")
+    monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)
+
+    config = config_loader.load_config()
+
+    assert config["demo_mode"] is False
+    assert json.loads(options_file.read_text(encoding="utf-8")) == {"mqtt": {"topic_prefix": "/custom/prefix/"}}
+
+
+def test_existing_demo_mode_values_are_preserved_in_raw_options(tmp_path, monkeypatch):
+    options_file = tmp_path / "options.json"
+    options_file.write_text(json.dumps({"demo_mode": True}), encoding="utf-8")
+    monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)
+
+    assert config_loader.load_config()["demo_mode"] is True
+    assert config_loader.load_raw_options()["demo_mode"] is True
+
+    options_file.write_text(json.dumps({"demo_mode": False}), encoding="utf-8")
+    assert config_loader.load_config()["demo_mode"] is False
+    assert config_loader.load_raw_options()["demo_mode"] is False
+
+
+def test_api_config_exposes_raw_options_without_defaults(tmp_path, monkeypatch):
+    options_file = tmp_path / "options.json"
+    options_file.write_text(json.dumps({"mqtt": {"topic_prefix": "/custom/prefix/"}}), encoding="utf-8")
+    monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)
+    module.config.clear()
+    module.config.update(config_loader.load_config())
+    client = module.app.test_client()
+
+    response = client.get("/api/config")
+
+    data = response.get_json()
+    assert response.status_code == 200
+    assert data["config"]["mqtt"]["topic_prefix"] == "custom/prefix"
+    assert data["raw_config"] == {"mqtt": {"topic_prefix": "/custom/prefix/"}}
+
+
 def test_save_app_config_preserves_masked_mqtt_password(tmp_path, monkeypatch):
     options_file = tmp_path / "options.json"
     options_file.write_text(json.dumps({"mqtt": {"password": "real-secret"}}), encoding="utf-8")

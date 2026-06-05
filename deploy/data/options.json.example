@@ -1,5 +1,5 @@
 {
-  "demo_mode": true,
+  "demo_mode": false,
   "log_level": "info",
   "event_interval_seconds": 10,
   "mqtt": {

@@ -4,7 +4,7 @@ Dieses Repository stellt das Home-Assistant-Add-on `Frigate Face Bridge` bereit.
 
 ## Zweck
 
-Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.14.0` liefert eine stabile Add-on-Basis mit Demo-Modus, REST-API, navigierbarer Home-Assistant-lesbarer Web-UI, Live-MQTT-Nachrichten, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, konfigurierbaren Ansagetexten mit Cooldowns, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
+Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.14.1` liefert eine stabile Add-on-Basis mit sicherer Parameterverwaltung, Demo-Modus, REST-API, navigierbarer Home-Assistant-lesbarer Web-UI, Live-MQTT-Nachrichten, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, konfigurierbaren Ansagetexten mit Cooldowns, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
 
 ## Architektur
 
@@ -28,11 +28,17 @@ Das Add-on ersetzt Frigate nicht. Frigate, Double Take, CompreFace oder eine lok
 
 ## Aktueller Stand
 
-Aktuelle Add-on-Version: `0.14.0`.
+Aktuelle Add-on-Version: `0.14.1`.
 
-Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. Bei Erstinstallation darf `demo_mode: true` der sichere Standard sein; bei Updates darf ein bestehender Nutzerwert nicht automatisch ueberschrieben werden.
+Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. `demo_mode` ist fuer fehlende/neue Werte nicht automatisch aktiv; bestehende Nutzerwerte werden bei Start, Neustart und Update nicht automatisch ueberschrieben.
 
 Die weiteren Ausbaustufen stehen in `ROADMAP.md`.
+
+## Version 0.14.1
+
+- Parameterverwaltungsregel in `docs/PARAMETER_MANAGEMENT.md` dokumentiert
+- Gespeicherte Rohoptionen und Runtime-Konfiguration getrennt
+- `demo_mode` ist fuer fehlende/neue Werte standardmaessig aus, ohne bestehende Nutzerwerte zu ueberschreiben
 
 ## Version 0.14.0
 
