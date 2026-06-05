@@ -29,6 +29,7 @@ Die projektlokalen Agenten liegen unter `.opencode/agents/` und koennen fuer neu
 - Nach freigegebenen Aenderungen: Tests ausfuehren, Commit erstellen und pushen, sofern der Nutzer nichts anderes sagt.
 - Neue Docker-/Webdienste sollen nach Moeglichkeit in `homepage.localdomain` sichtbar oder dokumentiert sein.
 - Live-only Aenderungen klar als solche markieren und lokal dokumentieren.
+- Globale Suchen auf dem gesamten Laufwerk oder im kompletten Home-Verzeichnis nur ausfuehren, wenn der Nutzer dies explizit freigibt; solche Suchen dauern lange und koennen wie ein haengendes OpenCode wirken.
 
 ## Empfohlene AoE Nutzung
 
