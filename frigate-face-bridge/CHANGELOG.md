@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.1
+
+### Changed
+
+- Ingress-Weboberflaeche nach der Command-Center-Vorlage ueberarbeitet.
+- Status, MQTT, Kamera, Event, Ansagen, Verlauf und Konfiguration optisch gruppiert.
+
 ## 0.13.0
 
 ### Added

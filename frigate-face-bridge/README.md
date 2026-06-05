@@ -6,13 +6,13 @@ Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mi
 
 Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-Events, MQTT-Ausgabe, REST-API und eine einfache Web-UI. Es ist als Grundlage fuer spaetere Integrationen mit Frigate, Double Take, CompreFace oder einer lokalen Face-Recognition-Engine gedacht.
 
-## Funktionsumfang 0.13.0
+## Funktionsumfang 0.13.1
 
 - Startfaehig ohne Kamera
 - Startfaehig ohne MQTT
 - Demo-Modus mit simulierten Events
 - REST-API fuer Health, Status, Kameras, letztes Event und maskierte Konfiguration
-- Ingress-Web-UI auf Port `8099` im hellen Home-Assistant-lesbaren Kartendesign
+- Ingress-Web-UI auf Port `8099` im Command-Center-Design mit Statuskarten, Timeline, Verlauf und gruppierter Konfiguration
 - MQTT-Publisher fuer Status und Event-Topics
 - Konfiguration ueber `/data/options.json`
 - Kamera-Parameter ueber Web-UI speichern
@@ -34,6 +34,7 @@ Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-
 - MQTT Discovery fuer Home-Assistant-Sensoren
 - Web-UI fuer Demo-Modus, MQTT, Discovery, Frigate-Import und Face-Import
 - helles Home-Assistant-lesbares Ingress-Theme ohne ungewollte Dark-Mode-Abdunklung
+- ueberarbeitete Ingress-Oberflaeche nach `ffb_ui_concepts.html` mit Command Center, Eventkarte und Timeline
 - Konfigurationsfehler und Event-Zaehler in der Web-UI sichtbar
 - Logs ueber stdout/stderr
 - konservativ maskierte Kamera-URLs in API-Ausgaben
