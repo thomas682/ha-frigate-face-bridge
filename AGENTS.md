@@ -12,9 +12,6 @@ Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
 - `demo_mode: true` bleibt der sichere Standard, bis echte Detection implementiert ist.
 - App-relevante Aenderungen benoetigen Versionsanpassung in `frigate-face-bridge/config.yaml` und Changelog-Eintrag.
 - Nach freigegebenen Aenderungen gehoeren Versionsanpassung, Commit und Push zum Abschluss, sofern der Nutzer nichts anderes sagt.
-- Projektlokale OpenCode-Agenten liegen unter `.opencode/agents/`; Rollen und gemeinsame Regeln sind in `OC-AGENTS.md` beschrieben.
-- Neue Docker-/Webdienste sollen nach Moeglichkeit auch in `homepage.localdomain` sichtbar oder dokumentiert sein.
-- Globale Suchen auf dem gesamten Laufwerk oder im kompletten Home-Verzeichnis nur ausfuehren, wenn der Nutzer dies explizit freigibt; solche Suchen dauern lange und koennen wie ein haengendes OpenCode wirken.
 
 ## Pflichtpruefungen
 
