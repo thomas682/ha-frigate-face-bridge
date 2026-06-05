@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.2
+
+### Fixed
+
+- Runtime-Version fuer die REST-API an die Add-on-Version angeglichen.
+
+### Changed
+
+- Ingress-Weboberflaeche weiter im Command-Center-Design ausgeliefert.
+
 ## 0.13.1
 
 ### Changed
