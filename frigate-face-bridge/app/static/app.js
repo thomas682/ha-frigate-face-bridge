@@ -3,6 +3,10 @@ const formState = {
   appPopulated: false,
 };
 
+function apiPath(path) {
+  return new URL(path.replace(/^\//, ''), window.location.href).toString();
+}
+
 function checkbox(id) {
   return document.getElementById(id).checked;
 }
@@ -264,8 +268,8 @@ function renderFaces(faces) {
 
 async function refreshStatus() {
   const [statusResponse, configResponse] = await Promise.all([
-    fetch('/api/status', { cache: 'no-store' }),
-    fetch('/api/config', { cache: 'no-store' }),
+    fetch(apiPath('api/status'), { cache: 'no-store' }),
+    fetch(apiPath('api/config'), { cache: 'no-store' }),
   ]);
   if (!statusResponse.ok) throw new Error(`status ${statusResponse.status}`);
   if (!configResponse.ok) throw new Error(`config ${configResponse.status}`);
@@ -311,7 +315,7 @@ async function saveAppConfig(event) {
   const message = document.getElementById('app-message');
   message.textContent = 'Speichere Betriebs-Konfiguration ...';
   try {
-    const response = await fetch('/api/config', {
+    const response = await fetch(apiPath('api/config'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(appConfigFromForm()),
@@ -333,7 +337,7 @@ async function createFace(event) {
   const input = document.getElementById('face-name');
   message.textContent = 'Speichere Person ...';
   try {
-    const response = await fetch('/api/faces', {
+    const response = await fetch(apiPath('api/faces'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: input.value.trim(), enabled: true }),
@@ -352,7 +356,7 @@ async function setFaceEnabled(name, enabled) {
   const message = document.getElementById('face-message');
   message.textContent = 'Aktualisiere Person ...';
   try {
-    const response = await fetch(`/api/faces/${encodeURIComponent(name)}`, {
+    const response = await fetch(apiPath(`api/faces/${encodeURIComponent(name)}`), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
@@ -372,7 +376,7 @@ async function saveCamera(event) {
   message.textContent = 'Speichere Kamera-Konfiguration ...';
 
   try {
-    const response = await fetch('/api/config/camera', {
+    const response = await fetch(apiPath('api/config/camera'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ camera: cameraFromForm() }),
@@ -396,7 +400,7 @@ async function loadSnapshot() {
   message.textContent = 'Lade Vorschau ...';
 
   try {
-    const response = await fetch(`/api/camera/snapshot?ts=${Date.now()}`, { cache: 'no-store' });
+    const response = await fetch(apiPath(`api/camera/snapshot?ts=${Date.now()}`), { cache: 'no-store' });
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data.error || `status ${response.status}`);

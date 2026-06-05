@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.4
+
+### Fixed
+
+- Statische Dateien und REST-Aufrufe verwenden relative Pfade, damit die Web-UI unter Home-Assistant-Ingress korrekt laedt.
+
 ## 0.13.3
 
 ### Fixed
