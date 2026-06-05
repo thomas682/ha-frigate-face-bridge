@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.3
+
+### Fixed
+
+- Sichtbaren Versionshinweis in der Ingress-Weboberflaeche angeglichen.
+
 ## 0.13.2
 
 ### Fixed
