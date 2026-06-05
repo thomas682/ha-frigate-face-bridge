@@ -11,6 +11,7 @@ Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
 - Add-on muss ohne Kamera und ohne MQTT starten koennen.
 - `demo_mode: true` bleibt der sichere Standard, bis echte Detection implementiert ist.
 - App-relevante Aenderungen benoetigen Versionsanpassung in `frigate-face-bridge/config.yaml` und Changelog-Eintrag.
+- Vor Aenderungen ein GitHub-Issue mit Ziel, Umfang und Akzeptanzkriterien erstellen und die Arbeit gegen dieses Issue abschliessen.
 - Nach freigegebenen Aenderungen gehoeren Versionsanpassung, Commit und Push zum Abschluss, sofern der Nutzer nichts anderes sagt.
 
 ## Pflichtpruefungen
@@ -19,6 +20,10 @@ Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
 - `pytest` fuer vorhandene Tests
 - Bei Docker-/Runtime-Aenderungen nach Moeglichkeit Docker-Build pruefen
 - Sicherheitspruefung auf Secrets, Log-Leaks, unsichere Eingaben, offene Ports und Container-Rechte
+
+## Tool-Hinweise
+
+- Bei `rtk git diff` Pfadtrenner doppelt uebergeben: `rtk git diff -- -- <pfade>`. Das erste `--` wird von RTK verbraucht, das zweite erreicht Git.
 
 ## Sicherheit
 
