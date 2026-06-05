@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.5
+
+### Changed
+
+- Agent-Regeln aus InfluxBro in FaceBridge-spezifischer Form uebernommen ([#5](https://github.com/thomas682/ha-frigate-face-bridge/issues/5)).
+- `demo_mode`-Regel fuer Erstinstallation und Updates praezisiert.
+- Versionierungs-, Docker-/Runtime-, Sicherheits-, Issue- und Abschlussregeln erweitert.
+
 ## 0.13.4
 
 ### Fixed

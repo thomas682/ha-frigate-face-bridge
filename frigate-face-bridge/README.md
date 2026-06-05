@@ -6,7 +6,7 @@ Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mi
 
 Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-Events, MQTT-Ausgabe, REST-API und eine einfache Web-UI. Es ist als Grundlage fuer spaetere Integrationen mit Frigate, Double Take, CompreFace oder einer lokalen Face-Recognition-Engine gedacht.
 
-## Funktionsumfang 0.13.4
+## Funktionsumfang 0.13.5
 
 - Startfaehig ohne Kamera
 - Startfaehig ohne MQTT
@@ -214,4 +214,4 @@ Diese Werte werden auf `terrace_door_open`, `terrace_door_confidence`, `terrace_
 
 Frigate Face Bridge ersetzt Frigate nicht. Frigate kann spaeter Personendetektionen liefern. Double Take oder CompreFace koennen spaeter Gesichtserkennung liefern. Dieses Add-on stellt Konfiguration, Statuslogik, API, Web-UI und Home-Assistant-MQTT-Anbindung bereit.
 
-Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.13.0` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.
+Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.13.5` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.
