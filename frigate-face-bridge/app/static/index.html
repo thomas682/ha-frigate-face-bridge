@@ -20,7 +20,18 @@
       </div>
     </section>
 
-    <section class="stat-grid" aria-label="Aktuelle Werte">
+    <nav class="view-nav" aria-label="Bereiche">
+      <button type="button" class="view-tab active" data-target-view="overview">Ueberblick</button>
+      <button type="button" class="view-tab" data-target-view="live">Live</button>
+      <button type="button" class="view-tab" data-target-view="mqtt">MQTT</button>
+      <button type="button" class="view-tab" data-target-view="recognition">Erkennungen</button>
+      <button type="button" class="view-tab" data-target-view="announcements">Ansagen</button>
+      <button type="button" class="view-tab" data-target-view="history">Verlauf</button>
+      <button type="button" class="view-tab" data-target-view="config">Konfiguration</button>
+      <button type="button" class="view-tab" data-target-view="debug">Debug</button>
+    </nav>
+
+    <section class="stat-grid view" data-view="overview" aria-label="Aktuelle Werte">
       <article class="stat-card accent">
         <span>Personen</span>
         <strong id="person-count">0</strong>
@@ -43,7 +54,7 @@
       </article>
     </section>
 
-    <section class="event-card">
+    <section class="event-card view" data-view="overview">
       <div class="event-head">
         <div class="event-icon" aria-hidden="true">◎</div>
         <div>
@@ -64,7 +75,7 @@
       </div>
     </section>
 
-    <section class="connection-row" aria-label="Verbindungen und Zusatzdaten">
+    <section class="connection-row view" data-view="overview" aria-label="Verbindungen und Zusatzdaten">
       <article class="connection-card">
         <span>Terrassentuer</span>
         <strong id="terrace-door-open">-</strong>
@@ -77,7 +88,112 @@
       </article>
     </section>
 
-    <section class="panel panel-graph">
+    <section class="panel view" data-view="live">
+      <div class="panel-title-row">
+        <div>
+          <p class="section-label">Live</p>
+          <h2>Aktuelle Erkennungen</h2>
+        </div>
+        <span class="live-dot" id="live-refresh-state">Live</span>
+      </div>
+      <div class="live-layout">
+        <article class="live-card highlight">
+          <span>Erkannte Namen</span>
+          <div class="entity-list" id="live-recognized-entities">-</div>
+          <small id="live-event-time">noch kein Event</small>
+        </article>
+        <article class="live-card">
+          <span>Bekannte Gesichter</span>
+          <div class="entity-list" id="live-known-faces">-</div>
+        </article>
+        <article class="live-card danger">
+          <span>Unbekannte Personen</span>
+          <strong id="live-unknown-faces">0</strong>
+        </article>
+        <article class="live-card">
+          <span>Hund</span>
+          <strong id="live-dog-state">0</strong>
+        </article>
+      </div>
+      <div class="raw-event-box">
+        <h3>Letztes Event</h3>
+        <pre id="last-event-json"></pre>
+      </div>
+    </section>
+
+    <section class="panel view" data-view="mqtt">
+      <div class="panel-title-row">
+        <div>
+          <p class="section-label">MQTT</p>
+          <h2>Live-Nachrichten</h2>
+        </div>
+      </div>
+      <div class="mqtt-summary">
+        <article><span>Status</span><strong id="mqtt-live-status">-</strong></article>
+        <article><span>Prefix</span><strong id="mqtt-live-prefix">-</strong></article>
+        <article><span>Frigate Topic</span><strong id="mqtt-frigate-topic">-</strong></article>
+        <article><span>Face Topic</span><strong id="mqtt-face-topic">-</strong></article>
+      </div>
+      <h3>Bridge-Ausgabe-Topics</h3>
+      <ul class="topic-list" id="mqtt-topic-list"></ul>
+      <h3>Nachrichten</h3>
+      <table class="history-table mqtt-table">
+        <thead>
+          <tr><th>Zeit</th><th>Richtung</th><th>Topic</th><th>Payload</th><th>Flags</th></tr>
+        </thead>
+        <tbody id="mqtt-history-body">
+          <tr><td colspan="5">Noch keine MQTT-Nachrichten.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel view" data-view="recognition">
+      <div class="panel-title-row">
+        <div>
+          <p class="section-label">Erkennungen</p>
+          <h2>Namen, Personen und Tiere</h2>
+        </div>
+      </div>
+      <div class="recognition-grid">
+        <article class="live-card highlight"><span>Aktuell erkannt</span><div class="entity-list" id="recognition-current">-</div></article>
+        <article class="live-card"><span>Bekannte Gesichter</span><div class="entity-list" id="recognition-known">-</div></article>
+        <article class="live-card danger"><span>Unbekannt</span><strong id="recognition-unknown">0</strong></article>
+        <article class="live-card"><span>Hund/Hunde</span><strong id="recognition-dog">0</strong></article>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr><th>Zeit</th><th>Erkannt</th><th>Unbekannt</th><th>Hund</th><th>Quelle</th></tr>
+        </thead>
+        <tbody id="recognition-history-body">
+          <tr><td colspan="5">Noch keine Erkennungen.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel view" data-view="announcements">
+      <div class="panel-title-row">
+        <div>
+          <p class="section-label">Ansagen</p>
+          <h2>Sprachausgabe und Cooldowns</h2>
+        </div>
+      </div>
+      <div class="recognition-grid">
+        <article class="live-card highlight"><span>Aktueller Text</span><div class="entity-list" id="announce-current-text">-</div></article>
+        <article class="live-card"><span>Status</span><strong id="announce-current-state">-</strong></article>
+        <article class="live-card"><span>Entitaeten</span><div class="entity-list" id="announce-current-entities">-</div></article>
+        <article class="live-card danger"><span>Sperrgrund</span><strong id="announce-suppressed-reason">-</strong></article>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr><th>Zeit</th><th>Text</th><th>Gesprochen</th><th>Entitaeten</th><th>Sperrgrund</th></tr>
+        </thead>
+        <tbody id="announcement-history-body">
+          <tr><td colspan="5">Noch keine Ansagen.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel panel-graph view" data-view="history">
       <div class="panel-title-row">
         <div>
           <p class="section-label">Verlauf</p>
@@ -87,7 +203,7 @@
       <div class="chart" id="person-chart" aria-label="Personen gleichzeitig im Wohnzimmer"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel view" data-view="history">
       <div class="panel-title-row">
         <div>
           <p class="section-label">Timeline</p>
@@ -104,7 +220,7 @@
       </table>
     </section>
 
-    <section class="panel">
+    <section class="panel view" data-view="config">
       <div class="panel-title-row">
         <div>
           <p class="section-label">Betrieb</p>
@@ -166,7 +282,7 @@
       </form>
     </section>
 
-    <section class="split-panels">
+    <section class="split-panels view" data-view="config">
       <article class="panel">
         <div class="panel-title-row"><div><p class="section-label">Personen</p><h2>Bekannte Personen</h2></div></div>
         <form id="face-form" class="config-form compact-form">
@@ -193,9 +309,9 @@
       </article>
     </section>
 
-    <section class="panel">
+    <section class="panel view" data-view="debug">
       <div class="panel-title-row"><div><p class="section-label">Debug</p><h2>Hinweise und Konfigurationsstatus</h2></div></div>
-      <p>Version 0.13.4 zeigt Status, MQTT, Erkennungslog, Ansagetexte, Personenverlauf und Konfiguration im Command-Center-Stil der Ingress-Weboberflaeche.</p>
+      <p>Version 0.14.0 zeigt Status, MQTT-Live-Nachrichten, Erkennungslog, Ansagetexte, Personenverlauf und Konfiguration in navigierbaren Sichten.</p>
       <pre id="debug"></pre>
     </section>
   </main>

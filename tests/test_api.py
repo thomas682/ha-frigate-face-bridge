@@ -426,6 +426,34 @@ def test_mqtt_publish_event_includes_terrace_door_fields():
     assert payloads["ha/frigate_face_bridge/garage/recognition_log"]["text"] == "Thomas ist da."
 
 
+def test_mqtt_history_masks_secrets_and_urls():
+    publisher = mqtt_client.MqttPublisher({"mqtt": {"enabled": True, "topic_prefix": "ha/frigate_face_bridge"}, "camera": {"name": "garage"}})
+
+    publisher.publish_raw(
+        "ha/frigate_face_bridge/garage/test",
+        {"password": "secret", "rtsp_url": "rtsp://user:pass@camera.local:7447/private", "name": "Thomas"},
+    )
+
+    history = publisher.history()
+    assert history[-1]["direction"] == "out"
+    assert history[-1]["topic"] == "ha/frigate_face_bridge/garage/test"
+    assert history[-1]["payload"]["password"] == "***"
+    assert "user:pass" not in history[-1]["payload"]["rtsp_url"]
+    assert history[-1]["payload"]["name"] == "Thomas"
+
+    publisher.publish_raw("ha/frigate_face_bridge/garage/raw", "token=abc123 status=ok")
+    assert publisher.history()[-1]["payload"] == "token=*** status=ok"
+
+
+def test_status_exposes_mqtt_history_and_output_topics():
+    module.publisher.publish_raw("ha/frigate_face_bridge/garage/test", {"known_faces": ["Thomas"]})
+
+    status = module._status()
+
+    assert status["mqtt_history"][-1]["topic"] == "ha/frigate_face_bridge/garage/test"
+    assert any(topic.endswith("/known_faces") for topic in status["mqtt_output_topics"])
+
+
 def test_mqtt_discovery_can_be_disabled():
     publisher = mqtt_client.MqttPublisher({"mqtt": {"enabled": True, "discovery": False}, "camera": {"name": "garage"}})
 

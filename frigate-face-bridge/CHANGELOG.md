@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.0
+
+### Added
+
+- Navigierbare Web-UI-Sichten fuer Ueberblick, Live-Daten, MQTT, Erkennungen, Ansagen, Verlauf, Konfiguration und Debug hinzugefuegt ([#6](https://github.com/thomas682/ha-frigate-face-bridge/issues/6)).
+- Maskierte Live-History fuer ein- und ausgehende MQTT-Nachrichten in Status-API und Web-UI ergaenzt.
+- Erkannte Namen, unbekannte Personen, Hunde, Ansagetexte und MQTT-Ausgabe-Topics als eigene Live-Ansichten sichtbar gemacht.
+
 ## 0.13.5
 
 ### Changed

@@ -3,16 +3,79 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
+from collections import deque
+from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 import paho.mqtt.client as mqtt
 
 LOG = logging.getLogger("frigate_face_bridge.mqtt")
+MQTT_HISTORY_LIMIT = 200
+MQTT_PAYLOAD_PREVIEW_LIMIT = 4096
+SECRET_KEYS = {"password", "token", "secret", "authorization", "access_token", "refresh_token"}
 
 
 def _slug(value: Any, default: str = "camera") -> str:
     slug = re.sub(r"[^A-Za-z0-9_]+", "_", str(value or default)).strip("_").lower()
     return slug or default
+
+
+def _mask_url(value: str) -> str:
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return value
+    if parsed.scheme.lower() not in {"rtsp", "rtsps", "http", "https"} or not parsed.netloc:
+        return value
+    netloc = parsed.hostname or parsed.netloc
+    if parsed.port:
+        netloc = f"{netloc}:{parsed.port}"
+    path = "/***" if parsed.path and any(part in value.lower() for part in ("rtsp://", "rtsps://", "token", "secret", "password")) else parsed.path
+    return urlunsplit((parsed.scheme, netloc, path, "***" if parsed.query else "", ""))
+
+
+def _mask_payload(value: Any) -> Any:
+    if isinstance(value, dict):
+        masked: dict[str, Any] = {}
+        for key, item in value.items():
+            key_text = str(key).lower()
+            if any(secret in key_text for secret in SECRET_KEYS):
+                masked[str(key)] = "***"
+            else:
+                masked[str(key)] = _mask_payload(item)
+        return masked
+    if isinstance(value, list):
+        return [_mask_payload(item) for item in value[:100]]
+    if isinstance(value, str):
+        text = _mask_url(value)
+        text = re.sub(r"(?i)(password|token|secret|access_token|refresh_token)=([^\s&]+)", r"\1=***", text)
+        if len(text) > MQTT_PAYLOAD_PREVIEW_LIMIT:
+            return f"{text[:MQTT_PAYLOAD_PREVIEW_LIMIT]}..."
+        return text
+    return value
+
+
+def _payload_preview(payload: Any) -> tuple[Any, bool]:
+    parsed_json = False
+    value = payload
+    if isinstance(payload, bytes):
+        text = payload[:MQTT_PAYLOAD_PREVIEW_LIMIT].decode("utf-8", errors="replace")
+        try:
+            value = json.loads(text)
+            parsed_json = True
+        except json.JSONDecodeError:
+            value = text
+    elif isinstance(payload, str):
+        try:
+            value = json.loads(payload)
+            parsed_json = True
+        except json.JSONDecodeError:
+            value = payload
+    elif isinstance(payload, dict):
+        parsed_json = True
+    return _mask_payload(value), parsed_json
 
 
 class MqttPublisher:
@@ -27,6 +90,8 @@ class MqttPublisher:
         self.client: mqtt.Client | None = None
         self.frigate_event_handler = frigate_event_handler
         self.face_event_handler = face_event_handler
+        self._history: deque[dict[str, Any]] = deque(maxlen=MQTT_HISTORY_LIMIT)
+        self._history_lock = threading.RLock()
 
     @property
     def topic_prefix(self) -> str:
@@ -90,6 +155,7 @@ class MqttPublisher:
             LOG.warning("ignored oversized MQTT message on topic %s", getattr(message, "topic", ""))
             return
         topic = str(getattr(message, "topic", "")).strip().strip("/")
+        self._record_message("in", topic, payload, retain=bool(getattr(message, "retain", False)), qos=int(getattr(message, "qos", 0) or 0))
         face_topic = str(self.face_settings.get("events_topic") or "").strip().strip("/")
         handler = self.face_event_handler if face_topic and topic == face_topic else self.frigate_event_handler
         if not handler:
@@ -201,6 +267,7 @@ class MqttPublisher:
             self.publish_raw(topic, payload, retain=True)
 
     def publish_raw(self, topic: str, payload: dict[str, Any], retain: bool = False) -> None:
+        self._record_message("out", topic, payload, retain=retain, qos=0)
         if not self.enabled or not self.client:
             return
         try:
@@ -208,6 +275,47 @@ class MqttPublisher:
         except Exception as exc:
             self.last_error = str(exc)
             LOG.warning("MQTT publish failed on topic %s: %s", topic, exc)
+
+    def _record_message(self, direction: str, topic: str, payload: Any, retain: bool = False, qos: int = 0) -> None:
+        preview, parsed_json = _payload_preview(payload)
+        with self._history_lock:
+            self._history.append(
+                {
+                    "direction": direction,
+                    "topic": topic,
+                    "payload": preview,
+                    "parsed_json": parsed_json,
+                    "retain": bool(retain),
+                    "qos": int(qos),
+                    "timestamp": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                }
+            )
+
+    def history(self, limit: int = 50) -> list[dict[str, Any]]:
+        with self._history_lock:
+            return list(self._history)[-max(1, min(limit, MQTT_HISTORY_LIMIT)):]
+
+    def output_topics(self) -> list[str]:
+        camera_config = self.config.get("camera", {}) if isinstance(self.config.get("camera"), dict) else {}
+        camera = str(camera_config.get("name") or "camera")
+        base = f"{self.topic_prefix}/{camera}"
+        return [
+            f"{base}/person_count",
+            f"{base}/dog_count",
+            f"{base}/maja_present",
+            f"{base}/known_faces",
+            f"{base}/recognized_entities",
+            f"{base}/unknown_faces",
+            f"{base}/announcement_text",
+            f"{base}/announcement_should_speak",
+            f"{base}/announcement_entities",
+            f"{base}/recognition_log",
+            f"{base}/terrace_door_open",
+            f"{base}/terrace_door_confidence",
+            f"{base}/terrace_door_last_changed",
+            f"{base}/last_event",
+            f"{self.topic_prefix}/status",
+        ]
 
     def status(self) -> dict[str, Any]:
         return {
@@ -219,6 +327,8 @@ class MqttPublisher:
             "discovery_prefix": str(self.settings.get("discovery_prefix") or "homeassistant").strip().strip("/"),
             "frigate_import": bool(self.frigate_settings.get("enabled")),
             "face_import": bool(self.face_settings.get("enabled")),
+            "frigate_events_topic": str(self.frigate_settings.get("events_topic") or "").strip().strip("/"),
+            "face_events_topic": str(self.face_settings.get("events_topic") or "").strip().strip("/"),
         }
 
     def stop(self) -> None:

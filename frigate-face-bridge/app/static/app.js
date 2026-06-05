@@ -3,6 +3,8 @@ const formState = {
   appPopulated: false,
 };
 
+const DEFAULT_VIEW = 'overview';
+
 function apiPath(path) {
   return new URL(path.replace(/^\//, ''), window.location.href).toString();
 }
@@ -13,6 +15,57 @@ function checkbox(id) {
 
 function value(id) {
   return document.getElementById(id).value.trim();
+}
+
+function text(id, content) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = content;
+}
+
+function setActiveView(viewName) {
+  const selected = viewName || DEFAULT_VIEW;
+  document.querySelectorAll('.view').forEach((section) => {
+    section.hidden = section.dataset.view !== selected;
+  });
+  document.querySelectorAll('.view-tab').forEach((button) => {
+    const active = button.dataset.targetView === selected;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-current', active ? 'page' : 'false');
+  });
+  window.localStorage.setItem('faceBridgeView', selected);
+}
+
+function setupNavigation() {
+  document.querySelectorAll('.view-tab').forEach((button) => {
+    button.addEventListener('click', () => setActiveView(button.dataset.targetView));
+  });
+  const saved = window.localStorage.getItem('faceBridgeView') || DEFAULT_VIEW;
+  const hasSavedView = Array.from(document.querySelectorAll('.view')).some((section) => section.dataset.view === saved);
+  setActiveView(hasSavedView ? saved : DEFAULT_VIEW);
+}
+
+function renderChips(containerId, values, emptyText = 'keine') {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  const items = (values || []).filter(Boolean);
+  if (!items.length) {
+    container.textContent = emptyText;
+    return;
+  }
+  items.forEach((valueItem) => {
+    const chip = document.createElement('span');
+    chip.className = 'entity-chip';
+    chip.textContent = valueItem;
+    container.appendChild(chip);
+  });
+}
+
+function addCell(row, content) {
+  const cell = document.createElement('td');
+  cell.textContent = content;
+  row.appendChild(cell);
+  return cell;
 }
 
 function appConfigFromForm() {
@@ -232,15 +285,108 @@ function renderHistory(items) {
   const rows = (items || []).slice(-20).reverse();
   body.innerHTML = '';
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="6">Noch keine History vorhanden.</td></tr>';
+    const row = document.createElement('tr');
+    const cell = addCell(row, 'Noch keine History vorhanden.');
+    cell.colSpan = 6;
+    body.appendChild(row);
     return;
   }
   for (const item of rows) {
     const row = document.createElement('tr');
     const recognized = (item.recognized_entities || item.known_faces || []).join(', ') || '-';
     const announcement = item.announcement_log_text || item.announcement_text || '-';
-    row.innerHTML = `<td>${item.timestamp || '-'}</td><td>${item.person_count ?? 0}</td><td>${item.maja_present ? 'Maja' : (item.dog_count || 0)}</td><td>${recognized}</td><td>${announcement}</td><td>${item.source || '-'}</td>`;
+    addCell(row, item.timestamp || '-');
+    addCell(row, item.person_count ?? 0);
+    addCell(row, item.maja_present ? 'Maja' : (item.dog_count || 0));
+    addCell(row, recognized);
+    addCell(row, announcement);
+    addCell(row, item.source || '-');
     body.appendChild(row);
+  }
+}
+
+function renderRecognitionHistory(items) {
+  const body = document.getElementById('recognition-history-body');
+  if (!body) return;
+  const rows = (items || []).slice(-20).reverse();
+  body.innerHTML = '';
+  if (!rows.length) {
+    const row = document.createElement('tr');
+    const cell = addCell(row, 'Noch keine Erkennungen.');
+    cell.colSpan = 5;
+    body.appendChild(row);
+    return;
+  }
+  rows.forEach((item) => {
+    const row = document.createElement('tr');
+    addCell(row, item.timestamp || '-');
+    addCell(row, (item.recognized_entities || item.known_faces || []).join(', ') || '-');
+    addCell(row, item.unknown_faces ?? 0);
+    addCell(row, item.maja_present ? 'Maja' : (item.dog_count || 0));
+    addCell(row, item.source || '-');
+    body.appendChild(row);
+  });
+}
+
+function renderMqttHistory(items) {
+  const body = document.getElementById('mqtt-history-body');
+  if (!body) return;
+  const rows = (items || []).slice(-50).reverse();
+  body.innerHTML = '';
+  if (!rows.length) {
+    const row = document.createElement('tr');
+    const cell = addCell(row, 'Noch keine MQTT-Nachrichten.');
+    cell.colSpan = 5;
+    body.appendChild(row);
+    return;
+  }
+  rows.forEach((item) => {
+    const row = document.createElement('tr');
+    addCell(row, item.timestamp || '-');
+    addCell(row, item.direction === 'in' ? 'rein' : 'raus');
+    addCell(row, item.topic || '-');
+    addCell(row, typeof item.payload === 'string' ? item.payload : JSON.stringify(item.payload));
+    addCell(row, `qos ${item.qos ?? 0}${item.retain ? ', retain' : ''}`);
+    body.appendChild(row);
+  });
+}
+
+function renderAnnouncementHistory(items) {
+  const body = document.getElementById('announcement-history-body');
+  if (!body) return;
+  const rows = (items || []).slice(-20).reverse();
+  body.innerHTML = '';
+  if (!rows.length) {
+    const row = document.createElement('tr');
+    const cell = addCell(row, 'Noch keine Ansagen.');
+    cell.colSpan = 5;
+    body.appendChild(row);
+    return;
+  }
+  rows.forEach((item) => {
+    const row = document.createElement('tr');
+    addCell(row, item.timestamp || '-');
+    addCell(row, item.text || '-');
+    addCell(row, item.spoken ? 'ja' : 'nein');
+    addCell(row, (item.entities || []).join(', ') || '-');
+    addCell(row, item.suppressed_reason || '-');
+    body.appendChild(row);
+  });
+}
+
+function renderTopicList(topics) {
+  const list = document.getElementById('mqtt-topic-list');
+  if (!list) return;
+  list.innerHTML = '';
+  (topics || []).forEach((topic) => {
+    const item = document.createElement('li');
+    item.textContent = topic;
+    list.appendChild(item);
+  });
+  if (!list.children.length) {
+    const item = document.createElement('li');
+    item.textContent = 'Keine Ausgabe-Topics bekannt.';
+    list.appendChild(item);
   }
 }
 
@@ -294,6 +440,26 @@ async function refreshStatus() {
   document.getElementById('announcement-text').textContent = announcement.text || '-';
   document.getElementById('announcement-state').textContent = announcement.should_speak ? 'wird angesagt' : (announcement.suppressed_reason || 'keine Ansage');
   document.getElementById('last-dog-count').textContent = event.dog_count ?? 0;
+  const recognizedEntities = event.recognized_entities || event.known_faces || [];
+  renderChips('live-recognized-entities', recognizedEntities);
+  renderChips('live-known-faces', event.known_faces || []);
+  renderChips('recognition-current', recognizedEntities);
+  renderChips('recognition-known', event.known_faces || []);
+  text('live-event-time', event.timestamp || 'noch kein Event');
+  text('live-unknown-faces', event.unknown_faces ?? 0);
+  text('live-dog-state', event.maja_present ? 'Maja' : (event.dog_count ?? 0));
+  text('recognition-unknown', event.unknown_faces ?? 0);
+  text('recognition-dog', event.maja_present ? 'Maja' : (event.dog_count ?? 0));
+  text('last-event-json', JSON.stringify(event, null, 2));
+  text('live-refresh-state', `Live - ${new Date().toLocaleTimeString('de-DE')}`);
+  text('announce-current-text', announcement.text || '-');
+  text('announce-current-state', announcement.should_speak ? 'wird angesagt' : 'keine Ausgabe');
+  renderChips('announce-current-entities', announcement.entities || []);
+  text('announce-suppressed-reason', announcement.suppressed_reason || '-');
+  text('mqtt-live-status', data.mqtt?.enabled ? (data.mqtt?.connected ? 'verbunden' : 'aktiviert, nicht verbunden') : 'deaktiviert');
+  text('mqtt-live-prefix', data.mqtt?.topic_prefix || '-');
+  text('mqtt-frigate-topic', data.mqtt?.frigate_events_topic || '-');
+  text('mqtt-face-topic', data.mqtt?.face_events_topic || '-');
   const door = data.terrace_door || {};
   document.getElementById('terrace-door-open').textContent = door.open ? 'offen' : 'geschlossen';
   document.getElementById('terrace-door-confidence').textContent = door.confidence ?? 0;
@@ -302,9 +468,13 @@ async function refreshStatus() {
   document.getElementById('event-count').textContent = data.event_count ?? 0;
   document.getElementById('frigate-event-count').textContent = data.frigate_event_count ?? 0;
   document.getElementById('face-event-count').textContent = data.face_event_count ?? 0;
-  document.getElementById('debug').textContent = JSON.stringify({ config_errors: data.config_errors || [], mqtt: data.mqtt, frigate: safeConfig.frigate, frigate_active_count: data.frigate_active_count, face_recognition: safeConfig.face_recognition, announcements: safeConfig.announcements, terrace_door: safeConfig.terrace_door }, null, 2);
+  document.getElementById('debug').textContent = JSON.stringify({ config_errors: data.config_errors || [], mqtt: data.mqtt, mqtt_history: data.mqtt_history || [], mqtt_output_topics: data.mqtt_output_topics || [], frigate: safeConfig.frigate, frigate_active_count: data.frigate_active_count, face_recognition: safeConfig.face_recognition, announcements: safeConfig.announcements, terrace_door: safeConfig.terrace_door }, null, 2);
   renderPersonChart(data.person_count_series || []);
   renderHistory(data.history || []);
+  renderRecognitionHistory(data.history || []);
+  renderAnnouncementHistory(data.announcement_history || []);
+  renderMqttHistory(data.mqtt_history || []);
+  renderTopicList(data.mqtt_output_topics || []);
   renderFaces(data.known_faces || []);
   populateCameraForm(data.camera);
   populateAppForm(safeConfig);
@@ -415,6 +585,7 @@ async function loadSnapshot() {
 }
 
 async function boot() {
+  setupNavigation();
   document.getElementById('app-form').addEventListener('submit', saveAppConfig);
   document.getElementById('camera-form').addEventListener('submit', saveCamera);
   document.getElementById('face-form').addEventListener('submit', createFace);

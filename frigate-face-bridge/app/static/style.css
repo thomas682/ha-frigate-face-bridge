@@ -107,6 +107,39 @@ h2 {
   gap: 8px;
 }
 
+.view[hidden] { display: none !important; }
+
+.view-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 8px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-lg);
+  background: rgba(255, 255, 255, .86);
+  box-shadow: var(--shadow-card);
+}
+
+.view-tab {
+  min-height: 38px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  box-shadow: none;
+  font-size: 13px;
+}
+
+.view-tab.active,
+.view-tab:hover,
+.view-tab:focus {
+  border-color: var(--color-border-info);
+  background: var(--color-background-info);
+  color: var(--color-text-info);
+}
+
 .badge,
 .face-chip {
   display: inline-flex;
@@ -229,6 +262,109 @@ h2 {
 .connection-card strong { font-size: 20px; }
 
 .panel-graph { overflow: hidden; }
+
+.live-layout,
+.recognition-grid,
+.mqtt-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.live-card,
+.mqtt-summary article {
+  min-height: 116px;
+  padding: 14px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background: #fbfcff;
+}
+
+.live-card span,
+.mqtt-summary span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.live-card strong,
+.mqtt-summary strong {
+  display: block;
+  color: var(--color-text-primary);
+  font-size: 24px;
+  overflow-wrap: anywhere;
+}
+
+.live-card.highlight { border-color: var(--color-border-info); background: var(--color-background-info); }
+.live-card.danger { border-color: var(--color-border-danger); background: var(--color-background-danger); }
+
+.entity-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--color-text-secondary);
+}
+
+.entity-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border-info);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-text-info);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.live-dot {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border-success);
+  border-radius: 999px;
+  background: var(--color-background-success);
+  color: var(--color-text-success);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.raw-event-box h3,
+.panel h3 {
+  margin: 14px 0 8px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.topic-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.topic-list li {
+  padding: 9px 10px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  background: #fbfcff;
+  color: var(--color-text-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.mqtt-table td:nth-child(3),
+.mqtt-table td:nth-child(4) {
+  max-width: 360px;
+  overflow-wrap: anywhere;
+}
 
 .chart {
   min-height: 220px;
@@ -413,6 +549,10 @@ pre {
   .shell { width: min(100% - 16px, 1180px); padding-top: 8px; }
   .command-header { align-items: flex-start; flex-direction: column; }
   .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .live-layout,
+  .recognition-grid,
+  .mqtt-summary,
+  .topic-list { grid-template-columns: 1fr; }
   .connection-row,
   .split-panels { grid-template-columns: 1fr; }
   .config-form fieldset { grid-template-columns: 1fr; }

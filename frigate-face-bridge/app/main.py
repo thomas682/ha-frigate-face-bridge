@@ -172,6 +172,8 @@ def _status() -> dict[str, Any]:
         "person_count_series": person_count_series,
         "camera": camera_status(config),
         "mqtt": publisher.status(),
+        "mqtt_history": publisher.history(80),
+        "mqtt_output_topics": publisher.output_topics(),
         "known_faces": known_face_status(config),
         "terrace_door": terrace_door_status(),
         "config_errors": config.get("config_errors", []),

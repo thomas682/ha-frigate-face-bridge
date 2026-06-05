@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 14 abgeschlossen**.
+Aktueller Stand: **Stufe 15 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.13.5`.
+Aktuelle Add-on-Version: `0.14.0`.
 
 ## Stufe 1 - Add-on-Basis
 
@@ -287,6 +287,40 @@ Abnahme:
 
 - Die Web-UI ist im HA-Seitenleistenpanel lesbar.
 - Status, Konfiguration, History und Debug bleiben erreichbar.
+
+## Stufe 14 - Ansageereignisse und Erkennungslog
+
+Status: **abgeschlossen**
+
+Ziel: Erkannte Personen, unbekannte Personen und Hund sollen einstellbare Ansageereignisse und ein nachtraegliches Log erzeugen.
+
+Umgesetzt:
+
+- Ansage-Manager mit Zufallstexten, eigenen Texten, Sperrliste und Cooldowns
+- MQTT Topics und Discovery fuer Ansagetext, Ansageausloeser, Entitaeten und Erkennungslog
+- Web-UI-Konfiguration und History-Erweiterung fuer Ansagen
+
+Abnahme:
+
+- Ansageereignisse werden in API, Web-UI und MQTT sichtbar.
+- Wiederholte Ansagen werden ueber Cooldowns begrenzt.
+
+## Stufe 15 - Navigierbare Live-UI und MQTT-Ansicht
+
+Status: **abgeschlossen**
+
+Ziel: Die Face-Bridge-App soll MQTT-Nachrichten, Namen und Live-Daten in sinnvollen Sichten mit Menuefuehrung anzeigen.
+
+Umgesetzt:
+
+- Menue-Sichten fuer Ueberblick, Live, MQTT, Erkennungen, Ansagen, Verlauf, Konfiguration und Debug
+- Maskierte Live-History fuer ein- und ausgehende MQTT-Nachrichten
+- Eigene Live-Sichten fuer erkannte Namen, unbekannte Personen, Hundestatus, Ansagen und MQTT-Topics
+
+Abnahme:
+
+- Die Web-UI zeigt Live-Daten und MQTT-Nachrichten ohne Secrets.
+- Bestehende Konfiguration und Verlauf bleiben erreichbar.
 
 ## Laufende Sicherheitsregeln
 
