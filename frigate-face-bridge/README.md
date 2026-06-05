@@ -6,7 +6,7 @@ Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mi
 
 Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-Events, MQTT-Ausgabe, REST-API und eine einfache Web-UI. Es ist als Grundlage fuer spaetere Integrationen mit Frigate, Double Take, CompreFace oder einer lokalen Face-Recognition-Engine gedacht.
 
-## Funktionsumfang 0.12.0
+## Funktionsumfang 0.12.1
 
 - Startfaehig ohne Kamera
 - Startfaehig ohne MQTT
@@ -22,7 +22,7 @@ Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-
 - optionaler Frigate-MQTT-Event-Import fuer reale Personenzaehlung
 - aktiver Frigate-Personenzaehler ueber die Frigate-API fuer aktuelle Personen im Bild
 - aktiver Hund-Zaehler fuer Frigate-Objekt `dog` mit `Maja`-Status
-- History und Graph fuer Personen gleichzeitig im Wohnzimmer
+- History und Zeitreihen-Kurvendiagramm fuer Personen gleichzeitig im Wohnzimmer
 - Terrassentuer-Statusfelder fuer MQTT/API/UI: offen, Confidence und letzte Aenderung
 - lokale Face-Registry fuer bekannte Personen unter `/data/faces.json`
 - API zum Anlegen, Aktivieren und Deaktivieren bekannter Personen

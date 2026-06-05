@@ -107,6 +107,13 @@ function populateAppForm(config) {
   formState.appPopulated = true;
 }
 
+function formatChartTime(timestamp) {
+  if (!timestamp) return '';
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) return String(timestamp).slice(0, 16);
+  return parsed.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
 function renderPersonChart(series) {
   const chart = document.getElementById('person-chart');
   if (!chart) return;
@@ -116,15 +123,82 @@ function renderPersonChart(series) {
     chart.textContent = 'Noch keine Datenpunkte.';
     return;
   }
-  const max = Math.max(1, ...points.map((item) => Number(item.person_count || 0)));
-  for (const item of points) {
-    const bar = document.createElement('span');
-    const count = Number(item.person_count || 0);
-    bar.style.height = `${Math.max(6, (count / max) * 100)}%`;
-    bar.title = `${item.timestamp || ''}: ${count} Personen`;
-    bar.dataset.count = String(count);
-    chart.appendChild(bar);
+  const values = points.map((item) => Number(item.person_count || 0));
+  const max = Math.max(1, ...values);
+  const width = 760;
+  const height = 180;
+  const padding = { top: 18, right: 22, bottom: 34, left: 34 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const xFor = (index) => padding.left + (points.length === 1 ? plotWidth / 2 : (index / (points.length - 1)) * plotWidth);
+  const yFor = (value) => padding.top + plotHeight - (value / max) * plotHeight;
+  const linePoints = values.map((value, index) => `${xFor(index).toFixed(1)},${yFor(value).toFixed(1)}`).join(' ');
+  const areaPoints = `${padding.left},${padding.top + plotHeight} ${linePoints} ${padding.left + plotWidth},${padding.top + plotHeight}`;
+  const first = points[0];
+  const last = points[points.length - 1];
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', `Personenverlauf von ${first.timestamp || 'Start'} bis ${last.timestamp || 'jetzt'}`);
+
+  const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  gridGroup.setAttribute('class', 'chart-grid');
+  for (let tick = 0; tick <= max; tick += 1) {
+    const y = yFor(tick);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', String(padding.left));
+    line.setAttribute('x2', String(padding.left + plotWidth));
+    line.setAttribute('y1', y.toFixed(1));
+    line.setAttribute('y2', y.toFixed(1));
+    gridGroup.appendChild(line);
   }
+  svg.appendChild(gridGroup);
+
+  const area = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  area.setAttribute('class', 'chart-area');
+  area.setAttribute('points', areaPoints);
+  svg.appendChild(area);
+
+  const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+  polyline.setAttribute('class', 'chart-line');
+  polyline.setAttribute('points', linePoints);
+  svg.appendChild(polyline);
+
+  values.forEach((value, index) => {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('class', 'chart-point');
+    circle.setAttribute('cx', xFor(index).toFixed(1));
+    circle.setAttribute('cy', yFor(value).toFixed(1));
+    circle.setAttribute('r', '4');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${points[index].timestamp || ''}: ${value} Personen`;
+    circle.appendChild(title);
+    svg.appendChild(circle);
+  });
+
+  const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  yLabel.setAttribute('class', 'chart-label');
+  yLabel.setAttribute('x', '6');
+  yLabel.setAttribute('y', String(padding.top + 4));
+  yLabel.textContent = String(max);
+  svg.appendChild(yLabel);
+
+  const startLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  startLabel.setAttribute('class', 'chart-label');
+  startLabel.setAttribute('x', String(padding.left));
+  startLabel.setAttribute('y', String(height - 8));
+  startLabel.textContent = formatChartTime(first.timestamp);
+  svg.appendChild(startLabel);
+
+  const endLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  endLabel.setAttribute('class', 'chart-label chart-label-end');
+  endLabel.setAttribute('x', String(width - padding.right));
+  endLabel.setAttribute('y', String(height - 8));
+  endLabel.textContent = formatChartTime(last.timestamp);
+  svg.appendChild(endLabel);
+
+  chart.appendChild(svg);
 }
 
 function renderHistory(items) {

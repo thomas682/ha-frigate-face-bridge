@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.1
+
+### Changed
+
+- Personen-Verlauf in der Web-UI von Balken auf ein Zeitreihen-Kurvendiagramm mit Flaeche, Punkten und Start-/Endzeit umgestellt.
+
 ## 0.12.0
 
 ### Changed
