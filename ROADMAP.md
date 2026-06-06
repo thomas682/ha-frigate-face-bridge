@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 16 abgeschlossen**.
+Aktueller Stand: **Stufe 17 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.14.1`.
+Aktuelle Add-on-Version: `0.15.0`.
 
 ## Stufe 1 - Add-on-Basis
 
@@ -339,6 +339,26 @@ Abnahme:
 
 - Fehlende neue Optionen funktionieren zur Laufzeit, ohne automatisch in `/data/options.json` geschrieben zu werden.
 - Bestehende Nutzerwerte fuer `demo_mode` bleiben true oder false, wie gespeichert.
+
+## Stufe 17 - Konfigurationspersistenz und responsive Bedien-UI
+
+Status: **abgeschlossen**
+
+Ziel: Die Web-UI soll gespeicherte Werte nicht durch leere Formularfelder ersetzen, gesetzte Secrets/URLs verstaendlich anzeigen, Testfunktionen anbieten und auf iPhone sowie voller Desktop-Breite bedienbar sein.
+
+Umgesetzt:
+
+- Template fuer sichere Parameter- und UI-Aenderungen unter `docs/templates/AGENT_PARAMETER_UI_CHANGE_TEMPLATE.md`
+- Teilupdates fuer Betriebs- und Kamerakonfiguration statt Vollformular-Speicherung
+- Statusanzeigen fuer gesetzte MQTT-/Kamera-Secrets ohne Offenlegung
+- Testbuttons fuer MQTT, RTSP und Snapshot
+- Vollbreite, mobile UI mit filterbaren, scrollbareren Listen und lesbaren Debug-/Live-Textlisten
+
+Abnahme:
+
+- Leere Formularfelder ueberschreiben keine gespeicherten Nutzerwerte.
+- Listen sind nach Zeitbereich und Volltext filterbar; Treffer werden markiert.
+- Debug und Live zeigen lesbare Statuslisten statt JSON-/YAML-Dumps.
 
 ## Laufende Sicherheitsregeln
 

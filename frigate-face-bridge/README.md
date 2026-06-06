@@ -6,13 +6,17 @@ Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mi
 
 Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-Events, MQTT-Ausgabe, REST-API und eine einfache Web-UI. Es ist als Grundlage fuer spaetere Integrationen mit Frigate, Double Take, CompreFace oder einer lokalen Face-Recognition-Engine gedacht.
 
-## Funktionsumfang 0.14.1
+## Funktionsumfang 0.15.0
 
 - Startfaehig ohne Kamera
 - Startfaehig ohne MQTT
 - Demo-Modus mit simulierten Events
 - REST-API fuer Health, Status, Kameras, letztes Event und maskierte Konfiguration
 - Ingress-Web-UI auf Port `8099` mit Menuefuehrung fuer Ueberblick, Live-Daten, MQTT, Erkennungen, Ansagen, Verlauf, Konfiguration und Debug
+- vollbreite, iPhone-taugliche Web-UI mit filterbaren, scrollbareren Listen
+- Konfigurationsspeicherung als Teilupdate, damit leere Formularfelder bestehende Nutzerwerte nicht ueberschreiben
+- Statusanzeigen fuer gesetzten MQTT-Benutzer, gesetztes MQTT-Passwort sowie gesetzte RTSP-/Snapshot-URLs
+- Testbuttons fuer MQTT-Verbindung, RTSP-Erreichbarkeit und Snapshot-Erreichbarkeit
 - maskierte Live-MQTT-History fuer ein- und ausgehende Nachrichten in API und Web-UI
 - MQTT-Publisher fuer Status und Event-Topics
 - Konfiguration ueber `/data/options.json`
@@ -110,6 +114,9 @@ known_faces:
 - `GET /api/config`
 - `POST /api/config`
 - `POST /api/config/camera`
+- `POST /api/test/mqtt`
+- `POST /api/test/rtsp`
+- `POST /api/test/snapshot`
 - `GET /api/camera/snapshot`
 - `GET /api/faces`
 - `POST /api/faces`
@@ -196,6 +203,8 @@ Die Ingress-Web-UI ist in navigierbare Sichten aufgeteilt:
 - `Konfiguration`: System-, MQTT-, Frigate-, Face-, Ansage-, Kamera- und Personen-Konfiguration.
 - `Debug`: maskierter technischer Status fuer Diagnose.
 
+Die Konfigurationssicht sendet Teilupdates. Leere Passwort-, RTSP- oder Snapshot-Felder bedeuten `unveraendert lassen`; gesetzte Werte werden als Status angezeigt, nicht im Klartext.
+
 Die MQTT-Live-History wird nur im Speicher gehalten und begrenzt. Secrets, Token, Passwoerter und Kamera-URLs mit Credentials werden vor der API-Ausgabe maskiert.
 
 ## Ansageereignisse
@@ -231,4 +240,4 @@ Diese Werte werden auf `terrace_door_open`, `terrace_door_confidence`, `terrace_
 
 Frigate Face Bridge ersetzt Frigate nicht. Frigate kann spaeter Personendetektionen liefern. Double Take oder CompreFace koennen spaeter Gesichtserkennung liefern. Dieses Add-on stellt Konfiguration, Statuslogik, API, Web-UI und Home-Assistant-MQTT-Anbindung bereit.
 
-Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.14.1` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.
+Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.15.0` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.

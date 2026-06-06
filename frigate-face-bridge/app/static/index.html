@@ -52,6 +52,26 @@
         <strong id="mqtt">-</strong>
         <small id="mqtt-topic"></small>
       </article>
+      <article class="stat-card accent">
+        <span>Erkannte Personen</span>
+        <strong id="recognized-count-card">0</strong>
+        <small id="recognized-count-detail">keine Namen</small>
+      </article>
+      <article class="stat-card">
+        <span>Terrassentuer</span>
+        <strong id="terrace-door-open">-</strong>
+        <small>Confidence <span id="terrace-door-confidence">-</span> · <span id="terrace-door-last-changed">-</span></small>
+      </article>
+      <article class="stat-card">
+        <span>Home Assistant</span>
+        <strong id="ha-status-card">-</strong>
+        <small>Ingress/API Status</small>
+      </article>
+      <article class="stat-card">
+        <span>go2rtc</span>
+        <strong id="go2rtc-status-card">-</strong>
+        <small>ueber Frigate API</small>
+      </article>
     </section>
 
     <section class="event-card view" data-view="overview">
@@ -77,14 +97,14 @@
 
     <section class="connection-row view" data-view="overview" aria-label="Verbindungen und Zusatzdaten">
       <article class="connection-card">
-        <span>Terrassentuer</span>
-        <strong id="terrace-door-open">-</strong>
-        <small>Confidence <span id="terrace-door-confidence">-</span> · <span id="terrace-door-last-changed">-</span></small>
+        <span>Applikationen</span>
+        <strong id="apps-status-card">-</strong>
+        <small>Bridge, Frigate, MQTT</small>
       </article>
       <article class="connection-card">
-        <span>Events</span>
-        <strong id="event-count">0</strong>
-        <small>Frigate <span id="frigate-event-count">0</span> · Face <span id="face-event-count">0</span></small>
+        <span>Letzter Fehler</span>
+        <strong id="last-error-card">kein Fehler</strong>
+        <small>Events <span id="event-count">0</span> · Frigate <span id="frigate-event-count">0</span> · Face <span id="face-event-count">0</span></small>
       </article>
     </section>
 
@@ -116,8 +136,9 @@
         </article>
       </div>
       <div class="raw-event-box">
-        <h3>Letztes Event</h3>
-        <pre id="last-event-json"></pre>
+        <h3>Letztes Event als Text</h3>
+        <ul class="detail-list" id="last-event-list"></ul>
+        <pre id="last-event-json" hidden></pre>
       </div>
     </section>
 
@@ -137,14 +158,18 @@
       <h3>Bridge-Ausgabe-Topics</h3>
       <ul class="topic-list" id="mqtt-topic-list"></ul>
       <h3>Nachrichten</h3>
-      <table class="history-table mqtt-table">
+      <div class="table-controls">
+        <label>Zeitbereich <select id="mqtt-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="mqtt-search" autocomplete="off" placeholder="Volltext suchen"></label>
+      </div>
+      <div class="table-scroll"><table class="history-table mqtt-table">
         <thead>
           <tr><th>Zeit</th><th>Richtung</th><th>Topic</th><th>Payload</th><th>Flags</th></tr>
         </thead>
         <tbody id="mqtt-history-body">
           <tr><td colspan="5">Noch keine MQTT-Nachrichten.</td></tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
 
     <section class="panel view" data-view="recognition">
@@ -160,14 +185,18 @@
         <article class="live-card danger"><span>Unbekannt</span><strong id="recognition-unknown">0</strong></article>
         <article class="live-card"><span>Hund/Hunde</span><strong id="recognition-dog">0</strong></article>
       </div>
-      <table class="history-table">
+      <div class="table-controls">
+        <label>Zeitbereich <select id="recognition-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="recognition-search" autocomplete="off" placeholder="Name, Quelle, Text"></label>
+      </div>
+      <div class="table-scroll"><table class="history-table">
         <thead>
           <tr><th>Zeit</th><th>Erkannt</th><th>Unbekannt</th><th>Hund</th><th>Quelle</th></tr>
         </thead>
         <tbody id="recognition-history-body">
           <tr><td colspan="5">Noch keine Erkennungen.</td></tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
 
     <section class="panel view" data-view="announcements">
@@ -183,14 +212,18 @@
         <article class="live-card"><span>Entitaeten</span><div class="entity-list" id="announce-current-entities">-</div></article>
         <article class="live-card danger"><span>Sperrgrund</span><strong id="announce-suppressed-reason">-</strong></article>
       </div>
-      <table class="history-table">
+      <div class="table-controls">
+        <label>Zeitbereich <select id="announcement-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="announcement-search" autocomplete="off" placeholder="Text, Person, Sperrgrund"></label>
+      </div>
+      <div class="table-scroll"><table class="history-table">
         <thead>
           <tr><th>Zeit</th><th>Text</th><th>Gesprochen</th><th>Entitaeten</th><th>Sperrgrund</th></tr>
         </thead>
         <tbody id="announcement-history-body">
           <tr><td colspan="5">Noch keine Ansagen.</td></tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
 
     <section class="panel panel-graph view" data-view="history">
@@ -210,14 +243,18 @@
           <h2>Erkennungs- und Ansagelog</h2>
         </div>
       </div>
-      <table class="history-table">
+      <div class="table-controls">
+        <label>Zeitbereich <select id="history-range"><option value="4">letzte 4 h</option><option value="24">letzte 24 h</option><option value="72" selected>letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="history-search" autocomplete="off" placeholder="Volltext suchen"></label>
+      </div>
+      <div class="table-scroll"><table class="history-table">
         <thead>
           <tr><th>Zeit</th><th>Personen</th><th>Hund</th><th>Erkannt</th><th>Ansage/Log</th><th>Quelle</th></tr>
         </thead>
         <tbody id="history-body">
           <tr><td colspan="6">Noch keine History geladen.</td></tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
 
     <section class="panel view" data-view="config">
@@ -236,20 +273,24 @@
         </fieldset>
         <fieldset>
           <legend>MQTT</legend>
+          <p class="field-help wide">MQTT verbindet die Bridge mit Home Assistant. Discovery erzeugt automatisch HA-Sensoren. Das Passwort wird nie im Klartext angezeigt.</p>
           <label>MQTT aktiv <input id="setting-mqtt-enabled" type="checkbox"></label>
           <label>MQTT Host <input id="setting-mqtt-host" autocomplete="off" placeholder="core-mosquitto"></label>
           <label>MQTT Port <input id="setting-mqtt-port" type="number" min="1" step="1" placeholder="1883"></label>
           <label>MQTT Benutzer <input id="setting-mqtt-username" autocomplete="off"></label>
-          <label>MQTT Passwort <input id="setting-mqtt-password" type="password" autocomplete="new-password" placeholder="unveraendert lassen"></label>
+          <label>MQTT Passwort <span class="value-status" id="mqtt-password-status">-</span><input id="setting-mqtt-password" type="password" autocomplete="new-password" placeholder="leer lassen = unveraendert"></label>
+          <label>MQTT Benutzerstatus <span class="value-status" id="mqtt-username-status">-</span><span class="field-help">Zeigt, ob ein Benutzer gespeichert ist.</span></label>
           <label>Topic Prefix <input id="setting-topic-prefix" autocomplete="off" placeholder="ha/frigate_face_bridge"></label>
           <label>MQTT Discovery <input id="setting-mqtt-discovery" type="checkbox"></label>
           <label>Discovery Prefix <input id="setting-discovery-prefix" autocomplete="off" placeholder="homeassistant"></label>
+          <div class="actions wide"><button type="button" id="mqtt-test-button">MQTT Verbindung testen</button><span id="mqtt-test-message" class="message"></span></div>
         </fieldset>
         <fieldset>
           <legend>Frigate und Face Import</legend>
+          <p class="field-help wide">Frigate Import liest Frigate-MQTT-Events. Face Import liest Events einer externen Gesichtserkennung. Der Kamera-Filter muss zum Frigate-Kameranamen passen, sonst werden Events ignoriert.</p>
           <label>Frigate Import <input id="setting-frigate-enabled" type="checkbox"></label>
           <label>Frigate Topic <input id="setting-frigate-topic" autocomplete="off" placeholder="frigate/events"></label>
-          <label>Frigate Kamera-Filter <input id="setting-frigate-camera" autocomplete="off" placeholder="garage_g3_flex"></label>
+          <label>Frigate Kamera-Filter <input id="setting-frigate-camera" autocomplete="off" placeholder="z.B. wohnzimmer_g3_flex"><span class="field-help">`garage_g3_flex` war nur ein alter Beispielname.</span></label>
           <label>Frigate API URL <input id="setting-frigate-api-url" autocomplete="off" placeholder="http://fossflow.localdomain:5000"></label>
           <label>Aktive Personen aus Frigate zaehlen <input id="setting-frigate-person-count-enabled" type="checkbox"></label>
           <label>Personen-Zaehler Intervall Sekunden <input id="setting-frigate-person-count-interval" type="number" min="1" step="1" placeholder="5"></label>
@@ -297,10 +338,12 @@
         <form id="camera-form" class="config-form compact-form">
           <label>Kameraname <input id="camera-name" name="name" autocomplete="off" placeholder="garage_g3_flex"></label>
           <label>IP-Adresse / Host <input id="camera-host" name="host" autocomplete="off" placeholder="192.168.2.241"></label>
-          <label>RTSP URL <input id="camera-rtsp" name="rtsp_url" autocomplete="off" placeholder="rtsp://192.168.2.241:7447/..."></label>
-          <label>Snapshot URL <input id="camera-snapshot" name="snapshot_url" autocomplete="off" placeholder="http://192.168.2.241/snapshot.jpg"></label>
-          <div class="actions"><button type="submit">Speichern</button><button type="button" id="snapshot-button">Vorschau laden</button></div>
+          <label>RTSP URL <span class="value-status" id="rtsp-url-status">-</span><input id="camera-rtsp" name="rtsp_url" autocomplete="off" placeholder="leer lassen = unveraendert"></label>
+          <label>Snapshot URL <span class="value-status" id="snapshot-url-status">-</span><input id="camera-snapshot" name="snapshot_url" autocomplete="off" placeholder="leer lassen = unveraendert"></label>
+          <div class="actions"><button type="submit">Speichern</button><button type="button" id="rtsp-test-button">RTSP testen</button><button type="button" id="snapshot-test-button">Snapshot testen</button><button type="button" id="snapshot-button">Vorschau laden</button></div>
           <p id="config-message" class="message" role="status"></p>
+          <p id="rtsp-test-message" class="message" role="status"></p>
+          <p id="snapshot-test-message" class="message" role="status"></p>
         </form>
         <div class="preview">
           <img id="snapshot-preview" alt="Kamera-Vorschau" hidden>
@@ -311,8 +354,9 @@
 
     <section class="panel view" data-view="debug">
       <div class="panel-title-row"><div><p class="section-label">Debug</p><h2>Hinweise und Konfigurationsstatus</h2></div></div>
-      <p>Version 0.14.0 zeigt Status, MQTT-Live-Nachrichten, Erkennungslog, Ansagetexte, Personenverlauf und Konfiguration in navigierbaren Sichten.</p>
-      <pre id="debug"></pre>
+      <p>Debug zeigt technische Statuswerte als Textliste. Secrets, Tokens und Kamera-Credentials werden nicht angezeigt.</p>
+      <ul class="detail-list" id="debug-list"></ul>
+      <pre id="debug" hidden></pre>
     </section>
   </main>
   <script src="static/app.js"></script>

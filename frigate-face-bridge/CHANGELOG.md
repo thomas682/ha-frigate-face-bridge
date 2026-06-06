@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.15.0
+
+### Added
+
+- Wiederverwendbares Template fuer sichere Parameter- und UI-Aenderungen ergaenzt ([#8](https://github.com/thomas682/ha-frigate-face-bridge/issues/8)).
+- Test-Endpunkte und Web-UI-Testbuttons fuer MQTT, RTSP und Snapshot ergaenzt.
+- Statusanzeigen fuer gesetzten MQTT-Benutzer, gesetztes MQTT-Passwort sowie gesetzte RTSP-/Snapshot-URLs hinzugefuegt, ohne Secrets offenzulegen.
+- Filterbare und scrollbare Listen mit Zeitbereichsauswahl und Treffer-Markierung fuer Verlauf, Ansagen, Erkennungen und MQTT-Nachrichten ergaenzt.
+
+### Changed
+
+- Web-UI speichert Betriebs- und Kamera-Konfiguration als Teilupdate, damit leere Felder keine bestehenden Nutzerwerte ueberschreiben.
+- Web-UI nutzt die volle Fensterbreite und bleibt auf iPhone-Displays besser bedienbar.
+- Live- und Debug-Sicht zeigen Textlisten statt JSON-/YAML-Dumps.
+
 ## 0.14.1
 
 ### Changed

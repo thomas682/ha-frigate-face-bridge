@@ -519,6 +519,60 @@ def test_save_app_config_preserves_masked_mqtt_password(tmp_path, monkeypatch):
     assert stored["mqtt"]["host"] == "core-mosquitto"
 
 
+def test_partial_app_config_does_not_overwrite_existing_values(tmp_path, monkeypatch):
+    options_file = tmp_path / "options.json"
+    options_file.write_text(
+        json.dumps({"mqtt": {"username": "bridge", "password": "real-secret", "host": "core-mosquitto"}, "frigate": {"events_topic": "frigate/events"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)
+    client = module.app.test_client()
+
+    response = client.post("/api/config", json={"mqtt": {"enabled": True}})
+
+    assert response.status_code == 200
+    stored = json.loads(options_file.read_text(encoding="utf-8"))
+    assert stored["mqtt"]["enabled"] is True
+    assert stored["mqtt"]["username"] == "bridge"
+    assert stored["mqtt"]["password"] == "real-secret"
+    assert stored["frigate"]["events_topic"] == "frigate/events"
+
+
+def test_config_api_exposes_secret_and_url_status(tmp_path, monkeypatch):
+    options_file = tmp_path / "options.json"
+    options_file.write_text(
+        json.dumps({"mqtt": {"username": "bridge", "password": "real-secret"}, "camera": {"rtsp_url": "rtsp://user:pass@camera/stream", "snapshot_url": "http://camera/snap.jpg"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)
+    module.config.clear()
+    module.config.update(config_loader.load_config())
+    client = module.app.test_client()
+
+    data = client.get("/api/config").get_json()
+
+    assert data["storage_status"]["mqtt_username_set"] is True
+    assert data["storage_status"]["mqtt_password_set"] is True
+    assert data["storage_status"]["rtsp_url_set"] is True
+    assert data["storage_status"]["snapshot_url_set"] is True
+    assert "real-secret" not in json.dumps(data)
+    assert "user:pass" not in json.dumps(data)
+
+
+def test_rtsp_test_endpoint_uses_masked_url(monkeypatch):
+    module.config["camera"]["rtsp_url"] = "rtsp://user:pass@camera.local:7447/private"
+    monkeypatch.setattr(module, "_tcp_test", lambda host, port, timeout=3.0: {"ok": True, "status": "TCP erreichbar", "host": host, "port": port})
+    client = module.app.test_client()
+
+    response = client.post("/api/test/rtsp")
+
+    data = response.get_json()
+    assert response.status_code == 200
+    assert data["ok"] is True
+    assert data["host"] == "camera.local"
+    assert "user:pass" not in data["url"]
+
+
 def test_update_app_config_writes_runtime_settings(tmp_path, monkeypatch):
     options_file = tmp_path / "options.json"
     monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)

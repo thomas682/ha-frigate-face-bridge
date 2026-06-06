@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import signal
+import socket
 import sys
 import threading
 import time
@@ -157,6 +158,9 @@ def _status() -> dict[str, Any]:
             for item in recent_history
             if item.get("source") == "frigate_active_objects"
         ][-60:]
+    mqtt_status = publisher.status()
+    config_errors = config.get("config_errors", [])
+    last_error = mqtt_status.get("last_error") or (config_errors[-1] if config_errors else "")
     return {
         "ok": True,
         "version": os.environ.get("ADDON_VERSION", "0.12.0"),
@@ -171,13 +175,75 @@ def _status() -> dict[str, Any]:
         "announcement_history": recent_announcements,
         "person_count_series": person_count_series,
         "camera": camera_status(config),
-        "mqtt": publisher.status(),
+        "mqtt": mqtt_status,
         "mqtt_history": publisher.history(80),
         "mqtt_output_topics": publisher.output_topics(),
         "known_faces": known_face_status(config),
         "terrace_door": terrace_door_status(),
-        "config_errors": config.get("config_errors", []),
+        "storage_status": storage_status(),
+        "app_status": {
+            "bridge": "online",
+            "home_assistant": "via Ingress" if os.environ.get("SUPERVISOR_TOKEN") else "nicht erkannt",
+            "go2rtc": go2rtc_status(),
+            "frigate": "aktiv" if bool(config.get("frigate", {}).get("enabled")) else "deaktiviert",
+            "mqtt": "verbunden" if mqtt_status.get("connected") else ("aktiviert" if mqtt_status.get("enabled") else "deaktiviert"),
+            "last_error": last_error,
+        },
+        "config_errors": config_errors,
     }
+
+
+def storage_status() -> dict[str, Any]:
+    raw = load_raw_options()
+    raw_mqtt = raw.get("mqtt") if isinstance(raw.get("mqtt"), dict) else {}
+    raw_camera = raw.get("camera") if isinstance(raw.get("camera"), dict) else {}
+    return {
+        "options_present": bool(raw),
+        "mqtt_username_set": bool(str(raw_mqtt.get("username") or config.get("mqtt", {}).get("username") or "")),
+        "mqtt_password_set": bool(str(raw_mqtt.get("password") or config.get("mqtt", {}).get("password") or "")),
+        "rtsp_url_set": bool(str(raw_camera.get("rtsp_url") or config.get("camera", {}).get("rtsp_url") or "")),
+        "snapshot_url_set": bool(str(raw_camera.get("snapshot_url") or config.get("camera", {}).get("snapshot_url") or "")),
+        "faces_registry_present": known_face_status(config) != [],
+    }
+
+
+def go2rtc_status() -> str:
+    frigate = config.get("frigate", {}) if isinstance(config.get("frigate"), dict) else {}
+    api_url = str(frigate.get("api_url") or "").strip().rstrip("/")
+    if not api_url:
+        return "nicht konfiguriert"
+    try:
+        parts = urlsplit(api_url)
+        if parts.scheme not in {"http", "https"} or not parts.netloc:
+            return "ungueltige Frigate URL"
+        req = Request(f"{api_url}/api/go2rtc/streams", headers={"User-Agent": "frigate-face-bridge"})
+        with urlopen(req, timeout=3) as response:
+            return "erreichbar" if response.status < 400 else f"HTTP {response.status}"
+    except Exception:
+        return "nicht erreichbar"
+
+
+def _tcp_test(host: str, port: int, timeout: float = 3.0) -> dict[str, Any]:
+    if not host or port <= 0:
+        return {"ok": False, "status": "nicht konfiguriert"}
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return {"ok": True, "status": "TCP erreichbar"}
+    except OSError as exc:
+        return {"ok": False, "status": "nicht erreichbar", "error": str(exc)}
+
+
+def test_rtsp_url(url: str) -> dict[str, Any]:
+    url = str(url or "").strip()
+    if not url:
+        return {"ok": False, "status": "RTSP URL nicht gesetzt"}
+    parts = urlsplit(url)
+    if parts.scheme.lower() not in {"rtsp", "rtsps", "http", "https"} or not parts.hostname:
+        return {"ok": False, "status": "ungueltige RTSP URL"}
+    port = parts.port or (7441 if parts.scheme.lower() == "rtsps" else 7447 if parts.scheme.lower() == "rtsp" else 443 if parts.scheme.lower() == "https" else 80)
+    result = _tcp_test(parts.hostname, port)
+    result["url"] = redact_url(url)
+    return result
 
 
 def event_loop() -> None:
@@ -255,7 +321,7 @@ def api_history():
 
 @app.get("/api/config")
 def api_config():
-    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options())})
+    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options()), "storage_status": storage_status()})
 
 
 @app.post("/api/config")
@@ -278,7 +344,7 @@ def api_update_config():
     if bool(config.get("mqtt", {}).get("enabled")):
         publisher.connect()
     LOG.info("application configuration updated")
-    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options()), "status": _status()})
+    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options()), "storage_status": storage_status(), "status": _status()})
 
 
 @app.get("/api/faces")
@@ -337,6 +403,40 @@ def api_update_camera():
     detector = create_detector(config)
     LOG.info("camera configuration updated: %s", camera_status(config))
     return jsonify({"ok": True, "camera": camera_status(config), "config_errors": config.get("config_errors", [])})
+
+
+@app.post("/api/test/mqtt")
+def api_test_mqtt():
+    mqtt = config.get("mqtt", {}) if isinstance(config.get("mqtt"), dict) else {}
+    result = _tcp_test(str(mqtt.get("host") or ""), int(mqtt.get("port") or 0))
+    result.update({"enabled": bool(mqtt.get("enabled")), "host": str(mqtt.get("host") or ""), "port": int(mqtt.get("port") or 0), "connected": bool(publisher.status().get("connected"))})
+    return jsonify(result), 200 if result.get("ok") else 502
+
+
+@app.post("/api/test/rtsp")
+def api_test_rtsp():
+    camera = config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+    result = test_rtsp_url(str(camera.get("rtsp_url") or ""))
+    return jsonify(result), 200 if result.get("ok") else 502
+
+
+@app.post("/api/test/snapshot")
+def api_test_snapshot():
+    camera = config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+    snapshot_url = str(camera.get("snapshot_url") or "").strip()
+    if not snapshot_url:
+        return jsonify({"ok": False, "status": "Snapshot URL nicht gesetzt"}), 400
+    parts = urlsplit(snapshot_url)
+    if parts.scheme.lower() not in {"http", "https"} or not parts.netloc:
+        return jsonify({"ok": False, "status": "ungueltige Snapshot URL"}), 400
+    try:
+        req = Request(snapshot_url, headers={"User-Agent": "frigate-face-bridge"})
+        with urlopen(req, timeout=5) as response:
+            content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
+            return jsonify({"ok": response.status < 400 and content_type.startswith("image/"), "status": "Bild erreichbar" if content_type.startswith("image/") else "Antwort ist kein Bild", "content_type": content_type, "url": redact_url(snapshot_url)})
+    except Exception as exc:
+        LOG.warning("snapshot test failed url=%s error=%s", redact_url(snapshot_url), exc)
+        return jsonify({"ok": False, "status": "Snapshot nicht erreichbar", "url": redact_url(snapshot_url)}), 502
 
 
 @app.get("/api/camera/snapshot")

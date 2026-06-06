@@ -68,76 +68,207 @@ function addCell(row, content) {
   return cell;
 }
 
-function appConfigFromForm() {
-  const mqttPassword = value('setting-mqtt-password');
-  const mqtt = {
-    enabled: checkbox('setting-mqtt-enabled'),
-    host: value('setting-mqtt-host'),
-    port: Number(value('setting-mqtt-port') || 1883),
-    username: value('setting-mqtt-username'),
-    topic_prefix: value('setting-topic-prefix'),
-    discovery: checkbox('setting-mqtt-discovery'),
-    discovery_prefix: value('setting-discovery-prefix'),
-  };
-  if (mqttPassword && !mqttPassword.includes('***')) mqtt.password = mqttPassword;
+function addHighlightedCell(row, content, query) {
+  const cell = document.createElement('td');
+  appendHighlightedText(cell, String(content ?? ''), query);
+  row.appendChild(cell);
+  return cell;
+}
 
-  return {
-    demo_mode: checkbox('setting-demo-mode'),
-    log_level: value('setting-log-level'),
-    event_interval_seconds: Number(value('setting-event-interval') || 10),
-    mqtt,
-    frigate: {
-      enabled: checkbox('setting-frigate-enabled'),
-      events_topic: value('setting-frigate-topic'),
-      camera_name: value('setting-frigate-camera'),
-      api_url: value('setting-frigate-api-url'),
-      person_count_enabled: checkbox('setting-frigate-person-count-enabled'),
-      person_count_interval_seconds: Number(value('setting-frigate-person-count-interval') || 5),
-      dog_name: value('setting-frigate-dog-name') || 'Maja',
-    },
-    face_recognition: {
-      enabled: checkbox('setting-face-enabled'),
-      events_topic: value('setting-face-topic'),
-      min_confidence: Number(value('setting-face-confidence') || 0.7),
-    },
-    announcements: {
-      enabled: checkbox('setting-announcements-enabled'),
-      announce_known: checkbox('setting-announcements-known'),
-      announce_unknown: checkbox('setting-announcements-unknown'),
-      announce_dog: checkbox('setting-announcements-dog'),
-      random_texts_enabled: checkbox('setting-announcements-random'),
-      global_cooldown_seconds: Number(value('setting-announcements-global-cooldown') || 60),
-      entity_cooldown_seconds: Number(value('setting-announcements-entity-cooldown') || 300),
-      disabled_entities: value('setting-announcements-disabled'),
-      custom_texts: document.getElementById('setting-announcements-custom-texts').value.trim(),
-    },
-    terrace_door: {
-      enabled: checkbox('setting-door-enabled'),
-      open: checkbox('setting-door-open'),
-      confidence: Number(value('setting-door-confidence') || 0),
-      last_changed: value('setting-door-last-changed'),
-    },
-  };
+function appendHighlightedText(parent, content, query) {
+  const textValue = String(content ?? '');
+  const search = String(query || '').trim();
+  if (!search) {
+    parent.textContent = textValue;
+    return;
+  }
+  const lower = textValue.toLowerCase();
+  const needle = search.toLowerCase();
+  let index = 0;
+  let match = lower.indexOf(needle, index);
+  while (match !== -1) {
+    if (match > index) parent.appendChild(document.createTextNode(textValue.slice(index, match)));
+    const mark = document.createElement('mark');
+    mark.textContent = textValue.slice(match, match + search.length);
+    parent.appendChild(mark);
+    index = match + search.length;
+    match = lower.indexOf(needle, index);
+  }
+  if (index < textValue.length) parent.appendChild(document.createTextNode(textValue.slice(index)));
+}
+
+function selectedRangeMs(prefix) {
+  const select = document.getElementById(`${prefix}-range`);
+  const valueText = select ? select.value : 'all';
+  if (valueText === 'all') return null;
+  return Number(valueText) * 60 * 60 * 1000;
+}
+
+function tableSearch(prefix) {
+  const input = document.getElementById(`${prefix}-search`);
+  return input ? input.value.trim() : '';
+}
+
+function itemText(item) {
+  try {
+    return JSON.stringify(item).toLowerCase();
+  } catch (err) {
+    return String(item || '').toLowerCase();
+  }
+}
+
+function filterRows(items, prefix) {
+  const search = tableSearch(prefix).toLowerCase();
+  const rangeMs = selectedRangeMs(prefix);
+  const minTime = rangeMs ? Date.now() - rangeMs : null;
+  return (items || []).filter((item) => {
+    if (minTime && item.timestamp) {
+      const parsed = new Date(item.timestamp).getTime();
+      if (!Number.isNaN(parsed) && parsed < minTime) return false;
+    }
+    return !search || itemText(item).includes(search);
+  });
+}
+
+function renderKeyValueList(containerId, entries) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  (entries || []).forEach(([key, content]) => {
+    const item = document.createElement('li');
+    const strong = document.createElement('strong');
+    const span = document.createElement('span');
+    strong.textContent = key;
+    span.textContent = content ?? '-';
+    item.appendChild(strong);
+    item.appendChild(span);
+    container.appendChild(item);
+  });
+}
+
+function setStatusBadge(id, isSet, setText = 'gesetzt', missingText = 'nicht gesetzt') {
+  const element = document.getElementById(id);
+  if (!element) return;
+  element.textContent = isSet ? setText : missingText;
+  element.classList.toggle('ok', Boolean(isSet));
+  element.classList.toggle('missing', !isSet);
+}
+
+function setField(id, content) {
+  const element = document.getElementById(id);
+  if (!element) return;
+  const valueText = content ?? '';
+  if (element.type === 'checkbox') {
+    element.checked = Boolean(content);
+    element.dataset.original = String(element.checked);
+    element.dataset.hasValue = content === undefined ? 'false' : 'true';
+    return;
+  }
+  element.value = valueText;
+  element.dataset.original = String(valueText);
+  element.dataset.hasValue = content === undefined ? 'false' : 'true';
+}
+
+function fieldChanged(id) {
+  const element = document.getElementById(id);
+  if (!element) return false;
+  if (element.type === 'checkbox') {
+    return String(element.checked) !== (element.dataset.original || 'false');
+  }
+  return element.value.trim() !== (element.dataset.original || '');
+}
+
+function includeIfChanged(target, key, id, transform = (input) => input) {
+  if (!fieldChanged(id)) return;
+  target[key] = transform(value(id));
+}
+
+function includeCheckboxIfChanged(target, key, id) {
+  if (!fieldChanged(id)) return;
+  target[key] = checkbox(id);
+}
+
+function includeNumberIfChanged(target, key, id) {
+  includeIfChanged(target, key, id, (input) => Number(input));
+}
+
+function hasKeys(valueObject) {
+  return Object.keys(valueObject).length > 0;
+}
+
+function appConfigFromForm() {
+  const payload = {};
+  includeCheckboxIfChanged(payload, 'demo_mode', 'setting-demo-mode');
+  includeIfChanged(payload, 'log_level', 'setting-log-level');
+  includeNumberIfChanged(payload, 'event_interval_seconds', 'setting-event-interval');
+
+  const mqtt = {};
+  includeCheckboxIfChanged(mqtt, 'enabled', 'setting-mqtt-enabled');
+  includeIfChanged(mqtt, 'host', 'setting-mqtt-host');
+  includeNumberIfChanged(mqtt, 'port', 'setting-mqtt-port');
+  includeIfChanged(mqtt, 'username', 'setting-mqtt-username');
+  const mqttPassword = value('setting-mqtt-password');
+  if (mqttPassword && !mqttPassword.includes('***')) mqtt.password = mqttPassword;
+  includeIfChanged(mqtt, 'topic_prefix', 'setting-topic-prefix');
+  includeCheckboxIfChanged(mqtt, 'discovery', 'setting-mqtt-discovery');
+  includeIfChanged(mqtt, 'discovery_prefix', 'setting-discovery-prefix');
+  if (hasKeys(mqtt)) payload.mqtt = mqtt;
+
+  const frigate = {};
+  includeCheckboxIfChanged(frigate, 'enabled', 'setting-frigate-enabled');
+  includeIfChanged(frigate, 'events_topic', 'setting-frigate-topic');
+  includeIfChanged(frigate, 'camera_name', 'setting-frigate-camera');
+  includeIfChanged(frigate, 'api_url', 'setting-frigate-api-url');
+  includeCheckboxIfChanged(frigate, 'person_count_enabled', 'setting-frigate-person-count-enabled');
+  includeNumberIfChanged(frigate, 'person_count_interval_seconds', 'setting-frigate-person-count-interval');
+  includeIfChanged(frigate, 'dog_name', 'setting-frigate-dog-name');
+  if (hasKeys(frigate)) payload.frigate = frigate;
+
+  const faceRecognition = {};
+  includeCheckboxIfChanged(faceRecognition, 'enabled', 'setting-face-enabled');
+  includeIfChanged(faceRecognition, 'events_topic', 'setting-face-topic');
+  includeNumberIfChanged(faceRecognition, 'min_confidence', 'setting-face-confidence');
+  if (hasKeys(faceRecognition)) payload.face_recognition = faceRecognition;
+
+  const announcements = {};
+  includeCheckboxIfChanged(announcements, 'enabled', 'setting-announcements-enabled');
+  includeCheckboxIfChanged(announcements, 'announce_known', 'setting-announcements-known');
+  includeCheckboxIfChanged(announcements, 'announce_unknown', 'setting-announcements-unknown');
+  includeCheckboxIfChanged(announcements, 'announce_dog', 'setting-announcements-dog');
+  includeCheckboxIfChanged(announcements, 'random_texts_enabled', 'setting-announcements-random');
+  includeNumberIfChanged(announcements, 'global_cooldown_seconds', 'setting-announcements-global-cooldown');
+  includeNumberIfChanged(announcements, 'entity_cooldown_seconds', 'setting-announcements-entity-cooldown');
+  includeIfChanged(announcements, 'disabled_entities', 'setting-announcements-disabled');
+  if (fieldChanged('setting-announcements-custom-texts')) announcements.custom_texts = document.getElementById('setting-announcements-custom-texts').value.trim();
+  if (hasKeys(announcements)) payload.announcements = announcements;
+
+  const terraceDoor = {};
+  includeCheckboxIfChanged(terraceDoor, 'enabled', 'setting-door-enabled');
+  includeCheckboxIfChanged(terraceDoor, 'open', 'setting-door-open');
+  includeNumberIfChanged(terraceDoor, 'confidence', 'setting-door-confidence');
+  includeIfChanged(terraceDoor, 'last_changed', 'setting-door-last-changed');
+  if (hasKeys(terraceDoor)) payload.terrace_door = terraceDoor;
+
+  return payload;
 }
 
 function cameraFromForm() {
-  const camera = {
-    name: document.getElementById('camera-name').value.trim(),
-    host: document.getElementById('camera-host').value.trim(),
-  };
+  const camera = {};
+  includeIfChanged(camera, 'name', 'camera-name');
+  includeIfChanged(camera, 'host', 'camera-host');
   const rtspUrl = document.getElementById('camera-rtsp').value.trim();
   const snapshotUrl = document.getElementById('camera-snapshot').value.trim();
-  if (rtspUrl && !rtspUrl.includes('***')) camera.rtsp_url = rtspUrl;
-  if (snapshotUrl && !snapshotUrl.includes('***')) camera.snapshot_url = snapshotUrl;
+  if (fieldChanged('camera-rtsp') && rtspUrl && !rtspUrl.includes('***')) camera.rtsp_url = rtspUrl;
+  if (fieldChanged('camera-snapshot') && snapshotUrl && !snapshotUrl.includes('***')) camera.snapshot_url = snapshotUrl;
   return camera;
 }
 
 function populateCameraForm(camera) {
   if (formState.populated || !camera) return;
-  document.getElementById('camera-name').value = camera.name || '';
-  document.getElementById('camera-host').value = camera.host || '';
-  document.getElementById('camera-rtsp').value = camera.rtsp_url && !camera.rtsp_url.includes('***') ? camera.rtsp_url : '';
-  document.getElementById('camera-snapshot').value = camera.snapshot_url && !camera.snapshot_url.includes('***') ? camera.snapshot_url : '';
+  setField('camera-name', camera.name || '');
+  setField('camera-host', camera.host || '');
+  setField('camera-rtsp', camera.rtsp_url && !camera.rtsp_url.includes('***') ? camera.rtsp_url : '');
+  setField('camera-snapshot', camera.snapshot_url && !camera.snapshot_url.includes('***') ? camera.snapshot_url : '');
   formState.populated = true;
 }
 
@@ -148,40 +279,40 @@ function populateAppForm(config) {
   const face = config.face_recognition || {};
   const announcements = config.announcements || {};
   const door = config.terrace_door || {};
-  document.getElementById('setting-demo-mode').checked = Boolean(config.demo_mode);
-  document.getElementById('setting-event-interval').value = config.event_interval_seconds || 10;
-  document.getElementById('setting-log-level').value = config.log_level || 'info';
-  document.getElementById('setting-mqtt-enabled').checked = Boolean(mqtt.enabled);
-  document.getElementById('setting-mqtt-host').value = mqtt.host || '';
-  document.getElementById('setting-mqtt-port').value = mqtt.port || 1883;
-  document.getElementById('setting-mqtt-username').value = mqtt.username || '';
-  document.getElementById('setting-mqtt-password').value = mqtt.password && !mqtt.password.includes('***') ? mqtt.password : '';
-  document.getElementById('setting-topic-prefix').value = mqtt.topic_prefix || 'ha/frigate_face_bridge';
-  document.getElementById('setting-mqtt-discovery').checked = mqtt.discovery !== false;
-  document.getElementById('setting-discovery-prefix').value = mqtt.discovery_prefix || 'homeassistant';
-  document.getElementById('setting-frigate-enabled').checked = Boolean(frigate.enabled);
-  document.getElementById('setting-frigate-topic').value = frigate.events_topic || 'frigate/events';
-  document.getElementById('setting-frigate-camera').value = frigate.camera_name || '';
-  document.getElementById('setting-frigate-api-url').value = frigate.api_url || '';
-  document.getElementById('setting-frigate-person-count-enabled').checked = frigate.person_count_enabled !== false;
-  document.getElementById('setting-frigate-person-count-interval').value = frigate.person_count_interval_seconds || 5;
-  document.getElementById('setting-frigate-dog-name').value = frigate.dog_name || 'Maja';
-  document.getElementById('setting-face-enabled').checked = Boolean(face.enabled);
-  document.getElementById('setting-face-topic').value = face.events_topic || 'face_recognition/events';
-  document.getElementById('setting-face-confidence').value = face.min_confidence ?? 0.7;
-  document.getElementById('setting-announcements-enabled').checked = announcements.enabled !== false;
-  document.getElementById('setting-announcements-known').checked = announcements.announce_known !== false;
-  document.getElementById('setting-announcements-unknown').checked = announcements.announce_unknown !== false;
-  document.getElementById('setting-announcements-dog').checked = announcements.announce_dog !== false;
-  document.getElementById('setting-announcements-random').checked = announcements.random_texts_enabled !== false;
-  document.getElementById('setting-announcements-global-cooldown').value = announcements.global_cooldown_seconds ?? 60;
-  document.getElementById('setting-announcements-entity-cooldown').value = announcements.entity_cooldown_seconds ?? 300;
-  document.getElementById('setting-announcements-disabled').value = announcements.disabled_entities || '';
-  document.getElementById('setting-announcements-custom-texts').value = announcements.custom_texts || '';
-  document.getElementById('setting-door-enabled').checked = Boolean(door.enabled);
-  document.getElementById('setting-door-open').checked = Boolean(door.open);
-  document.getElementById('setting-door-confidence').value = door.confidence ?? 0;
-  document.getElementById('setting-door-last-changed').value = door.last_changed || '';
+  setField('setting-demo-mode', config.demo_mode);
+  setField('setting-event-interval', config.event_interval_seconds ?? '');
+  setField('setting-log-level', config.log_level || 'info');
+  setField('setting-mqtt-enabled', mqtt.enabled);
+  setField('setting-mqtt-host', mqtt.host || '');
+  setField('setting-mqtt-port', mqtt.port ?? '');
+  setField('setting-mqtt-username', mqtt.username || '');
+  setField('setting-mqtt-password', mqtt.password && !mqtt.password.includes('***') ? mqtt.password : '');
+  setField('setting-topic-prefix', mqtt.topic_prefix || '');
+  setField('setting-mqtt-discovery', mqtt.discovery);
+  setField('setting-discovery-prefix', mqtt.discovery_prefix || '');
+  setField('setting-frigate-enabled', frigate.enabled);
+  setField('setting-frigate-topic', frigate.events_topic || '');
+  setField('setting-frigate-camera', frigate.camera_name || '');
+  setField('setting-frigate-api-url', frigate.api_url || '');
+  setField('setting-frigate-person-count-enabled', frigate.person_count_enabled);
+  setField('setting-frigate-person-count-interval', frigate.person_count_interval_seconds ?? '');
+  setField('setting-frigate-dog-name', frigate.dog_name || '');
+  setField('setting-face-enabled', face.enabled);
+  setField('setting-face-topic', face.events_topic || '');
+  setField('setting-face-confidence', face.min_confidence ?? '');
+  setField('setting-announcements-enabled', announcements.enabled);
+  setField('setting-announcements-known', announcements.announce_known);
+  setField('setting-announcements-unknown', announcements.announce_unknown);
+  setField('setting-announcements-dog', announcements.announce_dog);
+  setField('setting-announcements-random', announcements.random_texts_enabled);
+  setField('setting-announcements-global-cooldown', announcements.global_cooldown_seconds ?? '');
+  setField('setting-announcements-entity-cooldown', announcements.entity_cooldown_seconds ?? '');
+  setField('setting-announcements-disabled', announcements.disabled_entities || '');
+  setField('setting-announcements-custom-texts', announcements.custom_texts || '');
+  setField('setting-door-enabled', door.enabled);
+  setField('setting-door-open', door.open);
+  setField('setting-door-confidence', door.confidence ?? '');
+  setField('setting-door-last-changed', door.last_changed || '');
   formState.appPopulated = true;
 }
 
@@ -282,7 +413,8 @@ function renderPersonChart(series) {
 function renderHistory(items) {
   const body = document.getElementById('history-body');
   if (!body) return;
-  const rows = (items || []).slice(-20).reverse();
+  const query = tableSearch('history');
+  const rows = filterRows(items || [], 'history').reverse();
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
@@ -295,12 +427,12 @@ function renderHistory(items) {
     const row = document.createElement('tr');
     const recognized = (item.recognized_entities || item.known_faces || []).join(', ') || '-';
     const announcement = item.announcement_log_text || item.announcement_text || '-';
-    addCell(row, item.timestamp || '-');
-    addCell(row, item.person_count ?? 0);
-    addCell(row, item.maja_present ? 'Maja' : (item.dog_count || 0));
-    addCell(row, recognized);
-    addCell(row, announcement);
-    addCell(row, item.source || '-');
+    addHighlightedCell(row, item.timestamp || '-', query);
+    addHighlightedCell(row, item.person_count ?? 0, query);
+    addHighlightedCell(row, item.maja_present ? 'Maja' : (item.dog_count || 0), query);
+    addHighlightedCell(row, recognized, query);
+    addHighlightedCell(row, announcement, query);
+    addHighlightedCell(row, item.source || '-', query);
     body.appendChild(row);
   }
 }
@@ -308,7 +440,8 @@ function renderHistory(items) {
 function renderRecognitionHistory(items) {
   const body = document.getElementById('recognition-history-body');
   if (!body) return;
-  const rows = (items || []).slice(-20).reverse();
+  const query = tableSearch('recognition');
+  const rows = filterRows(items || [], 'recognition').reverse();
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
@@ -319,11 +452,11 @@ function renderRecognitionHistory(items) {
   }
   rows.forEach((item) => {
     const row = document.createElement('tr');
-    addCell(row, item.timestamp || '-');
-    addCell(row, (item.recognized_entities || item.known_faces || []).join(', ') || '-');
-    addCell(row, item.unknown_faces ?? 0);
-    addCell(row, item.maja_present ? 'Maja' : (item.dog_count || 0));
-    addCell(row, item.source || '-');
+    addHighlightedCell(row, item.timestamp || '-', query);
+    addHighlightedCell(row, (item.recognized_entities || item.known_faces || []).join(', ') || '-', query);
+    addHighlightedCell(row, item.unknown_faces ?? 0, query);
+    addHighlightedCell(row, item.maja_present ? 'Maja' : (item.dog_count || 0), query);
+    addHighlightedCell(row, item.source || '-', query);
     body.appendChild(row);
   });
 }
@@ -331,7 +464,8 @@ function renderRecognitionHistory(items) {
 function renderMqttHistory(items) {
   const body = document.getElementById('mqtt-history-body');
   if (!body) return;
-  const rows = (items || []).slice(-50).reverse();
+  const query = tableSearch('mqtt');
+  const rows = filterRows(items || [], 'mqtt').reverse();
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
@@ -342,11 +476,11 @@ function renderMqttHistory(items) {
   }
   rows.forEach((item) => {
     const row = document.createElement('tr');
-    addCell(row, item.timestamp || '-');
-    addCell(row, item.direction === 'in' ? 'rein' : 'raus');
-    addCell(row, item.topic || '-');
-    addCell(row, typeof item.payload === 'string' ? item.payload : JSON.stringify(item.payload));
-    addCell(row, `qos ${item.qos ?? 0}${item.retain ? ', retain' : ''}`);
+    addHighlightedCell(row, item.timestamp || '-', query);
+    addHighlightedCell(row, item.direction === 'in' ? 'rein' : 'raus', query);
+    addHighlightedCell(row, item.topic || '-', query);
+    addHighlightedCell(row, typeof item.payload === 'string' ? item.payload : JSON.stringify(item.payload), query);
+    addHighlightedCell(row, `qos ${item.qos ?? 0}${item.retain ? ', retain' : ''}`, query);
     body.appendChild(row);
   });
 }
@@ -354,7 +488,8 @@ function renderMqttHistory(items) {
 function renderAnnouncementHistory(items) {
   const body = document.getElementById('announcement-history-body');
   if (!body) return;
-  const rows = (items || []).slice(-20).reverse();
+  const query = tableSearch('announcement');
+  const rows = filterRows(items || [], 'announcement').reverse();
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
@@ -365,11 +500,11 @@ function renderAnnouncementHistory(items) {
   }
   rows.forEach((item) => {
     const row = document.createElement('tr');
-    addCell(row, item.timestamp || '-');
-    addCell(row, item.text || '-');
-    addCell(row, item.spoken ? 'ja' : 'nein');
-    addCell(row, (item.entities || []).join(', ') || '-');
-    addCell(row, item.suppressed_reason || '-');
+    addHighlightedCell(row, item.timestamp || '-', query);
+    addHighlightedCell(row, item.text || '-', query);
+    addHighlightedCell(row, item.spoken ? 'ja' : 'nein', query);
+    addHighlightedCell(row, (item.entities || []).join(', ') || '-', query);
+    addHighlightedCell(row, item.suppressed_reason || '-', query);
     body.appendChild(row);
   });
 }
@@ -424,6 +559,8 @@ async function refreshStatus() {
   const safeConfig = configData.config || {};
   const rawConfig = configData.raw_config || safeConfig;
   const event = data.last_event || {};
+  const storage = configData.storage_status || data.storage_status || {};
+  const appStatus = data.app_status || {};
   document.getElementById('status').textContent = data.ok ? 'online' : 'fehler';
   document.getElementById('started').textContent = `Start: ${data.started_at || '-'}`;
   document.getElementById('camera').textContent = data.camera?.name || '-';
@@ -452,6 +589,18 @@ async function refreshStatus() {
   text('recognition-unknown', event.unknown_faces ?? 0);
   text('recognition-dog', event.maja_present ? 'Maja' : (event.dog_count ?? 0));
   text('last-event-json', JSON.stringify(event, null, 2));
+  renderKeyValueList('last-event-list', [
+    ['Zeit', event.timestamp || 'noch kein Event'],
+    ['Quelle', event.source || '-'],
+    ['Kamera', event.camera || '-'],
+    ['Personen', event.person_count ?? 0],
+    ['Bekannte Gesichter', (event.known_faces || []).join(', ') || 'keine'],
+    ['Erkannte Namen/Tiere', (recognizedEntities || []).join(', ') || 'keine'],
+    ['Unbekannte Personen', event.unknown_faces ?? 0],
+    ['Hund', event.maja_present ? 'Maja' : (event.dog_count ?? 0)],
+    ['Status', event.status || '-'],
+    ['Snapshot', event.snapshot_available ? 'verfuegbar' : 'nicht verfuegbar'],
+  ]);
   text('live-refresh-state', `Live - ${new Date().toLocaleTimeString('de-DE')}`);
   text('announce-current-text', announcement.text || '-');
   text('announce-current-state', announcement.should_speak ? 'wird angesagt' : 'keine Ausgabe');
@@ -469,7 +618,29 @@ async function refreshStatus() {
   document.getElementById('event-count').textContent = data.event_count ?? 0;
   document.getElementById('frigate-event-count').textContent = data.frigate_event_count ?? 0;
   document.getElementById('face-event-count').textContent = data.face_event_count ?? 0;
-  document.getElementById('debug').textContent = JSON.stringify({ config_errors: data.config_errors || [], mqtt: data.mqtt, mqtt_history: data.mqtt_history || [], mqtt_output_topics: data.mqtt_output_topics || [], frigate: safeConfig.frigate, frigate_active_count: data.frigate_active_count, face_recognition: safeConfig.face_recognition, announcements: safeConfig.announcements, terrace_door: safeConfig.terrace_door }, null, 2);
+  text('recognized-count-card', recognizedEntities.length || 0);
+  text('recognized-count-detail', recognizedEntities.join(', ') || 'keine Namen');
+  text('ha-status-card', appStatus.home_assistant || '-');
+  text('go2rtc-status-card', appStatus.go2rtc || '-');
+  text('apps-status-card', `Bridge ${appStatus.bridge || '-'} · Frigate ${appStatus.frigate || '-'} · MQTT ${appStatus.mqtt || '-'}`);
+  text('last-error-card', appStatus.last_error || 'kein Fehler');
+  setStatusBadge('mqtt-username-status', storage.mqtt_username_set, 'Benutzer gesetzt', 'Benutzer nicht gesetzt');
+  setStatusBadge('mqtt-password-status', storage.mqtt_password_set, 'Passwort gesetzt', 'Passwort nicht gesetzt');
+  setStatusBadge('rtsp-url-status', storage.rtsp_url_set, 'RTSP gesetzt', 'RTSP nicht gesetzt');
+  setStatusBadge('snapshot-url-status', storage.snapshot_url_set, 'Snapshot gesetzt', 'Snapshot nicht gesetzt');
+  renderKeyValueList('debug-list', [
+    ['Bridge', appStatus.bridge || '-'],
+    ['Home Assistant', appStatus.home_assistant || '-'],
+    ['MQTT', appStatus.mqtt || '-'],
+    ['Frigate', appStatus.frigate || '-'],
+    ['go2rtc', appStatus.go2rtc || '-'],
+    ['Letzter Fehler', appStatus.last_error || 'kein Fehler'],
+    ['Konfigurationswarnungen', (data.config_errors || []).join(' | ') || 'keine'],
+    ['MQTT Prefix', data.mqtt?.topic_prefix || '-'],
+    ['MQTT History', `${(data.mqtt_history || []).length} Nachrichten im Speicher`],
+    ['Ausgabe-Topics', `${(data.mqtt_output_topics || []).length} Topics`],
+    ['Frigate aktive Zaehler', data.frigate_active_count ?? 0],
+  ]);
   renderPersonChart(data.person_count_series || []);
   renderHistory(data.history || []);
   renderRecognitionHistory(data.history || []);
@@ -486,15 +657,20 @@ async function saveAppConfig(event) {
   const message = document.getElementById('app-message');
   message.textContent = 'Speichere Betriebs-Konfiguration ...';
   try {
+    const payload = appConfigFromForm();
+    if (!hasKeys(payload)) {
+      message.textContent = 'Keine Aenderungen erkannt.';
+      return;
+    }
     const response = await fetch(apiPath('api/config'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(appConfigFromForm()),
+      body: JSON.stringify(payload),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok) throw new Error(data.error || `status ${response.status}`);
     formState.appPopulated = false;
-    populateAppForm(data.config);
+    populateAppForm(data.raw_config || data.config);
     await refreshStatus();
     message.textContent = 'Betriebs-Konfiguration gespeichert.';
   } catch (err) {
@@ -547,10 +723,15 @@ async function saveCamera(event) {
   message.textContent = 'Speichere Kamera-Konfiguration ...';
 
   try {
+    const camera = cameraFromForm();
+    if (!hasKeys(camera)) {
+      message.textContent = 'Keine Aenderungen erkannt.';
+      return;
+    }
     const response = await fetch(apiPath('api/config/camera'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ camera: cameraFromForm() }),
+      body: JSON.stringify({ camera }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok) throw new Error(data.error || `status ${response.status}`);
@@ -561,6 +742,27 @@ async function saveCamera(event) {
   } catch (err) {
     message.textContent = `Speichern fehlgeschlagen: ${err}`;
   }
+}
+
+async function runTest(endpoint, targetId) {
+  const message = document.getElementById(targetId);
+  message.textContent = 'Teste ...';
+  try {
+    const response = await fetch(apiPath(endpoint), { method: 'POST', cache: 'no-store' });
+    const data = await response.json().catch(() => ({}));
+    message.textContent = `${data.ok ? 'OK' : 'Fehler'}: ${data.status || data.error || response.status}`;
+  } catch (err) {
+    message.textContent = `Test fehlgeschlagen: ${err}`;
+  }
+}
+
+function setupFilters() {
+  ['history', 'recognition', 'announcement', 'mqtt'].forEach((prefix) => {
+    ['range', 'search'].forEach((suffix) => {
+      const element = document.getElementById(`${prefix}-${suffix}`);
+      if (element) element.addEventListener('input', () => refreshStatus().catch(() => {}));
+    });
+  });
 }
 
 async function loadSnapshot() {
@@ -587,10 +789,14 @@ async function loadSnapshot() {
 
 async function boot() {
   setupNavigation();
+  setupFilters();
   document.getElementById('app-form').addEventListener('submit', saveAppConfig);
   document.getElementById('camera-form').addEventListener('submit', saveCamera);
   document.getElementById('face-form').addEventListener('submit', createFace);
   document.getElementById('snapshot-button').addEventListener('click', loadSnapshot);
+  document.getElementById('mqtt-test-button').addEventListener('click', () => runTest('api/test/mqtt', 'mqtt-test-message'));
+  document.getElementById('rtsp-test-button').addEventListener('click', () => runTest('api/test/rtsp', 'rtsp-test-message'));
+  document.getElementById('snapshot-test-button').addEventListener('click', () => runTest('api/test/snapshot', 'snapshot-test-message'));
   try {
     await refreshStatus();
   } catch (err) {
