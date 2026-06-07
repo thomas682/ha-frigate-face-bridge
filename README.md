@@ -4,7 +4,7 @@ Dieses Repository stellt das Home-Assistant-Add-on `Frigate Face Bridge` bereit.
 
 ## Zweck
 
-Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.15.2` liefert eine stabile Add-on-Basis mit sicherer Parameterverwaltung, vollbreiter iPhone-tauglicher Web-UI, Links-Sicht, Schemazeichnung, Testfunktionen fuer MQTT/Frigate/RTSP/Snapshot, Demo-Modus, REST-API, Live-MQTT-Nachrichten, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, konfigurierbaren Ansagetexten mit Cooldowns, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
+Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.16.0` liefert eine stabile Add-on-Basis mit sicherer Parameterverwaltung, vollbreiter iPhone-tauglicher Web-UI, Live-Kommunikationsschema, Links-Sicht, Testfunktionen fuer MQTT/Frigate/RTSP/Snapshot, Demo-Modus, REST-API, Live-MQTT-Nachrichten, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, konfigurierbaren Ansagetexten mit Cooldowns, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
 
 ## Architektur
 
@@ -28,11 +28,17 @@ Das Add-on ersetzt Frigate nicht. Frigate, Double Take, CompreFace oder eine lok
 
 ## Aktueller Stand
 
-Aktuelle Add-on-Version: `0.15.2`.
+Aktuelle Add-on-Version: `0.16.0`.
 
 Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. `demo_mode` ist fuer fehlende/neue Werte nicht automatisch aktiv; bestehende Nutzerwerte werden bei Start, Neustart und Update nicht automatisch ueberschrieben.
 
 Die weiteren Ausbaustufen stehen in `ROADMAP.md`.
+
+## Version 0.16.0
+
+- Neuer Menuepunkt `Kommunikation` zeigt das Live-Schema Kamera/UniFi -> go2rtc/Frigate -> Face Bridge -> Home Assistant nach der bereitgestellten Vorlage
+- Kommunikationsschema zeigt Status, aktuelle Hosts/IPs/Ports, go2rtc-Nutzung und erklaert die ausgetauschten Daten je Element
+- Links-Sicht zeigt den HA-Add-on-Aufruflink fuer Homepage; direkter Port `8099` wird nur noch als optionaler Health-/Status-Zugriff beschrieben
 
 ## Version 0.15.2
 

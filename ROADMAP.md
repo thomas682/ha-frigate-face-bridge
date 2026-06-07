@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 18 abgeschlossen**.
+Aktueller Stand: **Stufe 19 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.15.2`.
+Aktuelle Add-on-Version: `0.16.0`.
 
 ## Stufe 1 - Add-on-Basis
 
@@ -379,6 +379,25 @@ Abnahme:
 - Bestehende gespeicherte Kamera-Werte bleiben bei Updates erhalten.
 - Neue Installationen zeigen keine irrefuehrenden Default-Werte `garage_g3_flex` oder `192.168.2.241`.
 - Relevante Projekt- und Weboberflaechen sind in der Links-Sicht anklickbar.
+
+## Stufe 19 - Live-Kommunikation und HA-Ingress-Fokus
+
+Status: **abgeschlossen**
+
+Ziel: Die Bridge soll die aktuelle Kommunikation von Kamera/UniFi ueber go2rtc/Frigate und Face Bridge bis Home Assistant live, verstaendlich und mit Status darstellen. Der direkte Port `8099` soll nicht als zweite Detail-Webseite erscheinen.
+
+Umgesetzt:
+
+- Neuer Menuepunkt `Kommunikation` nach Vorlage `docs/templates/ffb_schema_go2rtc_grouped.html`
+- Live-Anzeige fuer Status, Host/DNS/IP, Port, go2rtc-Nutzung und ausgetauschte Daten je Element
+- Links-Sicht mit HA-Add-on-Aufruflink fuer Homepage und getrenntem Health-/Status-Link fuer direkten `8099`-Zugriff
+- Direktzugriff zeigt nur Status und verweist auf die Home-Assistant-Add-on-Webseite
+
+Abnahme:
+
+- Kommunikationsdaten werden aus der aktuellen Runtime-Konfiguration/API abgeleitet und ohne Secrets angezeigt.
+- Details werden in der HA-Add-on-Webseite gebuendelt.
+- Homepage-Link zeigt auf die HA-Ingress-Webseite statt auf den direkten Port.
 
 ## Laufende Sicherheitsregeln
 

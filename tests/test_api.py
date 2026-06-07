@@ -41,6 +41,28 @@ def test_status_json():
     assert data["camera"]["name"] == ""
 
 
+def test_status_exposes_communication_without_secret_urls():
+    original = json.loads(json.dumps(module.config))
+    try:
+        module.config["camera"].update({"host": "camera.local", "rtsp_url": "rtsp://user:pass@camera.local:8554/stream", "snapshot_url": "http://camera.local/snap.jpg"})
+        module.config["frigate"].update({"enabled": True, "api_url": "http://frigate.local:5000", "events_topic": "frigate/events", "camera_name": "wohnzimmer"})
+        module.config["mqtt"].update({"enabled": True, "host": "core-mosquitto", "port": 1883, "topic_prefix": "ha/frigate_face_bridge"})
+        client = module.app.test_client()
+
+        data = client.get("/api/status").get_json()
+
+        communication = data["communication"]
+        assert communication["homepage_url"] == "http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge"
+        assert communication["direct_status_url"] == "http://fossflow.localdomain:8099/health"
+        assert communication["elements"]["camera"]["host"] == "camera.local"
+        assert communication["elements"]["frigate"]["api"]["display"] == "http://frigate.local:5000"
+        assert communication["elements"]["mqtt"]["host"] == "core-mosquitto"
+        assert "user:pass" not in json.dumps(communication)
+    finally:
+        module.config.clear()
+        module.config.update(original)
+
+
 def test_default_camera_options_do_not_force_old_example_values():
     config = config_loader.load_runtime_config({})
 

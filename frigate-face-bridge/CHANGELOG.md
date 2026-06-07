@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.16.0
+
+### Added
+
+- Menuepunkt `Kommunikation` mit Live-Schema auf Basis der bereitgestellten go2rtc/Frigate-Vorlage ergaenzt ([#11](https://github.com/thomas682/ha-frigate-face-bridge/issues/11)).
+- Kommunikationsstatus zeigt je Element Status, aktuelle Hosts/IPs/Ports, go2rtc-Nutzung und Daten-Austausch ohne Secret-Offenlegung.
+- Links-Sicht zeigt den HA-Add-on-Aufruflink fuer Homepage und den direkten `8099`-Zugriff nur noch als optionalen Health-/Status-Link.
+
+### Changed
+
+- Der vereinfachte Ueberblick verweist auf die neue Kommunikationssicht; Detailinformationen werden in der HA-Add-on-Webseite gebuendelt.
+
 ## 0.15.2
 
 ### Added

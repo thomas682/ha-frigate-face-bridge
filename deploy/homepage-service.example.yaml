@@ -1,5 +1,5 @@
 - Frigate Face Bridge:
-    href: http://192.168.3.182:8099
-    description: Lokale Personenzaehlung und Face-Bridge fuer UniFi-Kameras
+    href: http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge
+    description: HA Add-on-Webseite fuer Frigate Face Bridge
     icon: mdi-face-recognition
-    ping: http://192.168.3.182:8099/health
+    ping: http://fossflow.localdomain:8099/health

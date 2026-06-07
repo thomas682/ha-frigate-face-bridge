@@ -1,0 +1,175 @@
+
+<style>
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+*{box-sizing:border-box}
+.stage{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;min-width:0}
+.stage:hover .box{border-color:var(--color-border-secondary)}
+.box{border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:11px 7px;width:100%;transition:border-color .15s,background .15s;text-align:center}
+.box.sel{background:var(--color-background-secondary);border-color:var(--color-border-secondary)}
+.box-icon{font-size:20px;color:var(--color-text-secondary);margin-bottom:5px}
+.box-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.box-sub{font-size:10px;color:var(--color-text-secondary);line-height:1.35}
+.badge{display:inline-block;font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;margin-top:5px;white-space:nowrap;border:0.5px solid}
+.bg{background:var(--color-background-secondary);color:var(--color-text-secondary);border-color:var(--color-border-tertiary)}
+.bb{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.bt{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.bp{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC}
+.ba{background:#FAEEDA;color:#633806;border-color:#EF9F27}
+.arr{display:flex;align-items:center;padding-top:38px;color:var(--color-text-tertiary);font-size:14px;flex-shrink:0;padding-left:2px;padding-right:2px}
+.arr-inner{display:flex;align-items:center;padding-top:8px;color:var(--color-text-tertiary);font-size:13px;flex-shrink:0;padding-left:1px;padding-right:1px}
+.flow{display:flex;align-items:flex-start;gap:0;padding:0 0 0.875rem}
+
+/* Frigate group wrapper */
+.frigate-group{border:1.5px solid #378ADD;border-radius:16px;padding:10px 10px 10px;position:relative;display:flex;align-items:flex-start;gap:0;flex:2}
+.frigate-group-label{position:absolute;top:-10px;left:12px;background:var(--color-background-primary);padding:0 6px;font-size:10px;font-weight:500;color:#0C447C;display:flex;align-items:center;gap:4px;white-space:nowrap}
+
+.detail{border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:13px 15px;background:var(--color-background-primary);margin-bottom:0}
+.dt{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:7px;display:flex;align-items:center;gap:7px}
+.db{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.tp{font-family:var(--font-mono);font-size:10px;background:var(--color-background-secondary);padding:2px 6px;border-radius:4px;color:var(--color-text-primary);display:inline-block;margin:2px 2px}
+.back{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:9px;border-top:0.5px solid var(--color-border-tertiary)}
+.back-line{flex:1;height:0.5px;background:var(--color-border-secondary);position:relative}
+.back-line::after{content:"";position:absolute;left:0;top:-3px;width:6px;height:6px;border-left:1px solid var(--color-border-secondary);border-bottom:1px solid var(--color-border-secondary);transform:rotate(45deg)}
+.back-lbl{font-size:10px;color:var(--color-text-tertiary)}
+.proto-pill{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;border:0.5px solid;vertical-align:middle}
+</style>
+
+<h2 class="sr-only">Frigate Face Bridge mit go2rtc (intern in Frigate) — Pipeline von UniFi-Kamera bis Home Assistant</h2>
+
+<div class="flow">
+
+  <!-- Stage 0: Kamera -->
+  <div class="stage" onclick="show(0)" style="flex:1">
+    <div class="box sel" id="b0">
+      <div class="box-icon"><i class="ti ti-camera" aria-hidden="true"></i></div>
+      <div class="box-title">Kamera</div>
+      <div class="box-sub">UniFi G3 Flex<br>UniFi Protect</div>
+      <span class="badge bg">RTSPS</span>
+    </div>
+  </div>
+
+  <div class="arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></div>
+
+  <!-- Frigate group: go2rtc + Frigate -->
+  <div class="frigate-group">
+    <div class="frigate-group-label">
+      <i class="ti ti-package" aria-hidden="true" style="font-size:12px;color:#185FA5"></i>
+      Frigate NVR (inkl. go2rtc)
+    </div>
+
+    <div class="stage" onclick="show(1)" style="flex:1">
+      <div class="box" id="b1">
+        <div class="box-icon"><i class="ti ti-arrows-exchange" aria-hidden="true"></i></div>
+        <div class="box-title">go2rtc</div>
+        <div class="box-sub">Stream-Konverter<br>intern</div>
+        <span class="badge ba">RTSPS → RTSP</span>
+      </div>
+    </div>
+
+    <div class="arr-inner"><i class="ti ti-arrow-right" aria-hidden="true"></i></div>
+
+    <div class="stage" onclick="show(2)" style="flex:1">
+      <div class="box" id="b2">
+        <div class="box-icon"><i class="ti ti-eye" aria-hidden="true"></i></div>
+        <div class="box-title">Frigate</div>
+        <div class="box-sub">Personen · Hunde<br>KI-Erkennung</div>
+        <span class="badge bb">Events · API</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></div>
+
+  <!-- Stage 3: Face Bridge -->
+  <div class="stage" onclick="show(3)" style="flex:1">
+    <div class="box" id="b3">
+      <div class="box-icon"><i class="ti ti-face-id" aria-hidden="true"></i></div>
+      <div class="box-title">Face Bridge</div>
+      <div class="box-sub">Zählt · benennt<br>sagt an</div>
+      <span class="badge bt">Bridge-Logik</span>
+    </div>
+  </div>
+
+  <div class="arr"><i class="ti ti-arrow-right" aria-hidden="true"></i></div>
+
+  <!-- Stage 4: Home Assistant -->
+  <div class="stage" onclick="show(4)" style="flex:1">
+    <div class="box" id="b4">
+      <div class="box-icon"><i class="ti ti-smart-home" aria-hidden="true"></i></div>
+      <div class="box-title">Home Assistant</div>
+      <div class="box-sub">Sensoren<br>Automationen</div>
+      <span class="badge bp">MQTT Discovery</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Detail panels -->
+<div id="d0" class="detail">
+  <div class="dt"><i class="ti ti-camera" aria-hidden="true" style="font-size:16px"></i>Kamera · UniFi G3 Flex</div>
+  <div class="db">
+    UniFi Protect stellt den Stream ausschließlich als <span class="proto-pill bb"><i class="ti ti-lock" aria-hidden="true" style="font-size:10px"></i>&nbsp;RTSPS</span> (TLS-gesichertes RTSP) bereit. Frigate kann dieses verschlüsselte Format nicht direkt verarbeiten — deshalb übernimmt go2rtc intern die Konvertierung.<br><br>
+    <span class="tp">rtsps://192.168.2.241:7441/STREAM_ID</span>
+    <span class="tp">http://host/snap.jpg</span>
+  </div>
+  <div class="back"><div class="back-line"></div><span class="back-lbl">Snapshots gehen direkt an die Face Bridge — kein go2rtc nötig</span></div>
+</div>
+
+<div id="d1" class="detail" style="display:none">
+  <div class="dt"><i class="ti ti-arrows-exchange" aria-hidden="true" style="font-size:16px"></i>go2rtc · interner Stream-Konverter in Frigate</div>
+  <div class="db">
+    go2rtc ist direkt in Frigate eingebettet und benötigt keine separate Installation. Es terminiert den TLS-Tunnel von UniFi Protect und stellt Frigate intern einen sauberen <span class="proto-pill ba"><i class="ti ti-video" aria-hidden="true" style="font-size:10px"></i>&nbsp;RTSP</span>-Stream bereit — transparent, ohne eigene Konfiguration außerhalb von Frigate.<br><br>
+    <span class="tp">rtsps://192.168.2.241:7441/STREAM_ID</span>
+    <span style="font-size:11px;color:var(--color-text-secondary)">→ go2rtc (intern) →</span>
+    <span class="tp">rtsp://localhost:8554/kamera</span>
+  </div>
+  <div class="back"><div class="back-line"></div><span class="back-lbl">Konfiguration nur in frigate.yml unter cameras → ffmpeg → inputs</span></div>
+</div>
+
+<div id="d2" class="detail" style="display:none">
+  <div class="dt"><i class="ti ti-eye" aria-hidden="true" style="font-size:16px"></i>Frigate · Objekterkennung</div>
+  <div class="db">
+    Frigate erhält den Stream intern von go2rtc und erkennt <b style="font-weight:500">person</b> und <b style="font-weight:500">dog</b> per KI-Modell. Erkennungen werden als MQTT-Events publiziert und über die REST-API abgefragt.<br><br>
+    <span class="tp">frigate/events</span>
+    <span class="tp">GET /api/events?label=person&amp;in_progress=1</span>
+    <span class="tp">GET /api/events?label=dog&amp;in_progress=1</span>
+  </div>
+  <div class="back"><div class="back-line"></div><span class="back-lbl">camera_name-Filter wählt die richtige Kamera in der Face Bridge</span></div>
+</div>
+
+<div id="d3" class="detail" style="display:none">
+  <div class="dt"><i class="ti ti-face-id" aria-hidden="true" style="font-size:16px"></i>Face Bridge · Kern-Logik</div>
+  <div class="db">
+    Empfängt Frigate-Events, prüft gegen die lokale Face Registry, berechnet Ansagen mit globalem und entitätsbezogenem Cooldown und publiziert strukturierte MQTT-Payloads. Externe Face-Engines können Ergebnisse per REST oder MQTT einspeisen.<br><br>
+    <span class="tp">person_count</span>
+    <span class="tp">dog_count</span>
+    <span class="tp">known_faces</span>
+    <span class="tp">announcement_text</span>
+    <span class="tp">should_speak</span>
+    <span class="tp">terrace_door_open</span>
+  </div>
+  <div class="back"><div class="back-line"></div><span class="back-lbl">Web-UI und POST /api/config schreiben options.json zurück nach HA</span></div>
+</div>
+
+<div id="d4" class="detail" style="display:none">
+  <div class="dt"><i class="ti ti-smart-home" aria-hidden="true" style="font-size:16px"></i>Home Assistant · Ausgabe</div>
+  <div class="db">
+    MQTT Discovery legt alle Sensoren automatisch an. Automationen nutzen <span class="tp">announcement_should_speak</span> als Trigger und <span class="tp">announcement_text</span> als TTS-Text für Alexa, Google oder HA Voice.<br><br>
+    <span class="tp">homeassistant/sensor/…/config</span>
+    <span class="tp">ha/frigate_face_bridge/status</span>
+  </div>
+  <div class="back"><div class="back-line"></div><span class="back-lbl">HA Ingress öffnet Web-UI · Add-on Optionen schreiben Konfiguration</span></div>
+</div>
+
+<script>
+const N=5;
+function show(i){
+  for(let j=0;j<N;j++){
+    const b=document.getElementById('b'+j);
+    if(b) b.classList.toggle('sel',j===i);
+    const d=document.getElementById('d'+j);
+    if(d) d.style.display=j===i?'block':'none';
+  }
+}
+show(0);
+</script>

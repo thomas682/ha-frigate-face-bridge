@@ -190,7 +190,111 @@ def _status() -> dict[str, Any]:
             "mqtt": "verbunden" if mqtt_status.get("connected") else ("aktiviert" if mqtt_status.get("enabled") else "deaktiviert"),
             "last_error": last_error,
         },
+        "communication": communication_status(mqtt_status),
         "config_errors": config_errors,
+    }
+
+
+def _endpoint_from_url(value: str, default_port: int | None = None) -> dict[str, Any]:
+    value = str(value or "").strip()
+    if not value:
+        return {"configured": False, "scheme": "", "host": "", "port": None, "display": "nicht konfiguriert"}
+    try:
+        parts = urlsplit(value)
+        if not parts.scheme or not parts.hostname:
+            return {"configured": False, "scheme": "", "host": "", "port": None, "display": "ungueltig"}
+        if parts.port:
+            port = parts.port
+        elif parts.scheme == "https":
+            port = 443
+        elif parts.scheme == "http":
+            port = 80
+        elif parts.scheme == "rtsps":
+            port = 7441
+        elif parts.scheme == "rtsp":
+            port = default_port or 554
+        else:
+            port = default_port
+        display = f"{parts.scheme}://{parts.hostname}{':' + str(port) if port else ''}"
+        return {"configured": True, "scheme": parts.scheme, "host": parts.hostname, "port": port, "display": display}
+    except Exception:
+        return {"configured": False, "scheme": "", "host": "", "port": None, "display": "ungueltig"}
+
+
+def communication_status(mqtt_status: dict[str, Any] | None = None) -> dict[str, Any]:
+    mqtt_status = mqtt_status or publisher.status()
+    mqtt_config = config.get("mqtt", {}) if isinstance(config.get("mqtt"), dict) else {}
+    frigate_config = config.get("frigate", {}) if isinstance(config.get("frigate"), dict) else {}
+    camera_config = config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+
+    rtsp_endpoint = _endpoint_from_url(str(camera_config.get("rtsp_url") or ""), 8554)
+    snapshot_endpoint = _endpoint_from_url(str(camera_config.get("snapshot_url") or ""))
+    frigate_endpoint = _endpoint_from_url(str(frigate_config.get("api_url") or ""), 5000)
+    camera_host = str(camera_config.get("host") or rtsp_endpoint.get("host") or snapshot_endpoint.get("host") or "")
+    mqtt_host = str(mqtt_config.get("host") or "")
+    mqtt_port = int(mqtt_config.get("port") or 1883)
+    go2rtc_state = go2rtc_status()
+    rtsp_display = str(rtsp_endpoint.get("display") or "")
+    go2rtc_used = bool(frigate_endpoint.get("configured") and go2rtc_state != "nicht konfiguriert") or ":8554" in rtsp_display or "go2rtc" in rtsp_display.lower()
+
+    return {
+        "ha_ingress_url": "/b3b46a83_frigate_face_bridge",
+        "homepage_url": "http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge",
+        "direct_status_url": "http://fossflow.localdomain:8099/health",
+        "elements": {
+            "camera": {
+                "title": "Kamera / UniFi Protect",
+                "status": "konfiguriert" if camera_host or rtsp_endpoint.get("configured") or snapshot_endpoint.get("configured") else "nicht konfiguriert",
+                "host": camera_host,
+                "rtsp": rtsp_endpoint,
+                "snapshot": snapshot_endpoint,
+                "description": "Liefert Video-Stream und optional Snapshot-Bild. Credentials werden nicht angezeigt.",
+                "exchange": "Video per RTSP/RTSPS, Einzelbild per HTTP/HTTPS Snapshot.",
+            },
+            "go2rtc": {
+                "title": "go2rtc",
+                "used": go2rtc_used,
+                "status": go2rtc_state if go2rtc_used else "nicht verwendet/unklar",
+                "host": frigate_endpoint.get("host") or "",
+                "port": 8554 if go2rtc_used else None,
+                "description": "Stream-Konverter, haeufig in Frigate eingebettet. Wandelt UniFi/RTSPS-Streams in nutzbare RTSP-Streams.",
+                "exchange": "Stream-Weitergabe an Frigate; Status ueber Frigate go2rtc API, wenn Frigate API konfiguriert ist.",
+            },
+            "frigate": {
+                "title": "Frigate",
+                "status": "aktiv" if bool(frigate_config.get("enabled")) else ("API konfiguriert" if frigate_endpoint.get("configured") else "deaktiviert"),
+                "api": frigate_endpoint,
+                "camera_name": str(frigate_config.get("camera_name") or ""),
+                "events_topic": str(frigate_config.get("events_topic") or ""),
+                "description": "Erkennt Objekte wie Personen und Hunde und stellt Events sowie aktive Objektlisten bereit.",
+                "exchange": "MQTT Events, REST API fuer aktive Personen/Hunde und go2rtc-Status.",
+            },
+            "bridge": {
+                "title": "Face Bridge",
+                "status": "online",
+                "host": "Add-on intern",
+                "port": 8099,
+                "description": "Verarbeitet Frigate-/Face-Daten, berechnet Namen, Zaehler, Ansagen und Logs.",
+                "exchange": "Liest Frigate/Face-Daten, schreibt MQTT Sensorwerte und stellt HA-Ingress UI/API bereit.",
+            },
+            "mqtt": {
+                "title": "MQTT Broker",
+                "status": "verbunden" if mqtt_status.get("connected") else ("aktiviert" if mqtt_status.get("enabled") else "deaktiviert"),
+                "host": mqtt_host,
+                "port": mqtt_port,
+                "topic_prefix": str(mqtt_config.get("topic_prefix") or ""),
+                "description": "Transportiert Bridge-Sensorwerte und MQTT Discovery nach Home Assistant.",
+                "exchange": "Topics fuer person_count, known_faces, announcements, recognition_log und Discovery Configs.",
+            },
+            "home_assistant": {
+                "title": "Home Assistant",
+                "status": "via Ingress" if os.environ.get("SUPERVISOR_TOKEN") else "nicht erkannt",
+                "host": "homeassistant.localdomain",
+                "port": 8123,
+                "description": "Zeigt die Add-on-Weboberflaeche ueber Ingress und nutzt MQTT-Sensoren fuer Dashboard und Automationen.",
+                "exchange": "HA Ingress, Add-on Optionen, MQTT Sensoren und TTS/Automation-Ausgabe.",
+            },
+        },
     }
 
 

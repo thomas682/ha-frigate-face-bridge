@@ -4,6 +4,7 @@ const formState = {
 };
 
 const DEFAULT_VIEW = 'overview';
+let selectedCommunicationStage = 'camera';
 
 function apiPath(path) {
   return new URL(path.replace(/^\//, ''), window.location.href).toString();
@@ -42,6 +43,24 @@ function setupNavigation() {
   const saved = window.localStorage.getItem('faceBridgeView') || DEFAULT_VIEW;
   const hasSavedView = Array.from(document.querySelectorAll('.view')).some((section) => section.dataset.view === saved);
   setActiveView(hasSavedView ? saved : DEFAULT_VIEW);
+}
+
+function setupCommunicationNavigation() {
+  document.querySelectorAll('[data-comm-stage]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectedCommunicationStage = button.dataset.commStage || 'camera';
+      updateCommunicationSelection();
+    });
+  });
+}
+
+function updateCommunicationSelection() {
+  document.querySelectorAll('[data-comm-stage]').forEach((button) => {
+    const active = button.dataset.commStage === selectedCommunicationStage;
+    const box = button.querySelector('.comm-box');
+    if (box) box.classList.toggle('comm-selected', active);
+    button.setAttribute('aria-current', active ? 'true' : 'false');
+  });
 }
 
 function renderChips(containerId, values, emptyText = 'keine') {
@@ -164,6 +183,74 @@ function setLink(id, href, labelId, labelText) {
     link.classList.toggle('disabled', !enabled);
   }
   if (label) label.textContent = labelText || href || 'nicht konfiguriert';
+}
+
+function endpointText(endpoint) {
+  if (!endpoint || !endpoint.configured) return 'nicht konfiguriert';
+  return endpoint.display || `${endpoint.host || '-'}${endpoint.port ? `:${endpoint.port}` : ''}`;
+}
+
+function statusClass(status) {
+  const valueText = String(status || '').toLowerCase();
+  if (valueText.includes('verbunden') || valueText.includes('online') || valueText.includes('erreichbar') || valueText.includes('ingress')) return 'ok';
+  if (valueText.includes('fehler') || valueText.includes('nicht erreichbar') || valueText.includes('ungueltig')) return 'error';
+  if (valueText.includes('deaktiviert') || valueText.includes('nicht konfiguriert') || valueText.includes('unklar')) return 'muted';
+  return 'warn';
+}
+
+function setCommunicationBadge(stage, status) {
+  const badge = document.getElementById(`comm-${stage}-badge`);
+  if (!badge) return;
+  badge.textContent = status || '-';
+  badge.classList.remove('ok', 'warn', 'error', 'muted');
+  badge.classList.add(statusClass(status));
+}
+
+function renderCommunication(communication) {
+  const elements = communication?.elements || {};
+  const camera = elements.camera || {};
+  const go2rtc = elements.go2rtc || {};
+  const frigate = elements.frigate || {};
+  const bridge = elements.bridge || {};
+  const mqtt = elements.mqtt || {};
+  const ha = elements.home_assistant || {};
+
+  text('comm-camera-sub', camera.host || endpointText(camera.rtsp) || 'Kamera nicht gesetzt');
+  text('comm-go2rtc-sub', go2rtc.used ? `${go2rtc.host || 'Frigate'}${go2rtc.port ? `:${go2rtc.port}` : ''}` : 'nicht verwendet/unklar');
+  text('comm-frigate-sub', endpointText(frigate.api));
+  text('comm-bridge-sub', `${bridge.host || 'Add-on intern'}${bridge.port ? `:${bridge.port}` : ''}`);
+  text('comm-home_assistant-sub', `${ha.host || 'homeassistant.localdomain'}${ha.port ? `:${ha.port}` : ''}`);
+  text('comm-go2rtc-used', go2rtc.used ? 'go2rtc verwendet' : 'go2rtc nicht erkannt');
+  text('communication-refresh-state', `Live - ${new Date().toLocaleTimeString('de-DE')}`);
+  setCommunicationBadge('camera', camera.status);
+  setCommunicationBadge('go2rtc', go2rtc.status);
+  setCommunicationBadge('frigate', frigate.status);
+  setCommunicationBadge('bridge', bridge.status);
+  setCommunicationBadge('home_assistant', ha.status);
+
+  const detail = elements[selectedCommunicationStage] || camera;
+  text('comm-detail-title', detail.title || selectedCommunicationStage);
+  text('comm-detail-description', detail.description || '-');
+  renderKeyValueList('comm-detail-list', [
+    ['Status', detail.status || '-'],
+    ['Host/DNS/IP', detail.host || detail.api?.host || '-'],
+    ['Port', detail.port ?? detail.api?.port ?? '-'],
+    ['API/Stream', detail.api ? endpointText(detail.api) : detail.rtsp ? endpointText(detail.rtsp) : '-'],
+    ['Snapshot', detail.snapshot ? endpointText(detail.snapshot) : '-'],
+    ['MQTT Topic/Prefix', detail.events_topic || detail.topic_prefix || '-'],
+    ['Kamera-Filter', detail.camera_name || '-'],
+    ['Daten austausch', detail.exchange || '-'],
+  ]);
+  updateCommunicationSelection();
+}
+
+function setupDirectAccessNotice() {
+  const notice = document.getElementById('direct-access-notice');
+  if (!notice) return;
+  const direct = window.location.port === '8099';
+  notice.hidden = !direct;
+  if (!direct) return;
+  document.body.classList.add('direct-port-mode');
 }
 
 function currentMqttSettings() {
@@ -607,9 +694,11 @@ async function refreshStatus() {
   const event = data.last_event || {};
   const storage = configData.storage_status || data.storage_status || {};
   const appStatus = data.app_status || {};
+  const communication = data.communication || {};
   const frigateApiUrl = safeConfig.frigate?.api_url || rawConfig.frigate?.api_url || '';
   const frigateBaseUrl = frigateApiUrl.replace(/\/$/, '');
   text('addon-version', `Version ${data.version || '-'}`);
+  text('direct-bridge-status', data.ok ? 'Bridge aktiv / fehlerfrei' : 'Bridge Fehler oder offline');
   document.getElementById('status').textContent = data.ok ? 'online' : 'fehler';
   document.getElementById('started').textContent = `Start: ${data.started_at || '-'}`;
   document.getElementById('camera').textContent = data.camera?.name || '-';
@@ -679,6 +768,12 @@ async function refreshStatus() {
   setStatusBadge('snapshot-url-status', storage.snapshot_url_set, rawConfig.camera?.snapshot_url || data.camera?.snapshot_url || 'Snapshot gesetzt', 'Snapshot nicht gesetzt');
   setLink('link-frigate', frigateBaseUrl, 'link-frigate-text', frigateBaseUrl || 'nicht konfiguriert');
   setLink('link-go2rtc', frigateBaseUrl ? `${frigateBaseUrl}/api/go2rtc/streams` : '', 'link-go2rtc-text', frigateBaseUrl ? `${frigateBaseUrl}/api/go2rtc/streams` : 'Frigate API URL fehlt');
+  setLink('link-ha-ingress', communication.ha_ingress_url || 'http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge', 'link-ha-ingress-text', communication.ha_ingress_url || 'HA Add-on-Webseite');
+  setLink('link-homepage', communication.homepage_url || 'http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge', 'link-homepage-text', communication.homepage_url || 'Homepage-Aufruflink');
+  setLink('link-direct-status', communication.direct_status_url || 'http://fossflow.localdomain:8099/health', 'link-direct-status-text', 'Optionaler Status-/Health-Link, keine zweite Detail-Webseite');
+  const directHaLink = document.getElementById('direct-ha-link');
+  if (directHaLink) directHaLink.href = communication.homepage_url || 'http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge';
+  renderCommunication(communication);
   renderKeyValueList('debug-list', [
     ['Bridge', appStatus.bridge || '-'],
     ['Home Assistant', appStatus.home_assistant || '-'],
@@ -858,6 +953,8 @@ async function loadSnapshot() {
 
 async function boot() {
   setupNavigation();
+  setupCommunicationNavigation();
+  setupDirectAccessNotice();
   setupFilters();
   document.getElementById('app-form').addEventListener('submit', saveAppConfig);
   document.getElementById('camera-form').addEventListener('submit', saveCamera);

@@ -29,9 +29,22 @@
       <button type="button" class="view-tab" data-target-view="announcements">Ansagen</button>
       <button type="button" class="view-tab" data-target-view="history">Verlauf</button>
       <button type="button" class="view-tab" data-target-view="config">Konfiguration</button>
+      <button type="button" class="view-tab" data-target-view="communication">Kommunikation</button>
       <button type="button" class="view-tab" data-target-view="links">Links</button>
       <button type="button" class="view-tab" data-target-view="debug">Debug</button>
     </nav>
+
+    <section class="direct-access-notice" id="direct-access-notice" hidden>
+      <div>
+        <p class="section-label">Direktzugriff</p>
+        <h2>Bridge ist erreichbar</h2>
+        <p>Diese Adresse ist nur der optionale Direktzugriff auf den Add-on-Port. Die vollstaendige Bedienoberflaeche wird kuenftig nur ueber die Home-Assistant-Add-on-Webseite verwendet.</p>
+      </div>
+      <div class="direct-status-box">
+        <strong id="direct-bridge-status">Status wird geladen ...</strong>
+        <a id="direct-ha-link" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge">Zur HA Add-on-Webseite</a>
+      </div>
+    </section>
 
     <section class="stat-grid view" data-view="overview" aria-label="Aktuelle Werte">
       <article class="stat-card accent">
@@ -117,31 +130,71 @@
           <h2>Wie die Bridge arbeitet</h2>
         </div>
       </div>
-      <div class="flow-diagram" aria-label="Datenfluss von Kamera bis Home Assistant">
-        <article>
-          <span>Kamera / UniFi Protect</span>
-          <strong>Video und Snapshot</strong>
-          <small>RTSP-Stream oder HTTP-Snapshot liefern Bilddaten.</small>
-        </article>
-        <div class="flow-arrow">Video</div>
-        <article>
-          <span>Frigate / go2rtc</span>
-          <strong>Objekte und Streams</strong>
-          <small>Frigate erkennt Personen/Hunde; go2rtc stellt Streams bereit.</small>
-        </article>
-        <div class="flow-arrow">Events/API</div>
-        <article>
-          <span>Face Bridge</span>
-          <strong>Zaehlen, Namen, Ansagen</strong>
-          <small>Bridge sammelt Frigate-Events, Face-Importe und erzeugt MQTT-Daten.</small>
-        </article>
-        <div class="flow-arrow">MQTT</div>
-        <article>
-          <span>Home Assistant</span>
-          <strong>Sensoren, Dashboard, Alexa</strong>
-          <small>HA liest MQTT-Sensoren, zeigt Werte an und startet Automationen.</small>
-        </article>
-        <div class="flow-return">Rueckweg: HA Ingress oeffnet die Bridge-UI, HA Add-on Optionen schreiben Konfiguration, Automationen nutzen Ansagetexte.</div>
+      <p class="log-explain">Die vollstaendige Live-Grafik mit aktuellen DNS-Namen, IPs, Ports, go2rtc-Nutzung und Datenfluss-Erklaerung liegt jetzt im Menuepunkt <strong>Kommunikation</strong>.</p>
+    </section>
+
+    <section class="panel view" data-view="communication">
+      <div class="panel-title-row">
+        <div>
+          <p class="section-label">Kommunikation</p>
+          <h2>Live-Schema von Kamera bis Home Assistant</h2>
+        </div>
+        <span class="live-dot" id="communication-refresh-state">Live</span>
+      </div>
+      <div class="comm-flow" aria-label="Datenfluss von Kamera ueber Frigate und Face Bridge bis Home Assistant">
+        <button type="button" class="comm-stage" data-comm-stage="camera">
+          <span class="comm-box comm-selected" id="comm-box-camera">
+            <span class="comm-icon">CAM</span>
+            <span class="comm-title">Kamera</span>
+            <span class="comm-sub" id="comm-camera-sub">UniFi / Kamera</span>
+            <span class="comm-badge" id="comm-camera-badge">Status</span>
+          </span>
+        </button>
+        <div class="comm-arr">→</div>
+        <div class="comm-frigate-group">
+          <div class="comm-frigate-label">Frigate NVR <span id="comm-go2rtc-used">go2rtc?</span></div>
+          <button type="button" class="comm-stage" data-comm-stage="go2rtc">
+            <span class="comm-box" id="comm-box-go2rtc">
+              <span class="comm-icon">RTC</span>
+              <span class="comm-title">go2rtc</span>
+              <span class="comm-sub" id="comm-go2rtc-sub">Stream-Konverter</span>
+              <span class="comm-badge" id="comm-go2rtc-badge">Status</span>
+            </span>
+          </button>
+          <div class="comm-arr comm-arr-inner">→</div>
+          <button type="button" class="comm-stage" data-comm-stage="frigate">
+            <span class="comm-box" id="comm-box-frigate">
+              <span class="comm-icon">NVR</span>
+              <span class="comm-title">Frigate</span>
+              <span class="comm-sub" id="comm-frigate-sub">Events / API</span>
+              <span class="comm-badge" id="comm-frigate-badge">Status</span>
+            </span>
+          </button>
+        </div>
+        <div class="comm-arr">→</div>
+        <button type="button" class="comm-stage" data-comm-stage="bridge">
+          <span class="comm-box" id="comm-box-bridge">
+            <span class="comm-icon">FFB</span>
+            <span class="comm-title">Face Bridge</span>
+            <span class="comm-sub" id="comm-bridge-sub">Logik / UI</span>
+            <span class="comm-badge" id="comm-bridge-badge">Status</span>
+          </span>
+        </button>
+        <div class="comm-arr">→</div>
+        <button type="button" class="comm-stage" data-comm-stage="home_assistant">
+          <span class="comm-box" id="comm-box-home_assistant">
+            <span class="comm-icon">HA</span>
+            <span class="comm-title">Home Assistant</span>
+            <span class="comm-sub" id="comm-home_assistant-sub">Sensoren / UI</span>
+            <span class="comm-badge" id="comm-home_assistant-badge">Status</span>
+          </span>
+        </button>
+      </div>
+      <div class="comm-back">Rueckweg: Home Assistant oeffnet diese Add-on-Webseite per Ingress, schreibt Add-on-Optionen und nutzt MQTT-Sensoren fuer Dashboard, Automationen und TTS.</div>
+      <div class="comm-detail">
+        <h3 id="comm-detail-title">Kamera</h3>
+        <p id="comm-detail-description">-</p>
+        <ul class="detail-list" id="comm-detail-list"></ul>
       </div>
     </section>
 
@@ -396,6 +449,9 @@
       <div class="panel-title-row"><div><p class="section-label">Links</p><h2>Relevante Weboberflaechen und Projektlinks</h2></div></div>
       <div class="link-grid">
         <a href="/" target="_blank" rel="noreferrer">Home Assistant <span>Aktuelle HA-Oberflaeche / Ingress-Kontext</span></a>
+        <a id="link-ha-ingress" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge" target="_blank" rel="noreferrer">Face Bridge Add-on Webseite <span id="link-ha-ingress-text">HA Ingress / eine zentrale Weboberflaeche</span></a>
+        <a id="link-homepage" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge" target="_blank" rel="noreferrer">Homepage Aufruf-Link <span id="link-homepage-text">Link fuer Homepage-Eintrag</span></a>
+        <a id="link-direct-status" href="http://fossflow.localdomain:8099/health" target="_blank" rel="noreferrer">Direktzugriff Status <span id="link-direct-status-text">Nur Status/Health, keine zweite Detail-Webseite</span></a>
         <a href="api/status" target="_blank" rel="noreferrer">Bridge API Status <span>Live-Status dieser Bridge als JSON</span></a>
         <a href="api/config" target="_blank" rel="noreferrer">Bridge API Konfiguration <span>Maskierte Laufzeit- und Rohkonfiguration</span></a>
         <a id="link-frigate" href="#" target="_blank" rel="noreferrer">Frigate Web/API <span id="link-frigate-text">nicht konfiguriert</span></a>

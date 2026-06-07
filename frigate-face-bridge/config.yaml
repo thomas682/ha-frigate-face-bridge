@@ -1,5 +1,5 @@
 name: Frigate Face Bridge
-version: "0.15.2"
+version: "0.16.0"
 slug: frigate_face_bridge
 description: Lokale Personenzaehlung und Gesichtserkennung fuer UniFi-Kameras mit MQTT-Anbindung.
 url: "https://github.com/thomas682/ha-frigate-face-bridge"
@@ -17,7 +17,7 @@ panel_title: "Face Bridge"
 ports:
   8099/tcp: null
 ports_description:
-  8099/tcp: "Optionaler direkter Zugriff auf Web UI / REST API ohne Ingress. Standard: deaktiviert."
+  8099/tcp: "Optionaler Direktzugriff fuer Status/Health ohne Ingress. Details werden ueber die HA Add-on-Webseite angezeigt. Standard: deaktiviert."
 host_network: false
 privileged: []
 options:
