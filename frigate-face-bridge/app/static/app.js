@@ -154,6 +154,40 @@ function setStatusBadge(id, isSet, setText = 'gesetzt', missingText = 'nicht ges
   element.classList.toggle('missing', !isSet);
 }
 
+function currentMqttSettings() {
+  return {
+    enabled: checkbox('setting-mqtt-enabled'),
+    host: value('setting-mqtt-host'),
+    port: Number(value('setting-mqtt-port') || 1883),
+    username: value('setting-mqtt-username'),
+    password: value('setting-mqtt-password'),
+    topic_prefix: value('setting-topic-prefix'),
+    discovery: checkbox('setting-mqtt-discovery'),
+    discovery_prefix: value('setting-discovery-prefix'),
+  };
+}
+
+function currentFrigateSettings() {
+  return {
+    enabled: checkbox('setting-frigate-enabled'),
+    events_topic: value('setting-frigate-topic'),
+    camera_name: value('setting-frigate-camera'),
+    api_url: value('setting-frigate-api-url'),
+    person_count_enabled: checkbox('setting-frigate-person-count-enabled'),
+    person_count_interval_seconds: Number(value('setting-frigate-person-count-interval') || 5),
+    dog_name: value('setting-frigate-dog-name'),
+  };
+}
+
+function currentCameraSettings() {
+  return {
+    name: value('camera-name'),
+    host: value('camera-host'),
+    rtsp_url: value('camera-rtsp'),
+    snapshot_url: value('camera-snapshot'),
+  };
+}
+
 function setField(id, content) {
   const element = document.getElementById(id);
   if (!element) return;
@@ -626,8 +660,8 @@ async function refreshStatus() {
   text('last-error-card', appStatus.last_error || 'kein Fehler');
   setStatusBadge('mqtt-username-status', storage.mqtt_username_set, 'Benutzer gesetzt', 'Benutzer nicht gesetzt');
   setStatusBadge('mqtt-password-status', storage.mqtt_password_set, 'Passwort gesetzt', 'Passwort nicht gesetzt');
-  setStatusBadge('rtsp-url-status', storage.rtsp_url_set, 'RTSP gesetzt', 'RTSP nicht gesetzt');
-  setStatusBadge('snapshot-url-status', storage.snapshot_url_set, 'Snapshot gesetzt', 'Snapshot nicht gesetzt');
+  setStatusBadge('rtsp-url-status', storage.rtsp_url_set, rawConfig.camera?.rtsp_url || data.camera?.rtsp_url || 'RTSP gesetzt', 'RTSP nicht gesetzt');
+  setStatusBadge('snapshot-url-status', storage.snapshot_url_set, rawConfig.camera?.snapshot_url || data.camera?.snapshot_url || 'Snapshot gesetzt', 'Snapshot nicht gesetzt');
   renderKeyValueList('debug-list', [
     ['Bridge', appStatus.bridge || '-'],
     ['Home Assistant', appStatus.home_assistant || '-'],
@@ -744,16 +778,28 @@ async function saveCamera(event) {
   }
 }
 
-async function runTest(endpoint, targetId) {
+async function runTest(endpoint, targetId, body = {}) {
   const message = document.getElementById(targetId);
   message.textContent = 'Teste ...';
   try {
-    const response = await fetch(apiPath(endpoint), { method: 'POST', cache: 'no-store' });
+    const response = await fetch(apiPath(endpoint), {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
     const data = await response.json().catch(() => ({}));
-    message.textContent = `${data.ok ? 'OK' : 'Fehler'}: ${data.status || data.error || response.status}`;
+    const detail = data.url ? ` · ${data.url}` : data.host ? ` · ${data.host}:${data.port || ''}` : '';
+    message.textContent = `${data.ok ? 'OK' : 'Fehler'}: ${data.status || data.error || response.status}${detail}`;
   } catch (err) {
     message.textContent = `Test fehlgeschlagen: ${err}`;
   }
+}
+
+function useRtspExample() {
+  const input = document.getElementById('camera-rtsp');
+  input.value = 'rtsp://fossflow.localdomain:8554/wohnzimmer_g3_flex';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 function setupFilters() {
@@ -794,9 +840,11 @@ async function boot() {
   document.getElementById('camera-form').addEventListener('submit', saveCamera);
   document.getElementById('face-form').addEventListener('submit', createFace);
   document.getElementById('snapshot-button').addEventListener('click', loadSnapshot);
-  document.getElementById('mqtt-test-button').addEventListener('click', () => runTest('api/test/mqtt', 'mqtt-test-message'));
-  document.getElementById('rtsp-test-button').addEventListener('click', () => runTest('api/test/rtsp', 'rtsp-test-message'));
-  document.getElementById('snapshot-test-button').addEventListener('click', () => runTest('api/test/snapshot', 'snapshot-test-message'));
+  document.getElementById('mqtt-test-button').addEventListener('click', () => runTest('api/test/mqtt', 'mqtt-test-message', { mqtt: currentMqttSettings() }));
+  document.getElementById('frigate-test-button').addEventListener('click', () => runTest('api/test/frigate', 'frigate-test-message', { frigate: currentFrigateSettings() }));
+  document.getElementById('rtsp-test-button').addEventListener('click', () => runTest('api/test/rtsp', 'rtsp-test-message', { camera: currentCameraSettings() }));
+  document.getElementById('snapshot-test-button').addEventListener('click', () => runTest('api/test/snapshot', 'snapshot-test-message', { camera: currentCameraSettings() }));
+  document.getElementById('rtsp-example-button').addEventListener('click', useRtspExample);
   try {
     await refreshStatus();
   } catch (err) {

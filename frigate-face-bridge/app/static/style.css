@@ -546,6 +546,17 @@ mark {
   line-height: 1.4;
 }
 
+.log-explain {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-info);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-background-info);
+  color: var(--color-text-info);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .value-status {
   display: inline-flex;
   width: fit-content;
@@ -599,6 +610,7 @@ button:focus { background: #255fca; }
 button[type="button"] { background: var(--color-background-muted); color: var(--color-text-primary); box-shadow: none; }
 button[type="button"]:hover,
 button[type="button"]:focus { background: #dde4f0; }
+.inline-button { width: fit-content; min-height: 34px; padding: 7px 11px; font-size: 12px; }
 
 .message { margin: 0; color: var(--color-text-secondary); overflow-wrap: anywhere; }
 

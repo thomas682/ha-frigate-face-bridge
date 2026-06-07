@@ -15,11 +15,12 @@ from urllib.error import URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
+import paho.mqtt.client as mqtt
 from flask import Flask, Response, jsonify, request, send_from_directory
 
 from announcements import AnnouncementManager
 from camera import camera_status
-from config_loader import load_config, load_raw_options, redact_url, safe_config, save_app_config, save_camera_config
+from config_loader import display_url, load_config, load_raw_options, redact_url, safe_config, save_app_config, save_camera_config
 from detector import create_detector
 from face_recognition import known_face_status, parse_face_match_event, save_face, set_face_enabled
 from frigate_api import active_person_count_event
@@ -233,6 +234,53 @@ def _tcp_test(host: str, port: int, timeout: float = 3.0) -> dict[str, Any]:
         return {"ok": False, "status": "nicht erreichbar", "error": str(exc)}
 
 
+def test_mqtt_settings(settings: dict[str, Any]) -> dict[str, Any]:
+    host = str(settings.get("host") or "").strip()
+    try:
+        port = int(settings.get("port") or 1883)
+    except Exception:
+        port = 1883
+    if not host or port <= 0:
+        return {"ok": False, "status": "MQTT Host oder Port fehlt", "host": host, "port": port}
+
+    event = threading.Event()
+    result: dict[str, Any] = {"ok": False, "status": "keine Antwort", "host": host, "port": port}
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"frigate-face-bridge-test-{int(time.time())}")
+    username = str(settings.get("username") or "")
+    password = str(settings.get("password") or "")
+    if username or password:
+        client.username_pw_set(username, password)
+
+    def on_connect(_client: Any, _userdata: Any, _flags: Any, reason_code: Any, _properties: Any = None) -> None:
+        connected = int(reason_code) == 0 if str(reason_code).isdigit() else str(reason_code) == "Success"
+        result.update({"ok": connected, "status": "MQTT Login erfolgreich" if connected else f"MQTT Login fehlgeschlagen: {reason_code}", "reason": str(reason_code)})
+        event.set()
+
+    def on_disconnect(_client: Any, _userdata: Any, _flags: Any, reason_code: Any, _properties: Any = None) -> None:
+        if not event.is_set() and str(reason_code) not in {"0", "Normal disconnection"}:
+            result.update({"ok": False, "status": f"MQTT getrennt: {reason_code}", "reason": str(reason_code)})
+            event.set()
+
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+    try:
+        client.connect(host, port, keepalive=10)
+        client.loop_start()
+        event.wait(5)
+    except Exception as exc:
+        result.update({"ok": False, "status": "MQTT Test fehlgeschlagen", "error": str(exc)})
+    finally:
+        try:
+            client.disconnect()
+        except Exception:
+            pass
+        try:
+            client.loop_stop()
+        except Exception:
+            pass
+    return result
+
+
 def test_rtsp_url(url: str) -> dict[str, Any]:
     url = str(url or "").strip()
     if not url:
@@ -244,6 +292,28 @@ def test_rtsp_url(url: str) -> dict[str, Any]:
     result = _tcp_test(parts.hostname, port)
     result["url"] = redact_url(url)
     return result
+
+
+def test_frigate_api_url(url: str) -> dict[str, Any]:
+    url = str(url or "").strip().rstrip("/")
+    if not url:
+        return {"ok": False, "status": "Frigate API URL nicht gesetzt"}
+    parts = urlsplit(url)
+    if parts.scheme.lower() not in {"http", "https"} or not parts.netloc:
+        return {"ok": False, "status": "ungueltige Frigate API URL"}
+    checks = ["/api/stats", "/api/config", "/"]
+    last_error = ""
+    for path in checks:
+        try:
+            req = Request(f"{url}{path}", headers={"User-Agent": "frigate-face-bridge"})
+            with urlopen(req, timeout=5) as response:
+                content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
+                if response.status < 400:
+                    return {"ok": True, "status": f"Frigate erreichbar ({path}, HTTP {response.status})", "url": display_url(url), "content_type": content_type}
+                last_error = f"HTTP {response.status} auf {path}"
+        except Exception as exc:
+            last_error = str(exc)
+    return {"ok": False, "status": "Frigate API nicht erreichbar", "url": display_url(url), "error": last_error}
 
 
 def event_loop() -> None:
@@ -407,22 +477,33 @@ def api_update_camera():
 
 @app.post("/api/test/mqtt")
 def api_test_mqtt():
-    mqtt = config.get("mqtt", {}) if isinstance(config.get("mqtt"), dict) else {}
-    result = _tcp_test(str(mqtt.get("host") or ""), int(mqtt.get("port") or 0))
+    payload = request.get_json(silent=True) or {}
+    mqtt = payload.get("mqtt") if isinstance(payload.get("mqtt"), dict) else config.get("mqtt", {}) if isinstance(config.get("mqtt"), dict) else {}
+    result = test_mqtt_settings(mqtt)
     result.update({"enabled": bool(mqtt.get("enabled")), "host": str(mqtt.get("host") or ""), "port": int(mqtt.get("port") or 0), "connected": bool(publisher.status().get("connected"))})
+    return jsonify(result), 200 if result.get("ok") else 502
+
+
+@app.post("/api/test/frigate")
+def api_test_frigate():
+    payload = request.get_json(silent=True) or {}
+    frigate = payload.get("frigate") if isinstance(payload.get("frigate"), dict) else config.get("frigate", {}) if isinstance(config.get("frigate"), dict) else {}
+    result = test_frigate_api_url(str(frigate.get("api_url") or ""))
     return jsonify(result), 200 if result.get("ok") else 502
 
 
 @app.post("/api/test/rtsp")
 def api_test_rtsp():
-    camera = config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+    payload = request.get_json(silent=True) or {}
+    camera = payload.get("camera") if isinstance(payload.get("camera"), dict) else config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
     result = test_rtsp_url(str(camera.get("rtsp_url") or ""))
     return jsonify(result), 200 if result.get("ok") else 502
 
 
 @app.post("/api/test/snapshot")
 def api_test_snapshot():
-    camera = config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+    payload = request.get_json(silent=True) or {}
+    camera = payload.get("camera") if isinstance(payload.get("camera"), dict) else config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
     snapshot_url = str(camera.get("snapshot_url") or "").strip()
     if not snapshot_url:
         return jsonify({"ok": False, "status": "Snapshot URL nicht gesetzt"}), 400

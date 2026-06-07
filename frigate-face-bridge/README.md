@@ -6,7 +6,7 @@ Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mi
 
 Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-Events, MQTT-Ausgabe, REST-API und eine einfache Web-UI. Es ist als Grundlage fuer spaetere Integrationen mit Frigate, Double Take, CompreFace oder einer lokalen Face-Recognition-Engine gedacht.
 
-## Funktionsumfang 0.15.0
+## Funktionsumfang 0.15.1
 
 - Startfaehig ohne Kamera
 - Startfaehig ohne MQTT
@@ -17,6 +17,9 @@ Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-
 - Konfigurationsspeicherung als Teilupdate, damit leere Formularfelder bestehende Nutzerwerte nicht ueberschreiben
 - Statusanzeigen fuer gesetzten MQTT-Benutzer, gesetztes MQTT-Passwort sowie gesetzte RTSP-/Snapshot-URLs
 - Testbuttons fuer MQTT-Verbindung, RTSP-Erreichbarkeit und Snapshot-Erreichbarkeit
+- Testbutton fuer die Frigate API und direkte Tests mit den aktuell eingegebenen Formularwerten
+- konkrete Hilfetexte direkt an den Konfigurationsparametern sowie kurze Erklaerungen fuer Erkennungs-, MQTT-, Ansage- und Verlaufslogs
+- RTSP-Beispielbutton fuer `rtsp://fossflow.localdomain:8554/wohnzimmer_g3_flex` und sichtbare gespeicherte RTSP-/Snapshot-URLs ohne Credential-Offenlegung
 - maskierte Live-MQTT-History fuer ein- und ausgehende Nachrichten in API und Web-UI
 - MQTT-Publisher fuer Status und Event-Topics
 - Konfiguration ueber `/data/options.json`

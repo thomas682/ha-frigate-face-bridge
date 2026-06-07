@@ -158,6 +158,7 @@
       <h3>Bridge-Ausgabe-Topics</h3>
       <ul class="topic-list" id="mqtt-topic-list"></ul>
       <h3>Nachrichten</h3>
+      <p class="log-explain">Dieses Log zeigt MQTT-Nachrichten, die die Bridge empfaengt oder veroeffentlicht. Wiederholte Eintraege entstehen, wenn Frigate oder die Bridge zyklisch Statuswerte sendet; das ist nicht automatisch eine neue Personenerkennung. Secrets und lange Payloads werden gekuerzt oder maskiert.</p>
       <div class="table-controls">
         <label>Zeitbereich <select id="mqtt-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
         <label>Suche <input id="mqtt-search" autocomplete="off" placeholder="Volltext suchen"></label>
@@ -185,6 +186,7 @@
         <article class="live-card danger"><span>Unbekannt</span><strong id="recognition-unknown">0</strong></article>
         <article class="live-card"><span>Hund/Hunde</span><strong id="recognition-dog">0</strong></article>
       </div>
+      <p class="log-explain">Diese Tabelle zeigt erkannte Personen, unbekannte Gesichter, Hund/Maja und die jeweilige Quelle. Ein Eintrag alle paar Sekunden kommt meist vom aktiven Frigate-API-Zaehler (`person_count_interval_seconds`) oder im Demo-Modus vom Event-Intervall, nicht zwingend von einem neuen Frigate-Event.</p>
       <div class="table-controls">
         <label>Zeitbereich <select id="recognition-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
         <label>Suche <input id="recognition-search" autocomplete="off" placeholder="Name, Quelle, Text"></label>
@@ -212,6 +214,7 @@
         <article class="live-card"><span>Entitaeten</span><div class="entity-list" id="announce-current-entities">-</div></article>
         <article class="live-card danger"><span>Sperrgrund</span><strong id="announce-suppressed-reason">-</strong></article>
       </div>
+      <p class="log-explain">Dieses Log zeigt, welchen Ansagetext die Bridge erzeugt hat, ob er gesprochen werden sollte und welche Entitaeten betroffen waren. Wenn eine Ansage unterdrueckt wurde, steht der Grund in der Spalte `Sperrgrund`, z.B. Cooldown oder deaktivierte Kategorie.</p>
       <div class="table-controls">
         <label>Zeitbereich <select id="announcement-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
         <label>Suche <input id="announcement-search" autocomplete="off" placeholder="Text, Person, Sperrgrund"></label>
@@ -243,6 +246,7 @@
           <h2>Erkennungs- und Ansagelog</h2>
         </div>
       </div>
+      <p class="log-explain">Der Verlauf kombiniert Erkennungen, aktive Frigate-Zaehler und Ansageinformationen. Zyklische Zeilen zeigen den aktuellen Zustand im Raum; sie sind wichtig fuer Diagramm und Live-Status, auch wenn sich keine Person geaendert hat.</p>
       <div class="table-controls">
         <label>Zeitbereich <select id="history-range"><option value="4">letzte 4 h</option><option value="24">letzte 24 h</option><option value="72" selected>letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
         <label>Suche <input id="history-search" autocomplete="off" placeholder="Volltext suchen"></label>
@@ -267,56 +271,55 @@
       <form id="app-form" class="config-form">
         <fieldset>
           <legend>System</legend>
-          <label>Demo-Modus <input id="setting-demo-mode" type="checkbox"></label>
-          <label>Event-Intervall Sekunden <input id="setting-event-interval" type="number" min="1" step="1" placeholder="10"></label>
-          <label>Log-Level <select id="setting-log-level"><option value="trace">trace</option><option value="debug">debug</option><option value="info">info</option><option value="warning">warning</option><option value="error">error</option></select></label>
+          <label>Demo-Modus <span class="field-help">Erzeugt simulierte Events, wenn keine echte Kamera- oder Frigate-Anbindung genutzt wird. Ausschalten, sobald Frigate und Kamera echte Daten liefern sollen.</span><input id="setting-demo-mode" type="checkbox"></label>
+          <label>Event-Intervall Sekunden <span class="field-help">Abstand zwischen simulierten Demo-Events. Wenn Demo-Modus aktiv ist, entsteht deshalb z.B. alle 10 Sekunden ein neuer Erkennungseintrag.</span><input id="setting-event-interval" type="number" min="1" step="1" placeholder="10"></label>
+          <label>Log-Level <span class="field-help">Steuert die Ausfuehrlichkeit im Add-on-Log. `info` ist normal, `debug`/`trace` nur fuer Fehlersuche verwenden.</span><select id="setting-log-level"><option value="trace">trace</option><option value="debug">debug</option><option value="info">info</option><option value="warning">warning</option><option value="error">error</option></select></label>
         </fieldset>
         <fieldset>
           <legend>MQTT</legend>
-          <p class="field-help wide">MQTT verbindet die Bridge mit Home Assistant. Discovery erzeugt automatisch HA-Sensoren. Das Passwort wird nie im Klartext angezeigt.</p>
-          <label>MQTT aktiv <input id="setting-mqtt-enabled" type="checkbox"></label>
-          <label>MQTT Host <input id="setting-mqtt-host" autocomplete="off" placeholder="core-mosquitto"></label>
-          <label>MQTT Port <input id="setting-mqtt-port" type="number" min="1" step="1" placeholder="1883"></label>
-          <label>MQTT Benutzer <input id="setting-mqtt-username" autocomplete="off"></label>
-          <label>MQTT Passwort <span class="value-status" id="mqtt-password-status">-</span><input id="setting-mqtt-password" type="password" autocomplete="new-password" placeholder="leer lassen = unveraendert"></label>
-          <label>MQTT Benutzerstatus <span class="value-status" id="mqtt-username-status">-</span><span class="field-help">Zeigt, ob ein Benutzer gespeichert ist.</span></label>
-          <label>Topic Prefix <input id="setting-topic-prefix" autocomplete="off" placeholder="ha/frigate_face_bridge"></label>
-          <label>MQTT Discovery <input id="setting-mqtt-discovery" type="checkbox"></label>
-          <label>Discovery Prefix <input id="setting-discovery-prefix" autocomplete="off" placeholder="homeassistant"></label>
-          <div class="actions wide"><button type="button" id="mqtt-test-button">MQTT Verbindung testen</button><span id="mqtt-test-message" class="message"></span></div>
+          <label>MQTT aktiv <span class="field-help">Schaltet die Verbindung zum Mosquitto-Broker ein. Ohne MQTT werden keine Home-Assistant-Sensoren und keine Bridge-Topics aktualisiert.</span><input id="setting-mqtt-enabled" type="checkbox"></label>
+          <label>MQTT Host <span class="field-help">Hostname des Brokers aus Sicht des Add-ons. Bei Home Assistant ist meist `core-mosquitto` richtig.</span><input id="setting-mqtt-host" autocomplete="off" placeholder="core-mosquitto"></label>
+          <label>MQTT Port <span class="field-help">TCP-Port des Brokers. Standard fuer unverschluesseltes MQTT im HA-Netz ist `1883`.</span><input id="setting-mqtt-port" type="number" min="1" step="1" placeholder="1883"></label>
+          <label>MQTT Benutzer <span class="field-help">Benutzer, mit dem sich die Bridge beim Broker anmeldet. Muss im Mosquitto Add-on oder in Home Assistant berechtigt sein.</span><input id="setting-mqtt-username" autocomplete="off"></label>
+          <label>MQTT Passwort <span class="value-status" id="mqtt-password-status">-</span><span class="field-help">Passwort zum MQTT-Benutzer. Leer lassen bedeutet: gespeichertes Passwort bleibt unveraendert.</span><input id="setting-mqtt-password" type="password" autocomplete="new-password" placeholder="leer lassen = unveraendert"></label>
+          <label>MQTT Benutzerstatus <span class="value-status" id="mqtt-username-status">-</span><span class="field-help">Zeigt nur, ob ein Benutzer gespeichert ist. Der gespeicherte Benutzername und das Passwort werden nicht als Secret-Dump ausgegeben.</span></label>
+          <label>Topic Prefix <span class="field-help">Basis-Topic fuer alle Bridge-Ausgaben, z.B. `ha/frigate_face_bridge/wohnzimmer_g3_flex/person_count`.</span><input id="setting-topic-prefix" autocomplete="off" placeholder="ha/frigate_face_bridge"></label>
+          <label>MQTT Discovery <span class="field-help">Wenn aktiv, veroeffentlicht die Bridge MQTT-Discovery-Konfigurationen, damit Home Assistant passende Sensoren automatisch anlegt.</span><input id="setting-mqtt-discovery" type="checkbox"></label>
+          <label>Discovery Prefix <span class="field-help">Home-Assistant-Discovery-Root. Normalerweise `homeassistant`; nur aendern, wenn dein MQTT-Setup davon abweicht.</span><input id="setting-discovery-prefix" autocomplete="off" placeholder="homeassistant"></label>
+          <div class="actions wide"><button type="button" id="mqtt-test-button">Eingaben testen: MQTT</button><span id="mqtt-test-message" class="message"></span></div>
         </fieldset>
         <fieldset>
           <legend>Frigate und Face Import</legend>
-          <p class="field-help wide">Frigate Import liest Frigate-MQTT-Events. Face Import liest Events einer externen Gesichtserkennung. Der Kamera-Filter muss zum Frigate-Kameranamen passen, sonst werden Events ignoriert.</p>
-          <label>Frigate Import <input id="setting-frigate-enabled" type="checkbox"></label>
-          <label>Frigate Topic <input id="setting-frigate-topic" autocomplete="off" placeholder="frigate/events"></label>
-          <label>Frigate Kamera-Filter <input id="setting-frigate-camera" autocomplete="off" placeholder="z.B. wohnzimmer_g3_flex"><span class="field-help">`garage_g3_flex` war nur ein alter Beispielname.</span></label>
-          <label>Frigate API URL <input id="setting-frigate-api-url" autocomplete="off" placeholder="http://fossflow.localdomain:5000"></label>
-          <label>Aktive Personen aus Frigate zaehlen <input id="setting-frigate-person-count-enabled" type="checkbox"></label>
-          <label>Personen-Zaehler Intervall Sekunden <input id="setting-frigate-person-count-interval" type="number" min="1" step="1" placeholder="5"></label>
-          <label>Hundename <input id="setting-frigate-dog-name" autocomplete="off" placeholder="Maja"></label>
-          <label>Face-Import <input id="setting-face-enabled" type="checkbox"></label>
-          <label>Face-Event-Topic <input id="setting-face-topic" autocomplete="off" placeholder="face_recognition/events"></label>
-          <label>Mindest-Confidence <input id="setting-face-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.7"></label>
+          <label>Frigate Import <span class="field-help">Abonniert das MQTT-Topic `frigate/events` und verarbeitet abgeschlossene Frigate-Events. Das ist nicht der 5-Sekunden-Live-Zaehler.</span><input id="setting-frigate-enabled" type="checkbox"></label>
+          <label>Frigate Topic <span class="field-help">MQTT-Topic, auf dem Frigate Events publiziert. Standard ist `frigate/events`.</span><input id="setting-frigate-topic" autocomplete="off" placeholder="frigate/events"></label>
+          <label>Frigate Kamera-Filter <span class="field-help">Nur Events dieser Kamera werden verarbeitet. Der Wert muss exakt zum Frigate-Kameranamen passen, z.B. `wohnzimmer_g3_flex`.</span><input id="setting-frigate-camera" autocomplete="off" placeholder="z.B. wohnzimmer_g3_flex"></label>
+          <label>Frigate API URL <span class="field-help">HTTP-Adresse der Frigate-Web/API-Oberflaeche. Wird fuer aktive Personen-/Hund-Zaehler und go2rtc-Status genutzt.</span><input id="setting-frigate-api-url" autocomplete="off" placeholder="http://fossflow.localdomain:5000"></label>
+          <div class="actions wide"><button type="button" id="frigate-test-button">Eingabe testen: Frigate API</button><span id="frigate-test-message" class="message"></span></div>
+          <label>Aktive Personen aus Frigate zaehlen <span class="field-help">Fragt Frigate regelmaessig nach aktuell sichtbaren Objekten ab. Dadurch entstehen wiederkehrende Live-Eintraege, auch ohne neues abgeschlossenes Event.</span><input id="setting-frigate-person-count-enabled" type="checkbox"></label>
+          <label>Personen-Zaehler Intervall Sekunden <span class="field-help">Abstand der aktiven Frigate-API-Abfrage. Bei `5` wird alle 5 Sekunden geprueft, bei `10` etwa alle 10 Sekunden.</span><input id="setting-frigate-person-count-interval" type="number" min="1" step="1" placeholder="5"></label>
+          <label>Hundename <span class="field-help">Name, der fuer erkannte Hunde in Anzeige und Ansage verwendet wird. Bei dir ist das normalerweise `Maja`.</span><input id="setting-frigate-dog-name" autocomplete="off" placeholder="Maja"></label>
+          <label>Face-Import <span class="field-help">Liest externe Face-Recognition-Events von einem MQTT-Topic oder REST-Import. Nur aktivieren, wenn dort wirklich Daten eintreffen.</span><input id="setting-face-enabled" type="checkbox"></label>
+          <label>Face-Event-Topic <span class="field-help">MQTT-Topic fuer externe Gesichtserkennung, z.B. Double Take oder eine eigene Erkennung.</span><input id="setting-face-topic" autocomplete="off" placeholder="face_recognition/events"></label>
+          <label>Mindest-Confidence <span class="field-help">Schwellwert von 0 bis 1 fuer importierte Gesichtstreffer. `0.7` bedeutet: Treffer unter 70 Prozent werden ignoriert.</span><input id="setting-face-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.7"></label>
         </fieldset>
         <fieldset>
           <legend>Ansagen</legend>
-          <label>Sprachausgaben aktiv <input id="setting-announcements-enabled" type="checkbox"></label>
-          <label>Bekannte Personen ansagen <input id="setting-announcements-known" type="checkbox"></label>
-          <label>Unbekannte Personen ansagen <input id="setting-announcements-unknown" type="checkbox"></label>
-          <label>Hund ansagen <input id="setting-announcements-dog" type="checkbox"></label>
-          <label>Zufallstexte verwenden <input id="setting-announcements-random" type="checkbox"></label>
-          <label>Globale Ansage-Sperre Sekunden <input id="setting-announcements-global-cooldown" type="number" min="0" step="1" placeholder="60"></label>
-          <label>Sperre pro Person/Tier Sekunden <input id="setting-announcements-entity-cooldown" type="number" min="0" step="1" placeholder="300"></label>
-          <label>Nicht ansagen, kommagetrennt <input id="setting-announcements-disabled" autocomplete="off" placeholder="Thomas, unknown, Maja"></label>
-          <label class="wide">Eigene Ansagetexte je Zeile: Name=Text <textarea id="setting-announcements-custom-texts" rows="5" placeholder="Thomas=Thomas ist im Wohnzimmer erkannt worden.&#10;Maja=Maja ist im Haus.&#10;unknown=Achtung, unbekannte Person erkannt.&#10;multiple={names} wurden erkannt."></textarea></label>
+          <label>Sprachausgaben aktiv <span class="field-help">Erzeugt Ansagetexte und MQTT-Ansage-Signale. Home Assistant entscheidet danach mit seinen eigenen Sperrzeiten und Lautstaerkeeinstellungen, ob gesprochen wird.</span><input id="setting-announcements-enabled" type="checkbox"></label>
+          <label>Bekannte Personen ansagen <span class="field-help">Erlaubt Ansagen fuer Namen wie Thomas, Birgit oder Marie, sofern diese nicht in der Sperrliste stehen.</span><input id="setting-announcements-known" type="checkbox"></label>
+          <label>Unbekannte Personen ansagen <span class="field-help">Erlaubt Ansagen fuer erkannte Personen ohne bekannten Namen.</span><input id="setting-announcements-unknown" type="checkbox"></label>
+          <label>Hund ansagen <span class="field-help">Erlaubt Ansagen fuer erkannte Hunde bzw. Maja.</span><input id="setting-announcements-dog" type="checkbox"></label>
+          <label>Zufallstexte verwenden <span class="field-help">Wenn aktiv, waehlt die Bridge wechselnde Sprueche. Wenn aus, wird der Standard- oder eigene Text verwendet.</span><input id="setting-announcements-random" type="checkbox"></label>
+          <label>Globale Ansage-Sperre Sekunden <span class="field-help">Mindestabstand zwischen zwei Ansagen insgesamt. Verhindert, dass mehrere Events direkt hintereinander sprechen.</span><input id="setting-announcements-global-cooldown" type="number" min="0" step="1" placeholder="60"></label>
+          <label>Sperre pro Person/Tier Sekunden <span class="field-help">Mindestabstand pro Name oder Tier. Geht Thomas kurz weg und kommt wieder, wird erst nach Ablauf dieser Zeit erneut angesagt.</span><input id="setting-announcements-entity-cooldown" type="number" min="0" step="1" placeholder="300"></label>
+          <label>Nicht ansagen, kommagetrennt <span class="field-help">Diese Namen oder Kategorien werden herausgefiltert. Beispiel: `Thomas, unknown, Maja`.</span><input id="setting-announcements-disabled" autocomplete="off" placeholder="Thomas, unknown, Maja"></label>
+          <label class="wide">Eigene Ansagetexte je Zeile: Name=Text <span class="field-help">Ueberschreibt Texte fuer einzelne Namen oder Kategorien. `{names}` wird durch erkannte Namen ersetzt.</span><textarea id="setting-announcements-custom-texts" rows="5" placeholder="Thomas=Thomas ist im Wohnzimmer erkannt worden.&#10;Maja=Maja ist im Haus.&#10;unknown=Achtung, unbekannte Person erkannt.&#10;multiple={names} wurden erkannt."></textarea></label>
         </fieldset>
         <fieldset>
           <legend>Terrassentuer</legend>
-          <label>Terrassentuer-Entity aktiv <input id="setting-door-enabled" type="checkbox"></label>
-          <label>Terrassentuer offen <input id="setting-door-open" type="checkbox"></label>
-          <label>Terrassentuer Confidence <input id="setting-door-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.0"></label>
-          <label>Terrassentuer letzte Aenderung <input id="setting-door-last-changed" autocomplete="off" placeholder="2026-06-04T12:00:00Z"></label>
+          <label>Terrassentuer-Entity aktiv <span class="field-help">Veroeffentlicht Terrassentuer-Status als FaceBridge-MQTT-Entity. Das ist getrennt von externen HA-Tuerkontakten.</span><input id="setting-door-enabled" type="checkbox"></label>
+          <label>Terrassentuer offen <span class="field-help">Manueller/fallback Status, falls der Wert nicht aus einem Event kommt.</span><input id="setting-door-open" type="checkbox"></label>
+          <label>Terrassentuer Confidence <span class="field-help">Sicherheitswert zwischen 0 und 1 fuer die Tuererkennung. `0` bedeutet keine Bewertung.</span><input id="setting-door-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.0"></label>
+          <label>Terrassentuer letzte Aenderung <span class="field-help">Zeitstempel der letzten bekannten Tuer-Aenderung, z.B. `2026-06-04T12:00:00Z`.</span><input id="setting-door-last-changed" autocomplete="off" placeholder="2026-06-04T12:00:00Z"></label>
         </fieldset>
         <div class="actions"><button type="submit">Betrieb speichern</button></div>
         <p id="app-message" class="message" role="status"></p>
@@ -336,10 +339,10 @@
       <article class="panel">
         <div class="panel-title-row"><div><p class="section-label">Kamera</p><h2>Kamera konfigurieren</h2></div></div>
         <form id="camera-form" class="config-form compact-form">
-          <label>Kameraname <input id="camera-name" name="name" autocomplete="off" placeholder="garage_g3_flex"></label>
-          <label>IP-Adresse / Host <input id="camera-host" name="host" autocomplete="off" placeholder="192.168.2.241"></label>
-          <label>RTSP URL <span class="value-status" id="rtsp-url-status">-</span><input id="camera-rtsp" name="rtsp_url" autocomplete="off" placeholder="leer lassen = unveraendert"></label>
-          <label>Snapshot URL <span class="value-status" id="snapshot-url-status">-</span><input id="camera-snapshot" name="snapshot_url" autocomplete="off" placeholder="leer lassen = unveraendert"></label>
+          <label>Kameraname <span class="field-help">Interner Name der Kamera in der Bridge. Muss zu Frigate passen, wenn Frigate-Daten gefiltert werden.</span><input id="camera-name" name="name" autocomplete="off" placeholder="wohnzimmer_g3_flex"></label>
+          <label>IP-Adresse / Host <span class="field-help">Host oder IP der Kamera oder des Kamera-Proxys. Wird als Information und Fallback verwendet.</span><input id="camera-host" name="host" autocomplete="off" placeholder="fossflow.localdomain"></label>
+          <label>RTSP URL <span class="value-status" id="rtsp-url-status">-</span><span class="field-help">RTSP-Quelle fuer Video. Beispiel unten kann uebernommen und angepasst werden; gespeicherte Werte werden sichtbar angezeigt, Credentials bleiben maskiert.</span><input id="camera-rtsp" name="rtsp_url" autocomplete="off" placeholder="rtsp://fossflow.localdomain:8554/wohnzimmer_g3_flex"><button type="button" class="inline-button" id="rtsp-example-button">Beispiel uebernehmen</button></label>
+          <label>Snapshot URL <span class="value-status" id="snapshot-url-status">-</span><span class="field-help">HTTP/HTTPS-Bild fuer Vorschau und schnelle Tests. Beispiel: `http://fossflow.localdomain:5000/api/wohnzimmer_g3_flex/latest.jpg?bbox=1&tamp=1`.</span><input id="camera-snapshot" name="snapshot_url" autocomplete="off" placeholder="http://fossflow.localdomain:5000/api/wohnzimmer_g3_flex/latest.jpg?bbox=1&tamp=1"></label>
           <div class="actions"><button type="submit">Speichern</button><button type="button" id="rtsp-test-button">RTSP testen</button><button type="button" id="snapshot-test-button">Snapshot testen</button><button type="button" id="snapshot-button">Vorschau laden</button></div>
           <p id="config-message" class="message" role="status"></p>
           <p id="rtsp-test-message" class="message" role="status"></p>

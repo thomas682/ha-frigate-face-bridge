@@ -46,6 +46,25 @@ def redact_url(value: str) -> str:
     return re.sub(r"//[^/@\s]+@", "//***:***@", value)
 
 
+def display_url(value: str) -> str:
+    if not value:
+        return ""
+    try:
+        parts = urlsplit(value)
+        if parts.scheme and parts.netloc:
+            host = parts.hostname or ""
+            if parts.port:
+                host = f"{host}:{parts.port}"
+            query = parts.query
+            if parts.username or parts.password or re.search(r"(?i)(token|secret|password|key)=", query):
+                query = "***" if query else ""
+                return urlunsplit((parts.scheme, host, parts.path or "", query, ""))
+            return urlunsplit((parts.scheme, host, parts.path or "", query, ""))
+    except Exception:
+        pass
+    return re.sub(r"//[^/@\s]+@", "//***:***@", value)
+
+
 def redact_secret(value: Any) -> str:
     text = str(value or "")
     if not text:
@@ -62,9 +81,9 @@ def safe_config(config: dict[str, Any]) -> dict[str, Any]:
         mqtt["password"] = redact_secret(mqtt.get("password"))
     camera = out.get("camera") if isinstance(out.get("camera"), dict) else {}
     if "rtsp_url" in camera:
-        camera["rtsp_url"] = redact_url(str(camera.get("rtsp_url") or ""))
+        camera["rtsp_url"] = display_url(str(camera.get("rtsp_url") or ""))
     if "snapshot_url" in camera:
-        camera["snapshot_url"] = redact_url(str(camera.get("snapshot_url") or ""))
+        camera["snapshot_url"] = display_url(str(camera.get("snapshot_url") or ""))
     return out
 
 

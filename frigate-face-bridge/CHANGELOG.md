@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.15.1
+
+### Added
+
+- Feldnahe, konkrete Hilfetexte fuer die Konfigurationsparameter in der Ingress-Web-UI ergaenzt.
+- Erklaertexte fuer MQTT-, Erkennungs-, Ansage- und Verlaufslogs hinzugefuegt.
+- Frigate-API-Testbutton ergaenzt und vorhandene Testbuttons so erweitert, dass sie aktuelle Formulareingaben pruefen.
+- RTSP-Beispielbutton und sichtbare gespeicherte RTSP-/Snapshot-URLs ohne Credential-Offenlegung ergaenzt.
+
 ## 0.15.0
 
 ### Added
