@@ -8,7 +8,7 @@ from config_loader import display_url
 def camera_status(config: dict[str, Any]) -> dict[str, Any]:
     camera = config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
     return {
-        "name": camera.get("name") or "camera",
+        "name": camera.get("name") or "",
         "host": camera.get("host") or "",
         "rtsp_configured": bool(camera.get("rtsp_url")),
         "snapshot_configured": bool(camera.get("snapshot_url")),

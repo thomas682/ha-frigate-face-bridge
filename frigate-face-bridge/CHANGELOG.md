@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.15.2
+
+### Added
+
+- Ueberblick-Schemazeichnung fuer Datenfluss von Kamera/UniFi Protect ueber Frigate/go2rtc und MQTT bis Home Assistant ergaenzt ([#10](https://github.com/thomas682/ha-frigate-face-bridge/issues/10)).
+- Links-Sicht mit Bridge-API-, Frigate-/go2rtc- und GitHub-Links ergaenzt.
+- Snapshot-Beispielbutton und Headeranzeige fuer Version und Ersteller ergaenzt.
+
+### Changed
+
+- Kamera-Name und Kamera-Host/IP sind fuer neue Installationen neutral leer statt alter Beispielwerte `garage_g3_flex` und `192.168.2.241`; bestehende gespeicherte Nutzerwerte bleiben unveraendert.
+
 ## 0.15.1
 
 ### Added

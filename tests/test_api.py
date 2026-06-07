@@ -38,7 +38,14 @@ def test_status_json():
     assert response.status_code == 200
     data = response.get_json()
     assert data["ok"] is True
-    assert data["camera"]["name"] == "garage_g3_flex"
+    assert data["camera"]["name"] == ""
+
+
+def test_default_camera_options_do_not_force_old_example_values():
+    config = config_loader.load_runtime_config({})
+
+    assert config["camera"]["name"] == ""
+    assert config["camera"]["host"] == ""
 
 
 def test_config_redacts_secrets():

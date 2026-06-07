@@ -4,7 +4,7 @@ Dieses Repository stellt das Home-Assistant-Add-on `Frigate Face Bridge` bereit.
 
 ## Zweck
 
-Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.15.0` liefert eine stabile Add-on-Basis mit sicherer Parameterverwaltung, vollbreiter iPhone-tauglicher Web-UI, Testfunktionen fuer MQTT/RTSP/Snapshot, Demo-Modus, REST-API, Live-MQTT-Nachrichten, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, konfigurierbaren Ansagetexten mit Cooldowns, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
+Frigate Face Bridge ist eine lokale Bruecke fuer UniFi-Kameras, Personen-/Hund-Erkennung, vorbereitete Gesichtserkennung und MQTT-Ausgabe an Home Assistant. Version `0.15.2` liefert eine stabile Add-on-Basis mit sicherer Parameterverwaltung, vollbreiter iPhone-tauglicher Web-UI, Links-Sicht, Schemazeichnung, Testfunktionen fuer MQTT/Frigate/RTSP/Snapshot, Demo-Modus, REST-API, Live-MQTT-Nachrichten, MQTT-Publisher, Kamera-Konfiguration, Snapshot-Vorschau, realer Snapshot-Erfassung, optionalem Frigate-Event-Import, aktivem Frigate-Objektzaehler fuer Personen und Hund, konfigurierbaren Ansagetexten mit Cooldowns, Terrassentuer-Statusfeldern, lokaler Face-Registry, externem Face-Matching-Import, MQTT Discovery und konservativ maskierten Kamera-URLs in API-Ausgaben.
 
 ## Architektur
 
@@ -28,11 +28,17 @@ Das Add-on ersetzt Frigate nicht. Frigate, Double Take, CompreFace oder eine lok
 
 ## Aktueller Stand
 
-Aktuelle Add-on-Version: `0.15.0`.
+Aktuelle Add-on-Version: `0.15.2`.
 
 Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. `demo_mode` ist fuer fehlende/neue Werte nicht automatisch aktiv; bestehende Nutzerwerte werden bei Start, Neustart und Update nicht automatisch ueberschrieben.
 
 Die weiteren Ausbaustufen stehen in `ROADMAP.md`.
+
+## Version 0.15.2
+
+- Ueberblick zeigt eine Schemazeichnung vom Kamera-/UniFi-/Frigate-Datenfluss bis Home Assistant und zurueck zur Bridge-Konfiguration
+- Neue Links-Sicht mit anklickbaren Bridge-, Frigate-, go2rtc- und GitHub-Links
+- Snapshot-Beispielbutton ergaenzt; Kamera-Name und Host/IP sind fuer neue Installationen neutral leer statt alter Beispielwerte
 
 ## Version 0.15.0
 

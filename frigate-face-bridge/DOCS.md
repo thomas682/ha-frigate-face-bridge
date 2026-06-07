@@ -4,14 +4,14 @@
 
 Das Add-on startet im Standardzustand ohne automatisch aktivierten Demo-Modus. `demo_mode` muss bewusst aktiviert werden, wenn simulierte Events gewuenscht sind. Bereits gespeicherte Parameterwerte werden bei Start, Neustart oder Update nicht automatisch ueberschrieben.
 
-## Kamera 192.168.2.241 vorbereiten
+## Kamera vorbereiten
 
-Die Kamera-IP ist als `camera.host: 192.168.2.241` vorbereitet. Eine echte RTSP-URL wird bewusst nicht hart codiert.
+`camera.name` und `camera.host` sind fuer neue Installationen bewusst leer. Alte Werte wie `garage_g3_flex` oder `192.168.2.241` waren Beispiele aus einer frueheren Testkonfiguration und werden nicht mehr als Default gesetzt. Bereits gespeicherte Nutzerwerte bleiben bei Updates erhalten.
 
 Vorgehensweise fuer UniFi Protect / G3 Flex:
 
 1. UniFi Protect oeffnen.
-2. Kamera `G3 Flex` mit IP `192.168.2.241` auswaehlen.
+2. Gewuenschte Kamera auswaehlen und ihren Frigate-Kameranamen sowie Host/IP oder Proxy-Host notieren.
 3. RTSP oder RTSPS fuer die gewuenschte Stream-Qualitaet aktivieren.
 4. Falls UniFi Protect Zugangsdaten verlangt, einen dedizierten Nutzer mit minimalen Leserechten erstellen.
 5. RTSP-URL in VLC, `ffprobe` oder `ffmpeg` testen.
@@ -22,9 +22,9 @@ Beispiel ohne Zugangsdaten:
 
 ```yaml
 camera:
-  name: garage_g3_flex
-  host: 192.168.2.241
-  rtsp_url: rtsp://192.168.2.241:7447/STREAM_ID
+  name: wohnzimmer_g3_flex
+  host: fossflow.localdomain
+  rtsp_url: rtsp://fossflow.localdomain:8554/wohnzimmer_g3_flex
 ```
 
 Passwoerter gehoeren nicht in Logs, Issues, Screenshots oder Commits.
@@ -49,7 +49,7 @@ Payload fuer `person_count`:
 
 ```json
 {
-  "camera": "garage_g3_flex",
+  "camera": "wohnzimmer_g3_flex",
   "person_count": 2,
   "timestamp": "2026-06-01T18:30:00Z",
   "source": "frigate_face_bridge"

@@ -154,6 +154,18 @@ function setStatusBadge(id, isSet, setText = 'gesetzt', missingText = 'nicht ges
   element.classList.toggle('missing', !isSet);
 }
 
+function setLink(id, href, labelId, labelText) {
+  const link = document.getElementById(id);
+  const label = document.getElementById(labelId);
+  const enabled = Boolean(href);
+  if (link) {
+    link.href = enabled ? href : '#';
+    link.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+    link.classList.toggle('disabled', !enabled);
+  }
+  if (label) label.textContent = labelText || href || 'nicht konfiguriert';
+}
+
 function currentMqttSettings() {
   return {
     enabled: checkbox('setting-mqtt-enabled'),
@@ -595,6 +607,9 @@ async function refreshStatus() {
   const event = data.last_event || {};
   const storage = configData.storage_status || data.storage_status || {};
   const appStatus = data.app_status || {};
+  const frigateApiUrl = safeConfig.frigate?.api_url || rawConfig.frigate?.api_url || '';
+  const frigateBaseUrl = frigateApiUrl.replace(/\/$/, '');
+  text('addon-version', `Version ${data.version || '-'}`);
   document.getElementById('status').textContent = data.ok ? 'online' : 'fehler';
   document.getElementById('started').textContent = `Start: ${data.started_at || '-'}`;
   document.getElementById('camera').textContent = data.camera?.name || '-';
@@ -662,6 +677,8 @@ async function refreshStatus() {
   setStatusBadge('mqtt-password-status', storage.mqtt_password_set, 'Passwort gesetzt', 'Passwort nicht gesetzt');
   setStatusBadge('rtsp-url-status', storage.rtsp_url_set, rawConfig.camera?.rtsp_url || data.camera?.rtsp_url || 'RTSP gesetzt', 'RTSP nicht gesetzt');
   setStatusBadge('snapshot-url-status', storage.snapshot_url_set, rawConfig.camera?.snapshot_url || data.camera?.snapshot_url || 'Snapshot gesetzt', 'Snapshot nicht gesetzt');
+  setLink('link-frigate', frigateBaseUrl, 'link-frigate-text', frigateBaseUrl || 'nicht konfiguriert');
+  setLink('link-go2rtc', frigateBaseUrl ? `${frigateBaseUrl}/api/go2rtc/streams` : '', 'link-go2rtc-text', frigateBaseUrl ? `${frigateBaseUrl}/api/go2rtc/streams` : 'Frigate API URL fehlt');
   renderKeyValueList('debug-list', [
     ['Bridge', appStatus.bridge || '-'],
     ['Home Assistant', appStatus.home_assistant || '-'],
@@ -802,6 +819,12 @@ function useRtspExample() {
   input.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+function useSnapshotExample() {
+  const input = document.getElementById('camera-snapshot');
+  input.value = 'http://fossflow.localdomain:5000/api/wohnzimmer_g3_flex/latest.jpg?bbox=1';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 function setupFilters() {
   ['history', 'recognition', 'announcement', 'mqtt'].forEach((prefix) => {
     ['range', 'search'].forEach((suffix) => {
@@ -845,6 +868,7 @@ async function boot() {
   document.getElementById('rtsp-test-button').addEventListener('click', () => runTest('api/test/rtsp', 'rtsp-test-message', { camera: currentCameraSettings() }));
   document.getElementById('snapshot-test-button').addEventListener('click', () => runTest('api/test/snapshot', 'snapshot-test-message', { camera: currentCameraSettings() }));
   document.getElementById('rtsp-example-button').addEventListener('click', useRtspExample);
+  document.getElementById('snapshot-example-button').addEventListener('click', useSnapshotExample);
   try {
     await refreshStatus();
   } catch (err) {

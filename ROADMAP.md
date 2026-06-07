@@ -4,9 +4,9 @@ Diese Roadmap haelt den Projektstand und die naechsten Ausbaustufen fuer `Frigat
 
 ## Status
 
-Aktueller Stand: **Stufe 17 abgeschlossen**.
+Aktueller Stand: **Stufe 18 abgeschlossen**.
 
-Aktuelle Add-on-Version: `0.15.0`.
+Aktuelle Add-on-Version: `0.15.2`.
 
 ## Stufe 1 - Add-on-Basis
 
@@ -359,6 +359,26 @@ Abnahme:
 - Leere Formularfelder ueberschreiben keine gespeicherten Nutzerwerte.
 - Listen sind nach Zeitbereich und Volltext filterbar; Treffer werden markiert.
 - Debug und Live zeigen lesbare Statuslisten statt JSON-/YAML-Dumps.
+
+## Stufe 18 - Links, Schema und neutrale Kamera-Beispiele
+
+Status: **abgeschlossen**
+
+Ziel: Die Web-UI soll erklaeren, wie die Bridge zwischen Kamera, UniFi Protect, Frigate, MQTT und Home Assistant arbeitet, relevante Links direkt anbieten und keine alten Kamera-Beispielwerte als neue Defaults setzen.
+
+Umgesetzt:
+
+- Schemazeichnung im Ueberblick fuer Hin- und Rueckweg der Daten
+- Links-Sicht fuer Bridge-API, Frigate/go2rtc und GitHub-Seiten
+- Header mit Add-on-Version und Erstellerhinweis
+- Snapshot-Beispielbutton analog zum RTSP-Beispielbutton
+- Neue Installationen bekommen leere Kamera-Name-/Host-Felder statt alter Beispielwerte
+
+Abnahme:
+
+- Bestehende gespeicherte Kamera-Werte bleiben bei Updates erhalten.
+- Neue Installationen zeigen keine irrefuehrenden Default-Werte `garage_g3_flex` oder `192.168.2.241`.
+- Relevante Projekt- und Weboberflaechen sind in der Links-Sicht anklickbar.
 
 ## Laufende Sicherheitsregeln
 

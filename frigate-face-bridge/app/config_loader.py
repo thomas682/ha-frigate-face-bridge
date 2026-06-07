@@ -56,9 +56,15 @@ def display_url(value: str) -> str:
             if parts.port:
                 host = f"{host}:{parts.port}"
             query = parts.query
-            if parts.username or parts.password or re.search(r"(?i)(token|secret|password|key)=", query):
-                query = "***" if query else ""
-                return urlunsplit((parts.scheme, host, parts.path or "", query, ""))
+            sensitive = bool(
+                parts.username
+                or parts.password
+                or parts.scheme.lower() in {"rtsp", "rtsps"}
+                or re.search(r"(?i)(token|secret|password|key)=", query)
+                or re.search(r"(?i)(token|secret|password|key)", parts.path)
+            )
+            if sensitive:
+                return urlunsplit((parts.scheme, host, "/***" if parts.path else "", "", ""))
             return urlunsplit((parts.scheme, host, parts.path or "", query, ""))
     except Exception:
         pass
@@ -106,7 +112,7 @@ def _defaults_from_addon_config() -> dict[str, Any]:
         "face_recognition": {"enabled": False, "events_topic": "face_recognition/events", "min_confidence": 0.7},
         "announcements": {"enabled": True, "announce_known": True, "announce_unknown": True, "announce_dog": True, "random_texts_enabled": True, "global_cooldown_seconds": 60, "entity_cooldown_seconds": 300, "disabled_entities": "", "custom_texts": ""},
         "terrace_door": {"enabled": False, "open": False, "confidence": 0.0, "last_changed": ""},
-        "camera": {"name": "garage_g3_flex", "host": "192.168.2.241", "rtsp_url": "", "snapshot_url": "", "detect_width": 640, "detect_height": 360, "detect_fps": 5},
+        "camera": {"name": "", "host": "", "rtsp_url": "", "snapshot_url": "", "detect_width": 640, "detect_height": 360, "detect_fps": 5},
         "known_faces": [{"name": "Thomas", "enabled": True}, {"name": "Birgit", "enabled": True}, {"name": "Marie", "enabled": True}],
     }
 
@@ -243,7 +249,8 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(camera, dict):
         camera = config["camera"] = {}
         errors.append("camera must be an object; using defaults")
-    camera["name"] = re.sub(r"[^A-Za-z0-9_-]+", "_", str(camera.get("name") or "camera")).strip("_") or "camera"
+    camera_name = str(camera.get("name") or "").strip()
+    camera["name"] = re.sub(r"[^A-Za-z0-9_-]+", "_", camera_name).strip("_") if camera_name else ""
     camera["host"] = str(camera.get("host") or "")
     camera["rtsp_url"] = str(camera.get("rtsp_url") or "")
     camera["snapshot_url"] = str(camera.get("snapshot_url") or "")
@@ -303,7 +310,8 @@ def sanitize_camera_update(payload: dict[str, Any]) -> dict[str, Any]:
 
     out: dict[str, Any] = {}
     if "name" in camera:
-        name = re.sub(r"[^A-Za-z0-9_-]+", "_", str(camera.get("name") or "camera")).strip("_") or "camera"
+        raw_name = str(camera.get("name") or "").strip()
+        name = re.sub(r"[^A-Za-z0-9_-]+", "_", raw_name).strip("_") if raw_name else ""
         out["name"] = name
     if "host" in camera:
         host = str(camera.get("host") or "").strip()

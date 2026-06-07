@@ -6,7 +6,7 @@ Lokale Personenzaehlung und vorbereitete Gesichtserkennung fuer UniFi-Kameras mi
 
 Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-Events, MQTT-Ausgabe, REST-API und eine einfache Web-UI. Es ist als Grundlage fuer spaetere Integrationen mit Frigate, Double Take, CompreFace oder einer lokalen Face-Recognition-Engine gedacht.
 
-## Funktionsumfang 0.15.1
+## Funktionsumfang 0.15.2
 
 - Startfaehig ohne Kamera
 - Startfaehig ohne MQTT
@@ -18,8 +18,10 @@ Dieses Add-on ist die Home-Assistant-nahe Bruecke fuer Kamera-Status, Detection-
 - Statusanzeigen fuer gesetzten MQTT-Benutzer, gesetztes MQTT-Passwort sowie gesetzte RTSP-/Snapshot-URLs
 - Testbuttons fuer MQTT-Verbindung, RTSP-Erreichbarkeit und Snapshot-Erreichbarkeit
 - Testbutton fuer die Frigate API und direkte Tests mit den aktuell eingegebenen Formularwerten
+- Links-Sicht fuer Bridge-API, Frigate, go2rtc und GitHub-Projektseiten
+- Ueberblick-Schemazeichnung fuer Datenfluss von Kamera/UniFi Protect ueber Frigate/go2rtc und MQTT bis Home Assistant
 - konkrete Hilfetexte direkt an den Konfigurationsparametern sowie kurze Erklaerungen fuer Erkennungs-, MQTT-, Ansage- und Verlaufslogs
-- RTSP-Beispielbutton fuer `rtsp://fossflow.localdomain:8554/wohnzimmer_g3_flex` und sichtbare gespeicherte RTSP-/Snapshot-URLs ohne Credential-Offenlegung
+- RTSP- und Snapshot-Beispielbuttons fuer `wohnzimmer_g3_flex`-Beispiele und sichtbare gespeicherte RTSP-/Snapshot-URLs ohne Credential-Offenlegung
 - maskierte Live-MQTT-History fuer ein- und ausgehende Nachrichten in API und Web-UI
 - MQTT-Publisher fuer Status und Event-Topics
 - Konfiguration ueber `/data/options.json`
@@ -91,8 +93,8 @@ terrace_door:
   confidence: 0.0
   last_changed: ""
 camera:
-  name: garage_g3_flex
-  host: 192.168.2.241
+  name: ""
+  host: ""
   rtsp_url: ""
   snapshot_url: ""
   detect_width: 640
@@ -243,4 +245,4 @@ Diese Werte werden auf `terrace_door_open`, `terrace_door_confidence`, `terrace_
 
 Frigate Face Bridge ersetzt Frigate nicht. Frigate kann spaeter Personendetektionen liefern. Double Take oder CompreFace koennen spaeter Gesichtserkennung liefern. Dieses Add-on stellt Konfiguration, Statuslogik, API, Web-UI und Home-Assistant-MQTT-Anbindung bereit.
 
-Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.15.0` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.
+Lokale Bild-Personendetektion, lokale Face-Embedding-Berechnung und Terrassentuer-Bildklassifizierung sind in Version `0.15.2` noch nicht implementiert. Frigate-MQTT-Events und die Frigate-API koennen bereits fuer reale Personen-/Hund-Zaehler genutzt werden. Face-Matching-Ergebnisse koennen von einer externen lokalen Engine importiert werden. Die Face-Registry speichert nur lokale Metadaten bekannter Personen. Die naechsten Ausbaustufen sind in `../ROADMAP.md` dokumentiert.

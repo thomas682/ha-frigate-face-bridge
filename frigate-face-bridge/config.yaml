@@ -1,5 +1,5 @@
 name: Frigate Face Bridge
-version: "0.15.1"
+version: "0.15.2"
 slug: frigate_face_bridge
 description: Lokale Personenzaehlung und Gesichtserkennung fuer UniFi-Kameras mit MQTT-Anbindung.
 url: "https://github.com/thomas682/ha-frigate-face-bridge"
@@ -61,8 +61,8 @@ options:
     confidence: 0.0
     last_changed: ""
   camera:
-    name: garage_g3_flex
-    host: 192.168.2.241
+    name: ""
+    host: ""
     rtsp_url: ""
     snapshot_url: ""
     detect_width: 640
