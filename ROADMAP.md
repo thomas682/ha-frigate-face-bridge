@@ -330,7 +330,7 @@ Ziel: Parametrierte Nutzerwerte sollen bei Start, Neustart und Update nicht auto
 
 Umgesetzt:
 
-- Wiederverwendbare Regel in `docs/PARAMETER_MANAGEMENT.md`
+- Wiederverwendbare Regel in `docs/projekt-parameter-management.md`
 - Trennung zwischen gespeicherten Rohoptionen und Runtime-Konfiguration
 - `demo_mode` fuer fehlende/neue Werte standardmaessig aus
 - `/api/config` liefert `raw_config` zusaetzlich zur Runtime-Konfiguration

@@ -32,7 +32,7 @@ Aktuelle Add-on-Version: `0.16.0`.
 
 Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. `demo_mode` ist fuer fehlende/neue Werte nicht automatisch aktiv; bestehende Nutzerwerte werden bei Start, Neustart und Update nicht automatisch ueberschrieben.
 
-Die weiteren Ausbaustufen stehen in `ROADMAP.md`.
+Die weiteren Ausbaustufen stehen in `projekt-roadmap.md`.
 
 ## Version 0.16.0
 
@@ -54,7 +54,7 @@ Die weiteren Ausbaustufen stehen in `ROADMAP.md`.
 
 ## Version 0.14.1
 
-- Parameterverwaltungsregel in `docs/PARAMETER_MANAGEMENT.md` dokumentiert
+- Parameterverwaltungsregel in `docs/projekt-parameter-management.md` dokumentiert
 - Gespeicherte Rohoptionen und Runtime-Konfiguration getrennt
 - `demo_mode` ist fuer fehlende/neue Werte standardmaessig aus, ohne bestehende Nutzerwerte zu ueberschreiben
 

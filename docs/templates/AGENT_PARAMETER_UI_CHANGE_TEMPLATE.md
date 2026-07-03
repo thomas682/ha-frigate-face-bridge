@@ -12,7 +12,7 @@ Dieses Template dient Agenten als Vorgehensweise, wenn Parameter, Add-on-Konfigu
 
 ## Vor Aenderungen
 
-- Aktuelles Issue mit Ziel, Umfang, Akzeptanzkriterien und `## Urspruengliche Nutzeranweisung` erstellen.
+- Aktuelles Issue mit Ziel, Umfang, Akzeptanzkriterien und `## Vorgaben Chat` erstellen; darin die fuer dieses Issue relevanten Chat-Vorgaben 1:1, chronologisch und in Originalsprache erfassen.
 - Betroffene Dateien neu lesen, nicht auf alte Annahmen verlassen.
 - Pruefen, ob ein Wert aus `config.yaml`, `/data/options.json`, Registry-Dateien oder UI-Formularen stammt.
 - Klaeren, ob ein Feld ein Secret, eine URL mit Credentials oder ein sicherheitsrelevanter Wert ist.
