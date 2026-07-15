@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026.07.003
+
+### Fixed
+
+- Die Versionsermittlung startet auch im echten Home-Assistant-Add-on-Layout `/app/main.py` ohne `IndexError` und liefert bei fehlender oder leerer `VERSION` sicher `unbekannt` ([#12](https://github.com/thomas682/ha-frigate-face-bridge/issues/12)).
+
+### Changed
+
+- Funktionskatalog, Review-Fingerprints, Handbuch und globale Regel-Baseline wurden gemeinsam gegen den aktuellen Quell- und Regelstand aktualisiert.
+
 ## 2026.07.002
 
 - Die Funktionsinventar-Pruefung bindet Reviews jetzt ohne Selbstreferenz an eine existierende Audit-Basisrevision, die Vorfahr des validierten Commits sein muss ([#13](https://github.com/thomas682/ha-frigate-face-bridge/issues/13)).

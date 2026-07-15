@@ -48,6 +48,35 @@ def test_addon_metadata_version_matches_canonical_version():
     assert f'version: "{expected}"' in config_text
 
 
+def test_read_version_supports_actual_addon_layout(monkeypatch):
+    addon_version = Path("/app/VERSION")
+
+    def fake_read_text(path, encoding):
+        if path == addon_version:
+            return "2026.07.003\n"
+        raise FileNotFoundError(path)
+
+    monkeypatch.setattr(module, "APP_DIR", Path("/app"))
+    monkeypatch.setattr(Path, "read_text", fake_read_text)
+
+    assert module.read_version() == "2026.07.003"
+
+
+def test_read_version_returns_unknown_when_version_is_missing(tmp_path, monkeypatch):
+    monkeypatch.setattr(module, "APP_DIR", tmp_path / "app")
+
+    assert module.read_version() == "unbekannt"
+
+
+def test_read_version_returns_unknown_when_version_is_empty(tmp_path, monkeypatch):
+    app_dir = tmp_path / "app"
+    app_dir.mkdir()
+    (app_dir / "VERSION").write_text(" \n", encoding="utf-8")
+    monkeypatch.setattr(module, "APP_DIR", app_dir)
+
+    assert module.read_version() == "unbekannt"
+
+
 def test_status_exposes_communication_without_secret_urls():
     original = json.loads(json.dumps(module.config))
     try:

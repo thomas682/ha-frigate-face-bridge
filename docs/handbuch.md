@@ -1,6 +1,6 @@
 # Frigate Face Bridge - Bedien- und technisches Handbuch
 
-Stand: Version 2026.07.002, Audit-Basis `0cdb2058ac5468ba5395988c41aaf8016935f7ce`, fachlich und technisch abgeglichen am 2026-07-15. Der maschinenlesbare Katalog `docs/functions.yaml` ist die kanonische Inventarquelle. Die dortigen IDs bleiben stabil; dieses Handbuch erklaert Bedienung und Betrieb.
+Stand: Version 2026.07.003, Audit-Basis `436a6995ab957e440cac8aa2c39c2228cba67169`, fachlich und technisch abgeglichen am 2026-07-15. Der maschinenlesbare Katalog `docs/functions.yaml` ist die kanonische Inventarquelle. Die dortigen IDs bleiben stabil; dieses Handbuch erklaert Bedienung und Betrieb.
 
 ## Schnellstart
 
@@ -229,7 +229,7 @@ Die drei `camera.detect_*` Felder werden validiert und angezeigt, steuern im akt
 ## Start-, Container- und Pruefpfade
 
 
-`run.sh` startet `/app/main.py`. Die Anwendung liest die Version aus der kanonischen Root-Datei `VERSION`; das Image erhaelt denselben Wert ueber Home Assistants `BUILD_VERSION`, waehrend das Beispiel-Compose die Root-Datei read-only einbindet. Das Dockerfile verwendet Python 3.12 Alpine, installiert Bash/tzdata und `requirements.txt`, kopiert `config.yaml` als `/app/addon_config.yaml`, Anwendung und Startskript und exponiert Port 8099.
+`run.sh` startet `/app/main.py`. Die Anwendung liest zuerst `/app/VERSION` und verwendet im Repository-Layout ersatzweise die kanonische Root-Datei `VERSION`; fehlt die Datei oder ist sie leer, meldet Runtime und UI `unbekannt`, ohne den Start abzubrechen. Das Image erhaelt denselben Wert ueber Home Assistants `BUILD_VERSION`, waehrend das Beispiel-Compose die Root-Datei read-only einbindet. Das Dockerfile verwendet Python 3.12 Alpine, installiert Bash/tzdata und `requirements.txt`, kopiert `config.yaml` als `/app/addon_config.yaml`, Anwendung und Startskript und exponiert Port 8099.
 
 Home Assistant aktiviert Ingress auf 8099; die direkte Portzuordnung ist standardmaessig `null`. Das Beispiel-Compose exponiert dagegen `8099:8099`, bindet `deploy/data` nach `/data` und startet bei Fehlern/Hostneustart erneut. Dieser Port braucht einen vertrauenswuerdigen Netzbereich, weil die App keine eigene Authentifizierung besitzt.
 

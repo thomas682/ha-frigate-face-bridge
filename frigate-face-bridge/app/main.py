@@ -33,7 +33,7 @@ STARTED_AT = datetime.now(timezone.utc).replace(microsecond=0).isoformat().repla
 
 
 def read_version() -> str:
-    for version_file in (APP_DIR / "VERSION", APP_DIR.parents[1] / "VERSION"):
+    for version_file in (APP_DIR / "VERSION", APP_DIR.parent.parent / "VERSION"):
         try:
             version = version_file.read_text(encoding="utf-8").strip()
         except OSError:
