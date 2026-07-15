@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026.07.002
+
+- Die Funktionsinventar-Pruefung bindet Reviews jetzt ohne Selbstreferenz an eine existierende Audit-Basisrevision, die Vorfahr des validierten Commits sein muss ([#13](https://github.com/thomas682/ha-frigate-face-bridge/issues/13)).
+- Aktueller Quellbaum-Digest, Einzelfingerprints, kanonische Vertraege und stabile Dokumentations-IDs bleiben unveraendert strikt geprueft.
+
 ## 2026.07.001
 
 ### Fixed

@@ -513,6 +513,7 @@
     "python:scripts.validate_function_docs.InteractiveParser.__init__": "ffb.python.scripts.validate.function.docs.interactiveparser.init",
     "python:scripts.validate_function_docs.InteractiveParser.handle_starttag": "ffb.python.scripts.validate.function.docs.interactiveparser.handle.starttag",
     "python:scripts.validate_function_docs.accessibility_errors": "ffb.python.scripts.validate.function.docs.accessibility.errors",
+    "python:scripts.validate_function_docs.audited_revision_is_ancestor": "ffb.python.scripts.validate.function.docs.audited.revision.is.ancestor",
     "python:scripts.validate_function_docs.baseline_from_base_ref": "ffb.python.scripts.validate.function.docs.baseline.from.base.ref",
     "python:scripts.validate_function_docs.compare_historical_ids": "ffb.python.scripts.validate.function.docs.compare.historical.ids",
     "python:scripts.validate_function_docs.config_units": "ffb.python.scripts.validate.function.docs.config.units",

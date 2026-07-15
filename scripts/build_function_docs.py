@@ -648,7 +648,7 @@ def handbook(entries: list[dict[str, Any]]) -> str:
     marker = '<a id="atomic-inventory"></a>'
     intro = existing.split(marker, 1)[0].rstrip()
     intro = public_text(intro).replace("`<add-on-data>/options.json`", "the add-on options file").replace("`<add-on-data>/faces.json`", "the add-on face registry")
-    sections = [intro, "", marker, "## Technische Funktionsreferenz", "", f"Der kanonische Katalog enthaelt {len(entries)} einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa."]
+    sections = [intro, "", marker, "## Technische Funktionsreferenz", "", f"Der kanonische Katalog enthaelt {len(entries)} einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Audit-Basis, Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa."]
     grouped: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
     for entry in entries:
         grouped[entry["unit_type"]].append(entry)
@@ -664,7 +664,7 @@ def handbook(entries: list[dict[str, Any]]) -> str:
         sections.extend(["", f'<a id="inventory-{kind}"></a>', f"### {kind.title()} ({len(grouped[kind])})", "", references[kind]])
     sections.extend([
         "", "### Integritaet und ID-Stabilitaet", "",
-        "Jeder Eintrag enthaelt einen SHA-256-Fingerprint seiner Quelldatei und technischen Referenz. Der Top-Level-Quelldigest bindet den gesamten auditierten Quellumfang. `docs/function-id-baseline.json` speichert die dauerhafte Zuordnung aus Einheit und Dokumentations-ID; Umbenennungen oder Wiederverwendung einer ID schlagen im Validator fehl und muessen bewusst migriert werden.",
+        "`audited_head` ist die vollstaendige Commit-ID des vor Erstellung oder Aktualisierung des Inventars fachlich geprueften Basisstands. Sie muss existieren und Vorfahr des validierten Repository-HEAD sein; eine Gleichheit mit dem Inventar-Commit waere eine unloesbare Selbstreferenz. Der Top-Level-Quelldigest bindet stattdessen den gesamten aktuellen inventarisierten Quellumfang, und jeder Eintrag enthaelt zusaetzlich einen SHA-256-Fingerprint seiner Quelldatei und technischen Referenz. Produktquellenaenderungen nach der Audit-Basis schlagen deshalb weiterhin fehl, bis Katalog und Review aktualisiert werden. `docs/function-id-baseline.json` speichert die dauerhafte Zuordnung aus Einheit und Dokumentations-ID; Umbenennungen oder Wiederverwendung einer ID schlagen im Validator fehl und muessen bewusst migriert werden.",
     ])
     return "\n".join(sections) + "\n"
 
@@ -677,9 +677,9 @@ def build_catalog_data(seed_data: dict[str, Any] | None = None) -> dict[str, Any
     apply_seed(entries, seed)
     attach_source_fingerprints(entries)
     return sanitize_tree({
-        "schema_version": "4.0-source-bound", "project": "Frigate Face Bridge", "audited_head": git_head(),
+        "schema_version": "4.1-review-base-bound", "project": "Frigate Face Bridge", "audited_head": git_head(),
         "audited_source_digest": source_tree_digest(), "id_baseline": "docs/function-id-baseline.json",
-        "audit_method": "Manual source review plus deterministic AST/DOM extraction, transitive JavaScript effect analysis, SHA-256 source binding, and one-to-one validation; 2026-07-15.",
+        "audit_method": "Manual review of the audited base revision plus deterministic AST/DOM extraction, transitive JavaScript effect analysis, current-tree SHA-256 source binding, and one-to-one validation; 2026-07-15.",
         "review_evidence": "Every active unit was compared with the cited source, runtime states, security boundary, and available tests; canonical generated fields are independently recomputed by the validator.",
         "functions": sorted(entries, key=lambda item: (item["unit_type"], item["unit_ref"])),
         "exclusions": [

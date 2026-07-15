@@ -26,6 +26,50 @@ def test_checked_in_inventory_is_valid():
     assert sum(counts.values()) >= 513
 
 
+def test_validator_accepts_pre_inventory_review_base(tmp_path, monkeypatch):
+    data = catalog_data()
+    data["audited_head"] = "81115d9cc7a0e96971965c56bf831073223da72f"
+    catalog = tmp_path / "functions.yaml"
+    catalog.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr(validator, "CATALOG", catalog)
+
+    errors, _counts = validator.validate()
+
+    assert errors == []
+
+
+def test_validator_rejects_audited_revision_that_is_not_an_ancestor(tmp_path, monkeypatch):
+    data = catalog_data()
+    data["audited_head"] = "f" * 40
+    catalog = tmp_path / "functions.yaml"
+    catalog.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr(validator, "CATALOG", catalog)
+
+    errors, _counts = validator.validate()
+
+    assert any("audited_head must be a full reviewed base revision" in error for error in errors)
+
+
+def test_validator_rejects_old_audit_revision_contract(tmp_path, monkeypatch):
+    data = catalog_data()
+    data["schema_version"] = "4.0-source-bound"
+    catalog = tmp_path / "functions.yaml"
+    catalog.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr(validator, "CATALOG", catalog)
+
+    errors, _counts = validator.validate()
+
+    assert any("schema_version must be '4.1-review-base-bound'" in error for error in errors)
+
+
+def test_validator_rejects_changed_inventory_source_tree(monkeypatch):
+    monkeypatch.setattr(validator, "source_tree_digest", lambda: "sha256:" + "0" * 64)
+
+    errors, _counts = validator.validate()
+
+    assert "audited_source_digest does not match the current inventory source tree" in errors
+
+
 def test_validator_rejects_generic_auto_verified_wording(tmp_path, monkeypatch):
     data = catalog_data()
     data["functions"][0]["description"] = "konkrete Leerwerte und Ausnahmen folgen dem Codepfad"

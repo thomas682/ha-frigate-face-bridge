@@ -1,6 +1,6 @@
 # Frigate Face Bridge - Bedien- und technisches Handbuch
 
-Stand: Version 2026.07.001, veroeffentlichter HEAD `81115d9cc7a0e96971965c56bf831073223da72f`, fachlich und technisch abgeglichen am 2026-07-15. Der maschinenlesbare Katalog `docs/functions.yaml` ist die kanonische Inventarquelle. Die dortigen IDs bleiben stabil; dieses Handbuch erklaert Bedienung und Betrieb.
+Stand: Version 2026.07.002, Audit-Basis `0cdb2058ac5468ba5395988c41aaf8016935f7ce`, fachlich und technisch abgeglichen am 2026-07-15. Der maschinenlesbare Katalog `docs/functions.yaml` ist die kanonische Inventarquelle. Die dortigen IDs bleiben stabil; dieses Handbuch erklaert Bedienung und Betrieb.
 
 ## Schnellstart
 
@@ -261,10 +261,10 @@ Der Validator benoetigt nur die Python-Standardbibliothek. Er prueft Katalogstru
 <a id="atomic-inventory"></a>
 ## Technische Funktionsreferenz
 
-Der kanonische Katalog enthaelt 545 einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa.
+Der kanonische Katalog enthaelt 546 einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Audit-Basis, Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa.
 
 <a id="inventory-python"></a>
-### Python (168)
+### Python (169)
 
 Python-Funktionen umfassen Konfigurationsvalidierung und -persistenz, Eventnormalisierung, MQTT-Ausgabe, Netzwerkpruefungen, Hintergrundschleifen sowie die Dokumentationswerkzeuge. Dateischreibvorgaenge wie `config_loader._write_options`, Netzwerkzugriffe und Shared-State-Mutationen werden als Seiteneffekte ausgewiesen.
 
@@ -295,4 +295,4 @@ CI, Dockerfile, Compose und Startskript sind als Betriebsfunktionen erfasst. Die
 
 ### Integritaet und ID-Stabilitaet
 
-Jeder Eintrag enthaelt einen SHA-256-Fingerprint seiner Quelldatei und technischen Referenz. Der Top-Level-Quelldigest bindet den gesamten auditierten Quellumfang. `docs/function-id-baseline.json` speichert die dauerhafte Zuordnung aus Einheit und Dokumentations-ID; Umbenennungen oder Wiederverwendung einer ID schlagen im Validator fehl und muessen bewusst migriert werden.
+`audited_head` ist die vollstaendige Commit-ID des vor Erstellung oder Aktualisierung des Inventars fachlich geprueften Basisstands. Sie muss existieren und Vorfahr des validierten Repository-HEAD sein; eine Gleichheit mit dem Inventar-Commit waere eine unloesbare Selbstreferenz. Der Top-Level-Quelldigest bindet stattdessen den gesamten aktuellen inventarisierten Quellumfang, und jeder Eintrag enthaelt zusaetzlich einen SHA-256-Fingerprint seiner Quelldatei und technischen Referenz. Produktquellenaenderungen nach der Audit-Basis schlagen deshalb weiterhin fehl, bis Katalog und Review aktualisiert werden. `docs/function-id-baseline.json` speichert die dauerhafte Zuordnung aus Einheit und Dokumentations-ID; Umbenennungen oder Wiederverwendung einer ID schlagen im Validator fehl und muessen bewusst migriert werden.

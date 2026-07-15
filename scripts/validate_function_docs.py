@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate an atomic, dependency-free function inventory against HEAD sources."""
+"""Validate an atomic function inventory against its review base and current sources."""
 
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ PYTHON_DIR = ROOT / "frigate-face-bridge/app"
 JAVASCRIPT = PYTHON_DIR / "static/app.js"
 HTML = PYTHON_DIR / "static/index.html"
 CONFIG = ROOT / "frigate-face-bridge/config.yaml"
+CATALOG_SCHEMA_VERSION = "4.1-review-base-bound"
 ID_PATTERN = re.compile(r"^ffb\.(python|javascript|route|gui|config|operation)\.[a-z0-9]+(?:[._-][a-z0-9]+)*$")
 ROUTE_PATTERN = re.compile(r'@app\.(get|post|put|patch|delete)\("([^"]+)"\)')
 UNIT_TYPES = ("python", "javascript", "route", "gui", "config", "operation")
@@ -260,6 +261,18 @@ def compare_historical_ids(
             errors.append(f"{label} documentation ID changed for {unit}: {historical_id} -> {current[unit]}")
 
 
+def audited_revision_is_ancestor(revision: str) -> bool:
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        return False
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", revision, "HEAD"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
+
+
 def validate() -> tuple[list[str], Counter[str]]:
     errors: list[str] = []
     data = load_catalog(errors)
@@ -268,8 +281,16 @@ def validate() -> tuple[list[str], Counter[str]]:
     for field in ("schema_version", "project", "audited_head", "audited_source_digest", "id_baseline", "audit_method", "review_evidence"):
         if not meaningful(data.get(field)):
             errors.append(f"Top-Level-Pflichtfeld fehlt oder ist leer: {field}")
-    if data.get("audited_head") != git_head():
-        errors.append(f"audited_head does not match repository HEAD: {data.get('audited_head')!r}")
+    if data.get("schema_version") != CATALOG_SCHEMA_VERSION:
+        errors.append(
+            f"schema_version must be {CATALOG_SCHEMA_VERSION!r}: {data.get('schema_version')!r}"
+        )
+    audited_head = data.get("audited_head")
+    if not isinstance(audited_head, str) or not audited_revision_is_ancestor(audited_head):
+        errors.append(
+            "audited_head must be a full reviewed base revision that is an ancestor of repository HEAD: "
+            f"{audited_head!r}"
+        )
     if data.get("audited_source_digest") != source_tree_digest():
         errors.append("audited_source_digest does not match the current inventory source tree")
     entries = data.get("functions")
