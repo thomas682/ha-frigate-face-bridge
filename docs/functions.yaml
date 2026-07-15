@@ -1,8 +1,8 @@
 {
   "schema_version": "4.1-review-base-bound",
   "project": "Frigate Face Bridge",
-  "audited_head": "0cdb2058ac5468ba5395988c41aaf8016935f7ce",
-  "audited_source_digest": "sha256:64e106779e020b3c1c39640f67863bcfbd380cf8c8d35e91c28cb87ca83e3252",
+  "audited_head": "3d14617384c41da198ad52cbe4452e88a5968329",
+  "audited_source_digest": "sha256:9790209ad9124ff4c4a1d4e047dc43ee0e7248d9cd169794e975532665d1a7eb",
   "id_baseline": "docs/function-id-baseline.json",
   "audit_method": "Manual review of the audited base revision plus deterministic AST/DOM extraction, transitive JavaScript effect analysis, current-tree SHA-256 source binding, and one-to-one validation; 2026-07-15.",
   "review_evidence": "Every active unit was compared with the cited source, runtime states, security boundary, and available tests; canonical generated fields are independently recomputed by the validator.",
@@ -12464,7 +12464,7 @@
       "status": "verified",
       "verified_version": "2026.07.002; source review 2026-07-15",
       "source_ref": ".github/workflows/lint.yml",
-      "source_fingerprint": "sha256:07c2765018c1fc62593f60f1068bd96905c7e3c1a5610beeebe2752bd5af488c",
+      "source_fingerprint": "sha256:68ea1d323f215c3437ceb967fad27f02e84c2e63f2a23c5b5ef7f3d4d52f047e",
       "review_evidence": "Human source review of `.github/workflows/lint.yml` on 2026-07-15 covered semantics, states, side effects, security boundaries, and test evidence."
     },
     {
