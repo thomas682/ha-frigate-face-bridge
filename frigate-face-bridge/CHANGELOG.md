@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026.07.001
+
+### Fixed
+
+- Die Hund-Anwesenheitsanzeige aktualisiert wieder das vorhandene Element `dog-present` statt der nicht existierenden ID `maja-present`.
+
+### Changed
+
+- Die kanonische Release-Version liegt im Repository-Root in `VERSION`; Runtime und UI lesen diesen Wert ohne veraltete Code-Fallbacks.
+- Das von Home Assistant vorgeschriebene Feld `config.yaml.version` spiegelt dieselbe Version `2026.07.001`.
+- Funktionskatalog, Handbuch, stabile UI-Dokumentations-IDs, Review-Versionen und Quellfingerprints wurden auf den auditierten Baseline-Stand aktualisiert.
+
 ## 0.16.0
 
 ### Added

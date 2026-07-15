@@ -39,6 +39,13 @@ def test_status_json():
     data = response.get_json()
     assert data["ok"] is True
     assert data["camera"]["name"] == ""
+    assert data["version"] == (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+
+
+def test_addon_metadata_version_matches_canonical_version():
+    config_text = (ROOT / "frigate-face-bridge" / "config.yaml").read_text(encoding="utf-8")
+    expected = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    assert f'version: "{expected}"' in config_text
 
 
 def test_status_exposes_communication_without_secret_urls():

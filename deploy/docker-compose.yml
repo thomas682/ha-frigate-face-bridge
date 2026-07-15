@@ -8,5 +8,4 @@ services:
       - "8099:8099"
     volumes:
       - ./data:/data
-    environment:
-      ADDON_VERSION: "0.16.0"
+      - ../VERSION:/app/VERSION:ro

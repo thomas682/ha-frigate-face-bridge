@@ -31,6 +31,20 @@ APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 STARTED_AT = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
+
+def read_version() -> str:
+    for version_file in (APP_DIR / "VERSION", APP_DIR.parents[1] / "VERSION"):
+        try:
+            version = version_file.read_text(encoding="utf-8").strip()
+        except OSError:
+            continue
+        if version:
+            return version
+    return "unbekannt"
+
+
+APP_VERSION = read_version()
+
 app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="/static")
 HISTORY_LIMIT = 500
 state_lock = threading.RLock()
@@ -164,7 +178,7 @@ def _status() -> dict[str, Any]:
     last_error = mqtt_status.get("last_error") or (config_errors[-1] if config_errors else "")
     return {
         "ok": True,
-        "version": os.environ.get("ADDON_VERSION", "0.12.0"),
+        "version": APP_VERSION,
         "started_at": STARTED_AT,
         "demo_mode": bool(config.get("demo_mode", False)),
         "event_count": event_count,
@@ -662,7 +676,7 @@ def shutdown(signum: int, frame: Any) -> None:
 
 
 def main() -> None:
-    LOG.info("Frigate Face Bridge starting version=%s", os.environ.get("ADDON_VERSION", "0.12.0"))
+    LOG.info("Frigate Face Bridge starting version=%s", APP_VERSION)
     LOG.info("camera config: %s", camera_status(config))
     publisher.connect()
     thread = threading.Thread(target=event_loop, daemon=True)

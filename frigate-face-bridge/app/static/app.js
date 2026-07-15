@@ -69,11 +69,15 @@ function renderChips(containerId, values, emptyText = 'keine') {
   container.innerHTML = '';
   const items = (values || []).filter(Boolean);
   if (!items.length) {
-    container.textContent = emptyText;
+    const chip = document.createElement('span');
+    chip.dataset.docId = 'ffb.gui.chip.empty';
+    chip.textContent = emptyText;
+    container.appendChild(chip);
     return;
   }
   items.forEach((valueItem) => {
     const chip = document.createElement('span');
+    chip.dataset.docId = 'ffb.gui.chip.item';
     chip.className = 'entity-chip';
     chip.textContent = valueItem;
     container.appendChild(chip);
@@ -82,6 +86,7 @@ function renderChips(containerId, values, emptyText = 'keine') {
 
 function addCell(row, content) {
   const cell = document.createElement('td');
+  cell.dataset.docId = 'ffb.gui.table.cell';
   cell.textContent = content;
   row.appendChild(cell);
   return cell;
@@ -89,6 +94,7 @@ function addCell(row, content) {
 
 function addHighlightedCell(row, content, query) {
   const cell = document.createElement('td');
+  cell.dataset.docId = 'ffb.gui.table.highlighted-cell';
   appendHighlightedText(cell, String(content ?? ''), query);
   row.appendChild(cell);
   return cell;
@@ -108,6 +114,7 @@ function appendHighlightedText(parent, content, query) {
   while (match !== -1) {
     if (match > index) parent.appendChild(document.createTextNode(textValue.slice(index, match)));
     const mark = document.createElement('mark');
+    mark.dataset.docId = 'ffb.gui.search.highlight';
     mark.textContent = textValue.slice(match, match + search.length);
     parent.appendChild(mark);
     index = match + search.length;
@@ -155,8 +162,11 @@ function renderKeyValueList(containerId, entries) {
   container.innerHTML = '';
   (entries || []).forEach(([key, content]) => {
     const item = document.createElement('li');
+    item.dataset.docId = 'ffb.gui.key-value.item';
     const strong = document.createElement('strong');
+    strong.dataset.docId = 'ffb.gui.key-value.key';
     const span = document.createElement('span');
+    span.dataset.docId = 'ffb.gui.key-value.value';
     strong.textContent = key;
     span.textContent = content ?? '-';
     item.appendChild(strong);
@@ -480,15 +490,18 @@ function renderPersonChart(series) {
   const last = points[points.length - 1];
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('data-doc-id', 'ffb.gui.history.chart.svg');
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   svg.setAttribute('role', 'img');
   svg.setAttribute('aria-label', `Personenverlauf von ${first.timestamp || 'Start'} bis ${last.timestamp || 'jetzt'}`);
 
   const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  gridGroup.setAttribute('data-doc-id', 'ffb.gui.history.chart.grid');
   gridGroup.setAttribute('class', 'chart-grid');
   for (let tick = 0; tick <= max; tick += 1) {
     const y = yFor(tick);
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('data-doc-id', 'ffb.gui.history.chart.grid-line');
     line.setAttribute('x1', String(padding.left));
     line.setAttribute('x2', String(padding.left + plotWidth));
     line.setAttribute('y1', y.toFixed(1));
@@ -498,28 +511,33 @@ function renderPersonChart(series) {
   svg.appendChild(gridGroup);
 
   const area = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  area.setAttribute('data-doc-id', 'ffb.gui.history.chart.area');
   area.setAttribute('class', 'chart-area');
   area.setAttribute('points', areaPoints);
   svg.appendChild(area);
 
   const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+  polyline.setAttribute('data-doc-id', 'ffb.gui.history.chart.line');
   polyline.setAttribute('class', 'chart-line');
   polyline.setAttribute('points', linePoints);
   svg.appendChild(polyline);
 
   values.forEach((value, index) => {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('data-doc-id', 'ffb.gui.history.chart.point');
     circle.setAttribute('class', 'chart-point');
     circle.setAttribute('cx', xFor(index).toFixed(1));
     circle.setAttribute('cy', yFor(value).toFixed(1));
     circle.setAttribute('r', '4');
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.setAttribute('data-doc-id', 'ffb.gui.history.chart.point-title');
     title.textContent = `${points[index].timestamp || ''}: ${value} Personen`;
     circle.appendChild(title);
     svg.appendChild(circle);
   });
 
   const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  yLabel.setAttribute('data-doc-id', 'ffb.gui.history.chart.y-label');
   yLabel.setAttribute('class', 'chart-label');
   yLabel.setAttribute('x', '6');
   yLabel.setAttribute('y', String(padding.top + 4));
@@ -527,6 +545,7 @@ function renderPersonChart(series) {
   svg.appendChild(yLabel);
 
   const startLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  startLabel.setAttribute('data-doc-id', 'ffb.gui.history.chart.start-label');
   startLabel.setAttribute('class', 'chart-label');
   startLabel.setAttribute('x', String(padding.left));
   startLabel.setAttribute('y', String(height - 8));
@@ -534,6 +553,7 @@ function renderPersonChart(series) {
   svg.appendChild(startLabel);
 
   const endLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  endLabel.setAttribute('data-doc-id', 'ffb.gui.history.chart.end-label');
   endLabel.setAttribute('class', 'chart-label chart-label-end');
   endLabel.setAttribute('x', String(width - padding.right));
   endLabel.setAttribute('y', String(height - 8));
@@ -551,6 +571,7 @@ function renderHistory(items) {
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.history.empty';
     const cell = addCell(row, 'Noch keine History vorhanden.');
     cell.colSpan = 6;
     body.appendChild(row);
@@ -558,6 +579,7 @@ function renderHistory(items) {
   }
   for (const item of rows) {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.history.row';
     const recognized = (item.recognized_entities || item.known_faces || []).join(', ') || '-';
     const announcement = item.announcement_log_text || item.announcement_text || '-';
     addHighlightedCell(row, item.timestamp || '-', query);
@@ -578,6 +600,7 @@ function renderRecognitionHistory(items) {
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.recognition.empty';
     const cell = addCell(row, 'Noch keine Erkennungen.');
     cell.colSpan = 5;
     body.appendChild(row);
@@ -585,6 +608,7 @@ function renderRecognitionHistory(items) {
   }
   rows.forEach((item) => {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.recognition.row';
     addHighlightedCell(row, item.timestamp || '-', query);
     addHighlightedCell(row, (item.recognized_entities || item.known_faces || []).join(', ') || '-', query);
     addHighlightedCell(row, item.unknown_faces ?? 0, query);
@@ -602,6 +626,7 @@ function renderMqttHistory(items) {
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.mqtt.empty';
     const cell = addCell(row, 'Noch keine MQTT-Nachrichten.');
     cell.colSpan = 5;
     body.appendChild(row);
@@ -609,6 +634,7 @@ function renderMqttHistory(items) {
   }
   rows.forEach((item) => {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.mqtt.row';
     addHighlightedCell(row, item.timestamp || '-', query);
     addHighlightedCell(row, item.direction === 'in' ? 'rein' : 'raus', query);
     addHighlightedCell(row, item.topic || '-', query);
@@ -626,6 +652,7 @@ function renderAnnouncementHistory(items) {
   body.innerHTML = '';
   if (!rows.length) {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.announcement.empty';
     const cell = addCell(row, 'Noch keine Ansagen.');
     cell.colSpan = 5;
     body.appendChild(row);
@@ -633,6 +660,7 @@ function renderAnnouncementHistory(items) {
   }
   rows.forEach((item) => {
     const row = document.createElement('tr');
+    row.dataset.docId = 'ffb.gui.announcement.row';
     addHighlightedCell(row, item.timestamp || '-', query);
     addHighlightedCell(row, item.text || '-', query);
     addHighlightedCell(row, item.spoken ? 'ja' : 'nein', query);
@@ -648,11 +676,13 @@ function renderTopicList(topics) {
   list.innerHTML = '';
   (topics || []).forEach((topic) => {
     const item = document.createElement('li');
+    item.dataset.docId = 'ffb.gui.mqtt.topic.item';
     item.textContent = topic;
     list.appendChild(item);
   });
   if (!list.children.length) {
     const item = document.createElement('li');
+    item.dataset.docId = 'ffb.gui.mqtt.topic.empty';
     item.textContent = 'Keine Ausgabe-Topics bekannt.';
     list.appendChild(item);
   }
@@ -664,14 +694,18 @@ function renderFaces(faces) {
   list.innerHTML = '';
   if (!faces || faces.length === 0) {
     const item = document.createElement('li');
+    item.dataset.docId = 'ffb.gui.face.list.empty';
     item.textContent = 'Keine bekannten Personen angelegt.';
     list.appendChild(item);
     return;
   }
   for (const face of faces) {
     const item = document.createElement('li');
+    item.dataset.docId = 'ffb.gui.face.list.item';
     const button = document.createElement('button');
     button.type = 'button';
+    button.dataset.docId = 'ffb.gui.face.enabled.toggle';
+    button.setAttribute('aria-label', `${face.enabled ? 'Deaktivieren' : 'Aktivieren'}: ${face.name}`);
     button.textContent = face.enabled ? 'deaktivieren' : 'aktivieren';
     button.addEventListener('click', () => setFaceEnabled(face.name, !face.enabled));
     item.textContent = `${face.name} (${face.enabled ? 'aktiv' : 'inaktiv'}, Bilder: ${face.image_count ?? 0}) `;
@@ -707,7 +741,7 @@ async function refreshStatus() {
   document.getElementById('mqtt-topic').textContent = data.mqtt?.topic_prefix || '-';
   document.getElementById('person-count').textContent = event.person_count ?? 0;
   document.getElementById('dog-count').textContent = event.dog_count ?? 0;
-  document.getElementById('maja-present').textContent = event.maja_present ? 'Maja erkannt' : 'Maja nicht erkannt';
+  document.getElementById('dog-present').textContent = event.maja_present ? 'Maja erkannt' : 'Maja nicht erkannt';
   document.getElementById('event-time').textContent = event.timestamp || 'noch kein Event';
   document.getElementById('known-faces').textContent = (event.known_faces || []).join(', ') || 'keine';
   document.getElementById('recognized-entities').textContent = (event.recognized_entities || event.known_faces || []).join(', ') || 'keine';

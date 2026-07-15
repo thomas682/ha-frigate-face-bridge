@@ -11,80 +11,80 @@
     <section class="command-header">
       <div>
         <p class="eyebrow">Home Assistant Add-on</p>
-        <h1>Frigate Face Bridge <span class="version-inline" id="addon-version">Version -</span></h1>
+        <h1>Frigate Face Bridge <span class="version-inline" id="addon-version" data-doc-id="ffb.gui.addon.version">Version -</span></h1>
         <p>Lokale Personen-, Hunde- und Gesichtserkennung mit MQTT-Ausgabe fuer Home Assistant.</p>
         <p class="creator-line">(c) thomas schatz</p>
       </div>
       <div class="header-badges" aria-label="Systemstatus">
-        <span class="badge" id="status">lade...</span>
-        <span class="badge badge-muted" id="demo-mode">Demo -</span>
+        <span class="badge" id="status" data-doc-id="ffb.gui.status">lade...</span>
+        <span class="badge badge-muted" id="demo-mode" data-doc-id="ffb.gui.demo.mode">Demo -</span>
       </div>
     </section>
 
     <nav class="view-nav" aria-label="Bereiche">
-      <button type="button" class="view-tab active" data-target-view="overview">Ueberblick</button>
-      <button type="button" class="view-tab" data-target-view="live">Live</button>
-      <button type="button" class="view-tab" data-target-view="mqtt">MQTT</button>
-      <button type="button" class="view-tab" data-target-view="recognition">Erkennungen</button>
-      <button type="button" class="view-tab" data-target-view="announcements">Ansagen</button>
-      <button type="button" class="view-tab" data-target-view="history">Verlauf</button>
-      <button type="button" class="view-tab" data-target-view="config">Konfiguration</button>
-      <button type="button" class="view-tab" data-target-view="communication">Kommunikation</button>
-      <button type="button" class="view-tab" data-target-view="links">Links</button>
-      <button type="button" class="view-tab" data-target-view="debug">Debug</button>
+      <button type="button" class="view-tab active" data-target-view="overview" data-doc-id="ffb.gui.view.overview">Ueberblick</button>
+      <button type="button" class="view-tab" data-target-view="live" data-doc-id="ffb.gui.view.live">Live</button>
+      <button type="button" class="view-tab" data-target-view="mqtt" data-doc-id="ffb.gui.view.mqtt">MQTT</button>
+      <button type="button" class="view-tab" data-target-view="recognition" data-doc-id="ffb.gui.view.recognition">Erkennungen</button>
+      <button type="button" class="view-tab" data-target-view="announcements" data-doc-id="ffb.gui.view.announcements">Ansagen</button>
+      <button type="button" class="view-tab" data-target-view="history" data-doc-id="ffb.gui.view.history">Verlauf</button>
+      <button type="button" class="view-tab" data-target-view="config" data-doc-id="ffb.gui.view.config">Konfiguration</button>
+      <button type="button" class="view-tab" data-target-view="communication" data-doc-id="ffb.gui.view.communication">Kommunikation</button>
+      <button type="button" class="view-tab" data-target-view="links" data-doc-id="ffb.gui.view.links">Links</button>
+      <button type="button" class="view-tab" data-target-view="debug" data-doc-id="ffb.gui.view.debug">Debug</button>
     </nav>
 
-    <section class="direct-access-notice" id="direct-access-notice" hidden>
+    <section class="direct-access-notice" id="direct-access-notice" hidden data-doc-id="ffb.gui.direct.access.notice">
       <div>
         <p class="section-label">Direktzugriff</p>
         <h2>Bridge ist erreichbar</h2>
         <p>Diese Adresse ist nur der optionale Direktzugriff auf den Add-on-Port. Die vollstaendige Bedienoberflaeche wird kuenftig nur ueber die Home-Assistant-Add-on-Webseite verwendet.</p>
       </div>
       <div class="direct-status-box">
-        <strong id="direct-bridge-status">Status wird geladen ...</strong>
-        <a id="direct-ha-link" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge">Zur HA Add-on-Webseite</a>
+        <strong id="direct-bridge-status" data-doc-id="ffb.gui.direct.bridge.status">Status wird geladen ...</strong>
+        <a id="direct-ha-link" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge" data-doc-id="ffb.gui.direct.ha.link">Zur HA Add-on-Webseite</a>
       </div>
     </section>
 
     <section class="stat-grid view" data-view="overview" aria-label="Aktuelle Werte">
       <article class="stat-card accent">
         <span>Personen</span>
-        <strong id="person-count">0</strong>
-        <small id="event-time">noch kein Event</small>
+        <strong id="person-count" data-doc-id="ffb.gui.person.count">0</strong>
+        <small id="event-time" data-doc-id="ffb.gui.event.time">noch kein Event</small>
       </article>
       <article class="stat-card">
         <span>Hund</span>
-        <strong id="dog-count">0</strong>
-        <small id="maja-present">Maja nicht erkannt</small>
+        <strong id="dog-count" data-doc-id="ffb.gui.dog.count">0</strong>
+        <small id="dog-present" data-doc-id="ffb.gui.dog.present">Maja nicht erkannt</small>
       </article>
       <article class="stat-card">
         <span>Kamera</span>
-        <strong id="camera">-</strong>
-        <small id="camera-details"></small>
+        <strong id="camera" data-doc-id="ffb.gui.camera">-</strong>
+        <small id="camera-details" data-doc-id="ffb.gui.camera.details"></small>
       </article>
       <article class="stat-card warn">
         <span>MQTT</span>
-        <strong id="mqtt">-</strong>
-        <small id="mqtt-topic"></small>
+        <strong id="mqtt" data-doc-id="ffb.gui.mqtt">-</strong>
+        <small id="mqtt-topic" data-doc-id="ffb.gui.mqtt.topic"></small>
       </article>
       <article class="stat-card accent">
         <span>Erkannte Personen</span>
-        <strong id="recognized-count-card">0</strong>
-        <small id="recognized-count-detail">keine Namen</small>
+        <strong id="recognized-count-card" data-doc-id="ffb.gui.recognized.count.card">0</strong>
+        <small id="recognized-count-detail" data-doc-id="ffb.gui.recognized.count.detail">keine Namen</small>
       </article>
       <article class="stat-card">
         <span>Terrassentuer</span>
-        <strong id="terrace-door-open">-</strong>
-        <small>Confidence <span id="terrace-door-confidence">-</span> · <span id="terrace-door-last-changed">-</span></small>
+        <strong id="terrace-door-open" data-doc-id="ffb.gui.terrace.door.open">-</strong>
+        <small>Confidence <span id="terrace-door-confidence" data-doc-id="ffb.gui.terrace.door.confidence">-</span> · <span id="terrace-door-last-changed" data-doc-id="ffb.gui.terrace.door.last.changed">-</span></small>
       </article>
       <article class="stat-card">
         <span>Home Assistant</span>
-        <strong id="ha-status-card">-</strong>
+        <strong id="ha-status-card" data-doc-id="ffb.gui.ha.status.card">-</strong>
         <small>Ingress/API Status</small>
       </article>
       <article class="stat-card">
         <span>go2rtc</span>
-        <strong id="go2rtc-status-card">-</strong>
+        <strong id="go2rtc-status-card" data-doc-id="ffb.gui.go2rtc.status.card">-</strong>
         <small>ueber Frigate API</small>
       </article>
     </section>
@@ -94,32 +94,32 @@
         <div class="event-icon" aria-hidden="true">◎</div>
         <div>
           <h2>Letztes Event</h2>
-          <p id="started">Start: -</p>
+          <p id="started" data-doc-id="ffb.gui.started">Start: -</p>
         </div>
       </div>
       <div class="face-chips" aria-label="Erkennung">
-        <span class="face-chip">Bekannt: <strong id="known-faces">-</strong></span>
-        <span class="face-chip">Erkannt: <strong id="recognized-entities">-</strong></span>
-        <span class="face-chip danger">Unbekannt: <strong id="unknown-faces">0</strong></span>
-        <span class="face-chip">Hunde: <strong id="last-dog-count">0</strong></span>
+        <span class="face-chip">Bekannt: <strong id="known-faces" data-doc-id="ffb.gui.known.faces">-</strong></span>
+        <span class="face-chip">Erkannt: <strong id="recognized-entities" data-doc-id="ffb.gui.recognized.entities">-</strong></span>
+        <span class="face-chip danger">Unbekannt: <strong id="unknown-faces" data-doc-id="ffb.gui.unknown.faces">0</strong></span>
+        <span class="face-chip">Hunde: <strong id="last-dog-count" data-doc-id="ffb.gui.last.dog.count">0</strong></span>
       </div>
       <div class="announce-bar">
         <span>Ansage</span>
-        <strong id="announcement-state">-</strong>
-        <em id="announcement-text">-</em>
+        <strong id="announcement-state" data-doc-id="ffb.gui.announcement.state">-</strong>
+        <em id="announcement-text" data-doc-id="ffb.gui.announcement.text">-</em>
       </div>
     </section>
 
     <section class="connection-row view" data-view="overview" aria-label="Verbindungen und Zusatzdaten">
       <article class="connection-card">
         <span>Applikationen</span>
-        <strong id="apps-status-card">-</strong>
+        <strong id="apps-status-card" data-doc-id="ffb.gui.apps.status.card">-</strong>
         <small>Bridge, Frigate, MQTT</small>
       </article>
       <article class="connection-card">
         <span>Letzter Fehler</span>
-        <strong id="last-error-card">kein Fehler</strong>
-        <small>Events <span id="event-count">0</span> · Frigate <span id="frigate-event-count">0</span> · Face <span id="face-event-count">0</span></small>
+        <strong id="last-error-card" data-doc-id="ffb.gui.last.error.card">kein Fehler</strong>
+        <small>Events <span id="event-count" data-doc-id="ffb.gui.event.count">0</span> · Frigate <span id="frigate-event-count" data-doc-id="ffb.gui.frigate.event.count">0</span> · Face <span id="face-event-count" data-doc-id="ffb.gui.face.event.count">0</span></small>
       </article>
     </section>
 
@@ -139,62 +139,62 @@
           <p class="section-label">Kommunikation</p>
           <h2>Live-Schema von Kamera bis Home Assistant</h2>
         </div>
-        <span class="live-dot" id="communication-refresh-state">Live</span>
+        <span class="live-dot" id="communication-refresh-state" data-doc-id="ffb.gui.communication.refresh.state">Live</span>
       </div>
       <div class="comm-flow" aria-label="Datenfluss von Kamera ueber Frigate und Face Bridge bis Home Assistant">
-        <button type="button" class="comm-stage" data-comm-stage="camera">
-          <span class="comm-box comm-selected" id="comm-box-camera">
+        <button type="button" class="comm-stage" data-comm-stage="camera" data-doc-id="ffb.gui.communication.camera">
+          <span class="comm-box comm-selected" id="comm-box-camera" data-doc-id="ffb.gui.comm.box.camera">
             <span class="comm-icon">CAM</span>
             <span class="comm-title">Kamera</span>
-            <span class="comm-sub" id="comm-camera-sub">UniFi / Kamera</span>
-            <span class="comm-badge" id="comm-camera-badge">Status</span>
+            <span class="comm-sub" id="comm-camera-sub" data-doc-id="ffb.gui.comm.camera.sub">UniFi / Kamera</span>
+            <span class="comm-badge" id="comm-camera-badge" data-doc-id="ffb.gui.comm.camera.badge">Status</span>
           </span>
         </button>
         <div class="comm-arr">→</div>
         <div class="comm-frigate-group">
-          <div class="comm-frigate-label">Frigate NVR <span id="comm-go2rtc-used">go2rtc?</span></div>
-          <button type="button" class="comm-stage" data-comm-stage="go2rtc">
-            <span class="comm-box" id="comm-box-go2rtc">
+          <div class="comm-frigate-label">Frigate NVR <span id="comm-go2rtc-used" data-doc-id="ffb.gui.comm.go2rtc.used">go2rtc?</span></div>
+          <button type="button" class="comm-stage" data-comm-stage="go2rtc" data-doc-id="ffb.gui.communication.go2rtc">
+            <span class="comm-box" id="comm-box-go2rtc" data-doc-id="ffb.gui.comm.box.go2rtc">
               <span class="comm-icon">RTC</span>
               <span class="comm-title">go2rtc</span>
-              <span class="comm-sub" id="comm-go2rtc-sub">Stream-Konverter</span>
-              <span class="comm-badge" id="comm-go2rtc-badge">Status</span>
+              <span class="comm-sub" id="comm-go2rtc-sub" data-doc-id="ffb.gui.comm.go2rtc.sub">Stream-Konverter</span>
+              <span class="comm-badge" id="comm-go2rtc-badge" data-doc-id="ffb.gui.comm.go2rtc.badge">Status</span>
             </span>
           </button>
           <div class="comm-arr comm-arr-inner">→</div>
-          <button type="button" class="comm-stage" data-comm-stage="frigate">
-            <span class="comm-box" id="comm-box-frigate">
+          <button type="button" class="comm-stage" data-comm-stage="frigate" data-doc-id="ffb.gui.communication.frigate">
+            <span class="comm-box" id="comm-box-frigate" data-doc-id="ffb.gui.comm.box.frigate">
               <span class="comm-icon">NVR</span>
               <span class="comm-title">Frigate</span>
-              <span class="comm-sub" id="comm-frigate-sub">Events / API</span>
-              <span class="comm-badge" id="comm-frigate-badge">Status</span>
+              <span class="comm-sub" id="comm-frigate-sub" data-doc-id="ffb.gui.comm.frigate.sub">Events / API</span>
+              <span class="comm-badge" id="comm-frigate-badge" data-doc-id="ffb.gui.comm.frigate.badge">Status</span>
             </span>
           </button>
         </div>
         <div class="comm-arr">→</div>
-        <button type="button" class="comm-stage" data-comm-stage="bridge">
-          <span class="comm-box" id="comm-box-bridge">
+        <button type="button" class="comm-stage" data-comm-stage="bridge" data-doc-id="ffb.gui.communication.bridge">
+          <span class="comm-box" id="comm-box-bridge" data-doc-id="ffb.gui.comm.box.bridge">
             <span class="comm-icon">FFB</span>
             <span class="comm-title">Face Bridge</span>
-            <span class="comm-sub" id="comm-bridge-sub">Logik / UI</span>
-            <span class="comm-badge" id="comm-bridge-badge">Status</span>
+            <span class="comm-sub" id="comm-bridge-sub" data-doc-id="ffb.gui.comm.bridge.sub">Logik / UI</span>
+            <span class="comm-badge" id="comm-bridge-badge" data-doc-id="ffb.gui.comm.bridge.badge">Status</span>
           </span>
         </button>
         <div class="comm-arr">→</div>
-        <button type="button" class="comm-stage" data-comm-stage="home_assistant">
-          <span class="comm-box" id="comm-box-home_assistant">
+        <button type="button" class="comm-stage" data-comm-stage="home_assistant" data-doc-id="ffb.gui.communication.home.assistant">
+          <span class="comm-box" id="comm-box-home_assistant" data-doc-id="ffb.gui.comm.box.home.assistant">
             <span class="comm-icon">HA</span>
             <span class="comm-title">Home Assistant</span>
-            <span class="comm-sub" id="comm-home_assistant-sub">Sensoren / UI</span>
-            <span class="comm-badge" id="comm-home_assistant-badge">Status</span>
+            <span class="comm-sub" id="comm-home_assistant-sub" data-doc-id="ffb.gui.comm.home.assistant.sub">Sensoren / UI</span>
+            <span class="comm-badge" id="comm-home_assistant-badge" data-doc-id="ffb.gui.comm.home.assistant.badge">Status</span>
           </span>
         </button>
       </div>
       <div class="comm-back">Rueckweg: Home Assistant oeffnet diese Add-on-Webseite per Ingress, schreibt Add-on-Optionen und nutzt MQTT-Sensoren fuer Dashboard, Automationen und TTS.</div>
       <div class="comm-detail">
-        <h3 id="comm-detail-title">Kamera</h3>
-        <p id="comm-detail-description">-</p>
-        <ul class="detail-list" id="comm-detail-list"></ul>
+        <h3 id="comm-detail-title" data-doc-id="ffb.gui.comm.detail.title">Kamera</h3>
+        <p id="comm-detail-description" data-doc-id="ffb.gui.comm.detail.description">-</p>
+        <ul class="detail-list" id="comm-detail-list" data-doc-id="ffb.gui.comm.detail.list"></ul>
       </div>
     </section>
 
@@ -204,31 +204,31 @@
           <p class="section-label">Live</p>
           <h2>Aktuelle Erkennungen</h2>
         </div>
-        <span class="live-dot" id="live-refresh-state">Live</span>
+        <span class="live-dot" id="live-refresh-state" data-doc-id="ffb.gui.live.refresh.state">Live</span>
       </div>
       <div class="live-layout">
         <article class="live-card highlight">
           <span>Erkannte Namen</span>
-          <div class="entity-list" id="live-recognized-entities">-</div>
-          <small id="live-event-time">noch kein Event</small>
+          <div class="entity-list" id="live-recognized-entities" data-doc-id="ffb.gui.live.recognized.entities">-</div>
+          <small id="live-event-time" data-doc-id="ffb.gui.live.event.time">noch kein Event</small>
         </article>
         <article class="live-card">
           <span>Bekannte Gesichter</span>
-          <div class="entity-list" id="live-known-faces">-</div>
+          <div class="entity-list" id="live-known-faces" data-doc-id="ffb.gui.live.known.faces">-</div>
         </article>
         <article class="live-card danger">
           <span>Unbekannte Personen</span>
-          <strong id="live-unknown-faces">0</strong>
+          <strong id="live-unknown-faces" data-doc-id="ffb.gui.live.unknown.faces">0</strong>
         </article>
         <article class="live-card">
           <span>Hund</span>
-          <strong id="live-dog-state">0</strong>
+          <strong id="live-dog-state" data-doc-id="ffb.gui.live.dog.state">0</strong>
         </article>
       </div>
       <div class="raw-event-box">
         <h3>Letztes Event als Text</h3>
-        <ul class="detail-list" id="last-event-list"></ul>
-        <pre id="last-event-json" hidden></pre>
+        <ul class="detail-list" id="last-event-list" data-doc-id="ffb.gui.last.event.list"></ul>
+        <pre id="last-event-json" hidden data-doc-id="ffb.gui.last.event.json"></pre>
       </div>
     </section>
 
@@ -240,24 +240,24 @@
         </div>
       </div>
       <div class="mqtt-summary">
-        <article><span>Status</span><strong id="mqtt-live-status">-</strong></article>
-        <article><span>Prefix</span><strong id="mqtt-live-prefix">-</strong></article>
-        <article><span>Frigate Topic</span><strong id="mqtt-frigate-topic">-</strong></article>
-        <article><span>Face Topic</span><strong id="mqtt-face-topic">-</strong></article>
+        <article><span>Status</span><strong id="mqtt-live-status" data-doc-id="ffb.gui.mqtt.live.status">-</strong></article>
+        <article><span>Prefix</span><strong id="mqtt-live-prefix" data-doc-id="ffb.gui.mqtt.live.prefix">-</strong></article>
+        <article><span>Frigate Topic</span><strong id="mqtt-frigate-topic" data-doc-id="ffb.gui.mqtt.frigate.topic">-</strong></article>
+        <article><span>Face Topic</span><strong id="mqtt-face-topic" data-doc-id="ffb.gui.mqtt.face.topic">-</strong></article>
       </div>
       <h3>Bridge-Ausgabe-Topics</h3>
-      <ul class="topic-list" id="mqtt-topic-list"></ul>
+      <ul class="topic-list" id="mqtt-topic-list" data-doc-id="ffb.gui.mqtt.topic.list"></ul>
       <h3>Nachrichten</h3>
       <p class="log-explain">Dieses Log zeigt MQTT-Nachrichten, die die Bridge empfaengt oder veroeffentlicht. Wiederholte Eintraege entstehen, wenn Frigate oder die Bridge zyklisch Statuswerte sendet; das ist nicht automatisch eine neue Personenerkennung. Secrets und lange Payloads werden gekuerzt oder maskiert.</p>
       <div class="table-controls">
-        <label>Zeitbereich <select id="mqtt-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
-        <label>Suche <input id="mqtt-search" autocomplete="off" placeholder="Volltext suchen"></label>
+        <label>Zeitbereich <select id="mqtt-range" data-doc-id="ffb.gui.mqtt.range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="mqtt-search" autocomplete="off" placeholder="Volltext suchen" data-doc-id="ffb.gui.mqtt.search"></label>
       </div>
       <div class="table-scroll"><table class="history-table mqtt-table">
         <thead>
           <tr><th>Zeit</th><th>Richtung</th><th>Topic</th><th>Payload</th><th>Flags</th></tr>
         </thead>
-        <tbody id="mqtt-history-body">
+        <tbody id="mqtt-history-body" data-doc-id="ffb.gui.mqtt.history.body">
           <tr><td colspan="5">Noch keine MQTT-Nachrichten.</td></tr>
         </tbody>
       </table></div>
@@ -271,21 +271,21 @@
         </div>
       </div>
       <div class="recognition-grid">
-        <article class="live-card highlight"><span>Aktuell erkannt</span><div class="entity-list" id="recognition-current">-</div></article>
-        <article class="live-card"><span>Bekannte Gesichter</span><div class="entity-list" id="recognition-known">-</div></article>
-        <article class="live-card danger"><span>Unbekannt</span><strong id="recognition-unknown">0</strong></article>
-        <article class="live-card"><span>Hund/Hunde</span><strong id="recognition-dog">0</strong></article>
+        <article class="live-card highlight"><span>Aktuell erkannt</span><div class="entity-list" id="recognition-current" data-doc-id="ffb.gui.recognition.current">-</div></article>
+        <article class="live-card"><span>Bekannte Gesichter</span><div class="entity-list" id="recognition-known" data-doc-id="ffb.gui.recognition.known">-</div></article>
+        <article class="live-card danger"><span>Unbekannt</span><strong id="recognition-unknown" data-doc-id="ffb.gui.recognition.unknown">0</strong></article>
+        <article class="live-card"><span>Hund/Hunde</span><strong id="recognition-dog" data-doc-id="ffb.gui.recognition.dog">0</strong></article>
       </div>
       <p class="log-explain">Diese Tabelle zeigt erkannte Personen, unbekannte Gesichter, Hund/Maja und die jeweilige Quelle. Ein Eintrag alle paar Sekunden kommt meist vom aktiven Frigate-API-Zaehler (`person_count_interval_seconds`) oder im Demo-Modus vom Event-Intervall, nicht zwingend von einem neuen Frigate-Event.</p>
       <div class="table-controls">
-        <label>Zeitbereich <select id="recognition-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
-        <label>Suche <input id="recognition-search" autocomplete="off" placeholder="Name, Quelle, Text"></label>
+        <label>Zeitbereich <select id="recognition-range" data-doc-id="ffb.gui.recognition.range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="recognition-search" autocomplete="off" placeholder="Name, Quelle, Text" data-doc-id="ffb.gui.recognition.search"></label>
       </div>
       <div class="table-scroll"><table class="history-table">
         <thead>
           <tr><th>Zeit</th><th>Erkannt</th><th>Unbekannt</th><th>Hund</th><th>Quelle</th></tr>
         </thead>
-        <tbody id="recognition-history-body">
+        <tbody id="recognition-history-body" data-doc-id="ffb.gui.recognition.history.body">
           <tr><td colspan="5">Noch keine Erkennungen.</td></tr>
         </tbody>
       </table></div>
@@ -299,21 +299,21 @@
         </div>
       </div>
       <div class="recognition-grid">
-        <article class="live-card highlight"><span>Aktueller Text</span><div class="entity-list" id="announce-current-text">-</div></article>
-        <article class="live-card"><span>Status</span><strong id="announce-current-state">-</strong></article>
-        <article class="live-card"><span>Entitaeten</span><div class="entity-list" id="announce-current-entities">-</div></article>
-        <article class="live-card danger"><span>Sperrgrund</span><strong id="announce-suppressed-reason">-</strong></article>
+        <article class="live-card highlight"><span>Aktueller Text</span><div class="entity-list" id="announce-current-text" data-doc-id="ffb.gui.announce.current.text">-</div></article>
+        <article class="live-card"><span>Status</span><strong id="announce-current-state" data-doc-id="ffb.gui.announce.current.state">-</strong></article>
+        <article class="live-card"><span>Entitaeten</span><div class="entity-list" id="announce-current-entities" data-doc-id="ffb.gui.announce.current.entities">-</div></article>
+        <article class="live-card danger"><span>Sperrgrund</span><strong id="announce-suppressed-reason" data-doc-id="ffb.gui.announce.suppressed.reason">-</strong></article>
       </div>
       <p class="log-explain">Dieses Log zeigt, welchen Ansagetext die Bridge erzeugt hat, ob er gesprochen werden sollte und welche Entitaeten betroffen waren. Wenn eine Ansage unterdrueckt wurde, steht der Grund in der Spalte `Sperrgrund`, z.B. Cooldown oder deaktivierte Kategorie.</p>
       <div class="table-controls">
-        <label>Zeitbereich <select id="announcement-range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
-        <label>Suche <input id="announcement-search" autocomplete="off" placeholder="Text, Person, Sperrgrund"></label>
+        <label>Zeitbereich <select id="announcement-range" data-doc-id="ffb.gui.announcement.range"><option value="4">letzte 4 h</option><option value="24" selected>letzte 24 h</option><option value="72">letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="announcement-search" autocomplete="off" placeholder="Text, Person, Sperrgrund" data-doc-id="ffb.gui.announcement.search"></label>
       </div>
       <div class="table-scroll"><table class="history-table">
         <thead>
           <tr><th>Zeit</th><th>Text</th><th>Gesprochen</th><th>Entitaeten</th><th>Sperrgrund</th></tr>
         </thead>
-        <tbody id="announcement-history-body">
+        <tbody id="announcement-history-body" data-doc-id="ffb.gui.announcement.history.body">
           <tr><td colspan="5">Noch keine Ansagen.</td></tr>
         </tbody>
       </table></div>
@@ -326,7 +326,7 @@
           <h2>Personen im Wohnzimmer</h2>
         </div>
       </div>
-      <div class="chart" id="person-chart" aria-label="Personen gleichzeitig im Wohnzimmer"></div>
+      <div class="chart" id="person-chart" aria-label="Personen gleichzeitig im Wohnzimmer" data-doc-id="ffb.gui.person.chart"></div>
     </section>
 
     <section class="panel view" data-view="history">
@@ -338,14 +338,14 @@
       </div>
       <p class="log-explain">Der Verlauf kombiniert Erkennungen, aktive Frigate-Zaehler und Ansageinformationen. Zyklische Zeilen zeigen den aktuellen Zustand im Raum; sie sind wichtig fuer Diagramm und Live-Status, auch wenn sich keine Person geaendert hat.</p>
       <div class="table-controls">
-        <label>Zeitbereich <select id="history-range"><option value="4">letzte 4 h</option><option value="24">letzte 24 h</option><option value="72" selected>letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
-        <label>Suche <input id="history-search" autocomplete="off" placeholder="Volltext suchen"></label>
+        <label>Zeitbereich <select id="history-range" data-doc-id="ffb.gui.history.range"><option value="4">letzte 4 h</option><option value="24">letzte 24 h</option><option value="72" selected>letzte 3 Tage</option><option value="168">letzte 7 Tage</option><option value="672">letzte 4 Wochen</option><option value="2160">letzte 3 Monate</option><option value="4320">letzte 6 Monate</option><option value="8760">12 Monate</option><option value="all">alle</option></select></label>
+        <label>Suche <input id="history-search" autocomplete="off" placeholder="Volltext suchen" data-doc-id="ffb.gui.history.search"></label>
       </div>
       <div class="table-scroll"><table class="history-table">
         <thead>
           <tr><th>Zeit</th><th>Personen</th><th>Hund</th><th>Erkannt</th><th>Ansage/Log</th><th>Quelle</th></tr>
         </thead>
-        <tbody id="history-body">
+        <tbody id="history-body" data-doc-id="ffb.gui.history.body">
           <tr><td colspan="6">Noch keine History geladen.</td></tr>
         </tbody>
       </table></div>
@@ -358,89 +358,89 @@
           <h2>Bridge konfigurieren</h2>
         </div>
       </div>
-      <form id="app-form" class="config-form">
+      <form id="app-form" class="config-form" aria-label="Betrieb konfigurieren" data-doc-id="ffb.gui.app.form">
         <fieldset>
           <legend>System</legend>
-          <label>Demo-Modus <span class="field-help">Erzeugt simulierte Events, wenn keine echte Kamera- oder Frigate-Anbindung genutzt wird. Ausschalten, sobald Frigate und Kamera echte Daten liefern sollen.</span><input id="setting-demo-mode" type="checkbox"></label>
-          <label>Event-Intervall Sekunden <span class="field-help">Abstand zwischen simulierten Demo-Events. Wenn Demo-Modus aktiv ist, entsteht deshalb z.B. alle 10 Sekunden ein neuer Erkennungseintrag.</span><input id="setting-event-interval" type="number" min="1" step="1" placeholder="10"></label>
-          <label>Log-Level <span class="field-help">Steuert die Ausfuehrlichkeit im Add-on-Log. `info` ist normal, `debug`/`trace` nur fuer Fehlersuche verwenden.</span><select id="setting-log-level"><option value="trace">trace</option><option value="debug">debug</option><option value="info">info</option><option value="warning">warning</option><option value="error">error</option></select></label>
+          <label>Demo-Modus <span class="field-help">Erzeugt simulierte Events, wenn keine echte Kamera- oder Frigate-Anbindung genutzt wird. Ausschalten, sobald Frigate und Kamera echte Daten liefern sollen.</span><input id="setting-demo-mode" type="checkbox" data-doc-id="ffb.gui.setting.demo.mode"></label>
+          <label>Event-Intervall Sekunden <span class="field-help">Abstand zwischen simulierten Demo-Events. Wenn Demo-Modus aktiv ist, entsteht deshalb z.B. alle 10 Sekunden ein neuer Erkennungseintrag.</span><input id="setting-event-interval" type="number" min="1" step="1" placeholder="10" data-doc-id="ffb.gui.setting.event.interval"></label>
+          <label>Log-Level <span class="field-help">Steuert die Ausfuehrlichkeit im Add-on-Log. `info` ist normal, `debug`/`trace` nur fuer Fehlersuche verwenden.</span><select id="setting-log-level" data-doc-id="ffb.gui.setting.log.level"><option value="trace">trace</option><option value="debug">debug</option><option value="info">info</option><option value="warning">warning</option><option value="error">error</option></select></label>
         </fieldset>
         <fieldset>
           <legend>MQTT</legend>
-          <label>MQTT aktiv <span class="field-help">Schaltet die Verbindung zum Mosquitto-Broker ein. Ohne MQTT werden keine Home-Assistant-Sensoren und keine Bridge-Topics aktualisiert.</span><input id="setting-mqtt-enabled" type="checkbox"></label>
-          <label>MQTT Host <span class="field-help">Hostname des Brokers aus Sicht des Add-ons. Bei Home Assistant ist meist `core-mosquitto` richtig.</span><input id="setting-mqtt-host" autocomplete="off" placeholder="core-mosquitto"></label>
-          <label>MQTT Port <span class="field-help">TCP-Port des Brokers. Standard fuer unverschluesseltes MQTT im HA-Netz ist `1883`.</span><input id="setting-mqtt-port" type="number" min="1" step="1" placeholder="1883"></label>
-          <label>MQTT Benutzer <span class="field-help">Benutzer, mit dem sich die Bridge beim Broker anmeldet. Muss im Mosquitto Add-on oder in Home Assistant berechtigt sein.</span><input id="setting-mqtt-username" autocomplete="off"></label>
-          <label>MQTT Passwort <span class="value-status" id="mqtt-password-status">-</span><span class="field-help">Passwort zum MQTT-Benutzer. Leer lassen bedeutet: gespeichertes Passwort bleibt unveraendert.</span><input id="setting-mqtt-password" type="password" autocomplete="new-password" placeholder="leer lassen = unveraendert"></label>
-          <label>MQTT Benutzerstatus <span class="value-status" id="mqtt-username-status">-</span><span class="field-help">Zeigt nur, ob ein Benutzer gespeichert ist. Der gespeicherte Benutzername und das Passwort werden nicht als Secret-Dump ausgegeben.</span></label>
-          <label>Topic Prefix <span class="field-help">Basis-Topic fuer alle Bridge-Ausgaben, z.B. `ha/frigate_face_bridge/wohnzimmer_g3_flex/person_count`.</span><input id="setting-topic-prefix" autocomplete="off" placeholder="ha/frigate_face_bridge"></label>
-          <label>MQTT Discovery <span class="field-help">Wenn aktiv, veroeffentlicht die Bridge MQTT-Discovery-Konfigurationen, damit Home Assistant passende Sensoren automatisch anlegt.</span><input id="setting-mqtt-discovery" type="checkbox"></label>
-          <label>Discovery Prefix <span class="field-help">Home-Assistant-Discovery-Root. Normalerweise `homeassistant`; nur aendern, wenn dein MQTT-Setup davon abweicht.</span><input id="setting-discovery-prefix" autocomplete="off" placeholder="homeassistant"></label>
-          <div class="actions wide"><button type="button" id="mqtt-test-button">Eingaben testen: MQTT</button><span id="mqtt-test-message" class="message"></span></div>
+          <label>MQTT aktiv <span class="field-help">Schaltet die Verbindung zum Mosquitto-Broker ein. Ohne MQTT werden keine Home-Assistant-Sensoren und keine Bridge-Topics aktualisiert.</span><input id="setting-mqtt-enabled" type="checkbox" data-doc-id="ffb.gui.setting.mqtt.enabled"></label>
+          <label>MQTT Host <span class="field-help">Hostname des Brokers aus Sicht des Add-ons. Bei Home Assistant ist meist `core-mosquitto` richtig.</span><input id="setting-mqtt-host" autocomplete="off" placeholder="core-mosquitto" data-doc-id="ffb.gui.setting.mqtt.host"></label>
+          <label>MQTT Port <span class="field-help">TCP-Port des Brokers. Standard fuer unverschluesseltes MQTT im HA-Netz ist `1883`.</span><input id="setting-mqtt-port" type="number" min="1" step="1" placeholder="1883" data-doc-id="ffb.gui.setting.mqtt.port"></label>
+          <label>MQTT Benutzer <span class="field-help">Benutzer, mit dem sich die Bridge beim Broker anmeldet. Muss im Mosquitto Add-on oder in Home Assistant berechtigt sein.</span><input id="setting-mqtt-username" autocomplete="off" data-doc-id="ffb.gui.setting.mqtt.username"></label>
+          <label>MQTT Passwort <span class="value-status" id="mqtt-password-status" data-doc-id="ffb.gui.mqtt.password.status">-</span><span class="field-help">Passwort zum MQTT-Benutzer. Leer lassen bedeutet: gespeichertes Passwort bleibt unveraendert.</span><input id="setting-mqtt-password" type="password" autocomplete="new-password" placeholder="leer lassen = unveraendert" data-doc-id="ffb.gui.setting.mqtt.password"></label>
+          <label>MQTT Benutzerstatus <span class="value-status" id="mqtt-username-status" data-doc-id="ffb.gui.mqtt.username.status">-</span><span class="field-help">Zeigt nur, ob ein Benutzer gespeichert ist. Der gespeicherte Benutzername und das Passwort werden nicht als Secret-Dump ausgegeben.</span></label>
+          <label>Topic Prefix <span class="field-help">Basis-Topic fuer alle Bridge-Ausgaben, z.B. `ha/frigate_face_bridge/wohnzimmer_g3_flex/person_count`.</span><input id="setting-topic-prefix" autocomplete="off" placeholder="ha/frigate_face_bridge" data-doc-id="ffb.gui.setting.topic.prefix"></label>
+          <label>MQTT Discovery <span class="field-help">Wenn aktiv, veroeffentlicht die Bridge MQTT-Discovery-Konfigurationen, damit Home Assistant passende Sensoren automatisch anlegt.</span><input id="setting-mqtt-discovery" type="checkbox" data-doc-id="ffb.gui.setting.mqtt.discovery"></label>
+          <label>Discovery Prefix <span class="field-help">Home-Assistant-Discovery-Root. Normalerweise `homeassistant`; nur aendern, wenn dein MQTT-Setup davon abweicht.</span><input id="setting-discovery-prefix" autocomplete="off" placeholder="homeassistant" data-doc-id="ffb.gui.setting.discovery.prefix"></label>
+          <div class="actions wide"><button type="button" id="mqtt-test-button" data-doc-id="ffb.gui.mqtt.test.button">Eingaben testen: MQTT</button><span id="mqtt-test-message" class="message" data-doc-id="ffb.gui.mqtt.test.message"></span></div>
         </fieldset>
         <fieldset>
           <legend>Frigate und Face Import</legend>
-          <label>Frigate Import <span class="field-help">Abonniert das MQTT-Topic `frigate/events` und verarbeitet abgeschlossene Frigate-Events. Das ist nicht der 5-Sekunden-Live-Zaehler.</span><input id="setting-frigate-enabled" type="checkbox"></label>
-          <label>Frigate Topic <span class="field-help">MQTT-Topic, auf dem Frigate Events publiziert. Standard ist `frigate/events`.</span><input id="setting-frigate-topic" autocomplete="off" placeholder="frigate/events"></label>
-          <label>Frigate Kamera-Filter <span class="field-help">Nur Events dieser Kamera werden verarbeitet. Der Wert muss exakt zum Frigate-Kameranamen passen, z.B. `wohnzimmer_g3_flex`.</span><input id="setting-frigate-camera" autocomplete="off" placeholder="z.B. wohnzimmer_g3_flex"></label>
-          <label>Frigate API URL <span class="field-help">HTTP-Adresse der Frigate-Web/API-Oberflaeche. Wird fuer aktive Personen-/Hund-Zaehler und go2rtc-Status genutzt.</span><input id="setting-frigate-api-url" autocomplete="off" placeholder="http://fossflow.localdomain:5000"></label>
-          <div class="actions wide"><button type="button" id="frigate-test-button">Eingabe testen: Frigate API</button><span id="frigate-test-message" class="message"></span></div>
-          <label>Aktive Personen aus Frigate zaehlen <span class="field-help">Fragt Frigate regelmaessig nach aktuell sichtbaren Objekten ab. Dadurch entstehen wiederkehrende Live-Eintraege, auch ohne neues abgeschlossenes Event.</span><input id="setting-frigate-person-count-enabled" type="checkbox"></label>
-          <label>Personen-Zaehler Intervall Sekunden <span class="field-help">Abstand der aktiven Frigate-API-Abfrage. Bei `5` wird alle 5 Sekunden geprueft, bei `10` etwa alle 10 Sekunden.</span><input id="setting-frigate-person-count-interval" type="number" min="1" step="1" placeholder="5"></label>
-          <label>Hundename <span class="field-help">Name, der fuer erkannte Hunde in Anzeige und Ansage verwendet wird. Bei dir ist das normalerweise `Maja`.</span><input id="setting-frigate-dog-name" autocomplete="off" placeholder="Maja"></label>
-          <label>Face-Import <span class="field-help">Liest externe Face-Recognition-Events von einem MQTT-Topic oder REST-Import. Nur aktivieren, wenn dort wirklich Daten eintreffen.</span><input id="setting-face-enabled" type="checkbox"></label>
-          <label>Face-Event-Topic <span class="field-help">MQTT-Topic fuer externe Gesichtserkennung, z.B. Double Take oder eine eigene Erkennung.</span><input id="setting-face-topic" autocomplete="off" placeholder="face_recognition/events"></label>
-          <label>Mindest-Confidence <span class="field-help">Schwellwert von 0 bis 1 fuer importierte Gesichtstreffer. `0.7` bedeutet: Treffer unter 70 Prozent werden ignoriert.</span><input id="setting-face-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.7"></label>
+          <label>Frigate Import <span class="field-help">Abonniert das MQTT-Topic `frigate/events` und verarbeitet abgeschlossene Frigate-Events. Das ist nicht der 5-Sekunden-Live-Zaehler.</span><input id="setting-frigate-enabled" type="checkbox" data-doc-id="ffb.gui.setting.frigate.enabled"></label>
+          <label>Frigate Topic <span class="field-help">MQTT-Topic, auf dem Frigate Events publiziert. Standard ist `frigate/events`.</span><input id="setting-frigate-topic" autocomplete="off" placeholder="frigate/events" data-doc-id="ffb.gui.setting.frigate.topic"></label>
+          <label>Frigate Kamera-Filter <span class="field-help">Nur Events dieser Kamera werden verarbeitet. Der Wert muss exakt zum Frigate-Kameranamen passen, z.B. `wohnzimmer_g3_flex`.</span><input id="setting-frigate-camera" autocomplete="off" placeholder="z.B. wohnzimmer_g3_flex" data-doc-id="ffb.gui.setting.frigate.camera"></label>
+          <label>Frigate API URL <span class="field-help">HTTP-Adresse der Frigate-Web/API-Oberflaeche. Wird fuer aktive Personen-/Hund-Zaehler und go2rtc-Status genutzt.</span><input id="setting-frigate-api-url" autocomplete="off" placeholder="http://fossflow.localdomain:5000" data-doc-id="ffb.gui.setting.frigate.api.url"></label>
+          <div class="actions wide"><button type="button" id="frigate-test-button" data-doc-id="ffb.gui.frigate.test.button">Eingabe testen: Frigate API</button><span id="frigate-test-message" class="message" data-doc-id="ffb.gui.frigate.test.message"></span></div>
+          <label>Aktive Personen aus Frigate zaehlen <span class="field-help">Fragt Frigate regelmaessig nach aktuell sichtbaren Objekten ab. Dadurch entstehen wiederkehrende Live-Eintraege, auch ohne neues abgeschlossenes Event.</span><input id="setting-frigate-person-count-enabled" type="checkbox" data-doc-id="ffb.gui.setting.frigate.person.count.enabled"></label>
+          <label>Personen-Zaehler Intervall Sekunden <span class="field-help">Abstand der aktiven Frigate-API-Abfrage. Bei `5` wird alle 5 Sekunden geprueft, bei `10` etwa alle 10 Sekunden.</span><input id="setting-frigate-person-count-interval" type="number" min="1" step="1" placeholder="5" data-doc-id="ffb.gui.setting.frigate.person.count.interval"></label>
+          <label>Hundename <span class="field-help">Name, der fuer erkannte Hunde in Anzeige und Ansage verwendet wird. Bei dir ist das normalerweise `Maja`.</span><input id="setting-frigate-dog-name" autocomplete="off" placeholder="Maja" data-doc-id="ffb.gui.setting.frigate.dog.name"></label>
+          <label>Face-Import <span class="field-help">Liest externe Face-Recognition-Events von einem MQTT-Topic oder REST-Import. Nur aktivieren, wenn dort wirklich Daten eintreffen.</span><input id="setting-face-enabled" type="checkbox" data-doc-id="ffb.gui.setting.face.enabled"></label>
+          <label>Face-Event-Topic <span class="field-help">MQTT-Topic fuer externe Gesichtserkennung, z.B. Double Take oder eine eigene Erkennung.</span><input id="setting-face-topic" autocomplete="off" placeholder="face_recognition/events" data-doc-id="ffb.gui.setting.face.topic"></label>
+          <label>Mindest-Confidence <span class="field-help">Schwellwert von 0 bis 1 fuer importierte Gesichtstreffer. `0.7` bedeutet: Treffer unter 70 Prozent werden ignoriert.</span><input id="setting-face-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.7" data-doc-id="ffb.gui.setting.face.confidence"></label>
         </fieldset>
         <fieldset>
           <legend>Ansagen</legend>
-          <label>Sprachausgaben aktiv <span class="field-help">Erzeugt Ansagetexte und MQTT-Ansage-Signale. Home Assistant entscheidet danach mit seinen eigenen Sperrzeiten und Lautstaerkeeinstellungen, ob gesprochen wird.</span><input id="setting-announcements-enabled" type="checkbox"></label>
-          <label>Bekannte Personen ansagen <span class="field-help">Erlaubt Ansagen fuer Namen wie Thomas, Birgit oder Marie, sofern diese nicht in der Sperrliste stehen.</span><input id="setting-announcements-known" type="checkbox"></label>
-          <label>Unbekannte Personen ansagen <span class="field-help">Erlaubt Ansagen fuer erkannte Personen ohne bekannten Namen.</span><input id="setting-announcements-unknown" type="checkbox"></label>
-          <label>Hund ansagen <span class="field-help">Erlaubt Ansagen fuer erkannte Hunde bzw. Maja.</span><input id="setting-announcements-dog" type="checkbox"></label>
-          <label>Zufallstexte verwenden <span class="field-help">Wenn aktiv, waehlt die Bridge wechselnde Sprueche. Wenn aus, wird der Standard- oder eigene Text verwendet.</span><input id="setting-announcements-random" type="checkbox"></label>
-          <label>Globale Ansage-Sperre Sekunden <span class="field-help">Mindestabstand zwischen zwei Ansagen insgesamt. Verhindert, dass mehrere Events direkt hintereinander sprechen.</span><input id="setting-announcements-global-cooldown" type="number" min="0" step="1" placeholder="60"></label>
-          <label>Sperre pro Person/Tier Sekunden <span class="field-help">Mindestabstand pro Name oder Tier. Geht Thomas kurz weg und kommt wieder, wird erst nach Ablauf dieser Zeit erneut angesagt.</span><input id="setting-announcements-entity-cooldown" type="number" min="0" step="1" placeholder="300"></label>
-          <label>Nicht ansagen, kommagetrennt <span class="field-help">Diese Namen oder Kategorien werden herausgefiltert. Beispiel: `Thomas, unknown, Maja`.</span><input id="setting-announcements-disabled" autocomplete="off" placeholder="Thomas, unknown, Maja"></label>
-          <label class="wide">Eigene Ansagetexte je Zeile: Name=Text <span class="field-help">Ueberschreibt Texte fuer einzelne Namen oder Kategorien. `{names}` wird durch erkannte Namen ersetzt.</span><textarea id="setting-announcements-custom-texts" rows="5" placeholder="Thomas=Thomas ist im Wohnzimmer erkannt worden.&#10;Maja=Maja ist im Haus.&#10;unknown=Achtung, unbekannte Person erkannt.&#10;multiple={names} wurden erkannt."></textarea></label>
+          <label>Sprachausgaben aktiv <span class="field-help">Erzeugt Ansagetexte und MQTT-Ansage-Signale. Home Assistant entscheidet danach mit seinen eigenen Sperrzeiten und Lautstaerkeeinstellungen, ob gesprochen wird.</span><input id="setting-announcements-enabled" type="checkbox" data-doc-id="ffb.gui.setting.announcements.enabled"></label>
+          <label>Bekannte Personen ansagen <span class="field-help">Erlaubt Ansagen fuer Namen wie Thomas, Birgit oder Marie, sofern diese nicht in der Sperrliste stehen.</span><input id="setting-announcements-known" type="checkbox" data-doc-id="ffb.gui.setting.announcements.known"></label>
+          <label>Unbekannte Personen ansagen <span class="field-help">Erlaubt Ansagen fuer erkannte Personen ohne bekannten Namen.</span><input id="setting-announcements-unknown" type="checkbox" data-doc-id="ffb.gui.setting.announcements.unknown"></label>
+          <label>Hund ansagen <span class="field-help">Erlaubt Ansagen fuer erkannte Hunde bzw. Maja.</span><input id="setting-announcements-dog" type="checkbox" data-doc-id="ffb.gui.setting.announcements.dog"></label>
+          <label>Zufallstexte verwenden <span class="field-help">Wenn aktiv, waehlt die Bridge wechselnde Sprueche. Wenn aus, wird der Standard- oder eigene Text verwendet.</span><input id="setting-announcements-random" type="checkbox" data-doc-id="ffb.gui.setting.announcements.random"></label>
+          <label>Globale Ansage-Sperre Sekunden <span class="field-help">Mindestabstand zwischen zwei Ansagen insgesamt. Verhindert, dass mehrere Events direkt hintereinander sprechen.</span><input id="setting-announcements-global-cooldown" type="number" min="0" step="1" placeholder="60" data-doc-id="ffb.gui.setting.announcements.global.cooldown"></label>
+          <label>Sperre pro Person/Tier Sekunden <span class="field-help">Mindestabstand pro Name oder Tier. Geht Thomas kurz weg und kommt wieder, wird erst nach Ablauf dieser Zeit erneut angesagt.</span><input id="setting-announcements-entity-cooldown" type="number" min="0" step="1" placeholder="300" data-doc-id="ffb.gui.setting.announcements.entity.cooldown"></label>
+          <label>Nicht ansagen, kommagetrennt <span class="field-help">Diese Namen oder Kategorien werden herausgefiltert. Beispiel: `Thomas, unknown, Maja`.</span><input id="setting-announcements-disabled" autocomplete="off" placeholder="Thomas, unknown, Maja" data-doc-id="ffb.gui.setting.announcements.disabled"></label>
+          <label class="wide">Eigene Ansagetexte je Zeile: Name=Text <span class="field-help">Ueberschreibt Texte fuer einzelne Namen oder Kategorien. `{names}` wird durch erkannte Namen ersetzt.</span><textarea id="setting-announcements-custom-texts" rows="5" placeholder="Thomas=Thomas ist im Wohnzimmer erkannt worden.&#10;Maja=Maja ist im Haus.&#10;unknown=Achtung, unbekannte Person erkannt.&#10;multiple={names} wurden erkannt." data-doc-id="ffb.gui.setting.announcements.custom.texts"></textarea></label>
         </fieldset>
         <fieldset>
           <legend>Terrassentuer</legend>
-          <label>Terrassentuer-Entity aktiv <span class="field-help">Veroeffentlicht Terrassentuer-Status als FaceBridge-MQTT-Entity. Das ist getrennt von externen HA-Tuerkontakten.</span><input id="setting-door-enabled" type="checkbox"></label>
-          <label>Terrassentuer offen <span class="field-help">Manueller/fallback Status, falls der Wert nicht aus einem Event kommt.</span><input id="setting-door-open" type="checkbox"></label>
-          <label>Terrassentuer Confidence <span class="field-help">Sicherheitswert zwischen 0 und 1 fuer die Tuererkennung. `0` bedeutet keine Bewertung.</span><input id="setting-door-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.0"></label>
-          <label>Terrassentuer letzte Aenderung <span class="field-help">Zeitstempel der letzten bekannten Tuer-Aenderung, z.B. `2026-06-04T12:00:00Z`.</span><input id="setting-door-last-changed" autocomplete="off" placeholder="2026-06-04T12:00:00Z"></label>
+          <label>Terrassentuer-Entity aktiv <span class="field-help">Veroeffentlicht Terrassentuer-Status als FaceBridge-MQTT-Entity. Das ist getrennt von externen HA-Tuerkontakten.</span><input id="setting-door-enabled" type="checkbox" data-doc-id="ffb.gui.setting.door.enabled"></label>
+          <label>Terrassentuer offen <span class="field-help">Manueller/fallback Status, falls der Wert nicht aus einem Event kommt.</span><input id="setting-door-open" type="checkbox" data-doc-id="ffb.gui.setting.door.open"></label>
+          <label>Terrassentuer Confidence <span class="field-help">Sicherheitswert zwischen 0 und 1 fuer die Tuererkennung. `0` bedeutet keine Bewertung.</span><input id="setting-door-confidence" type="number" min="0" max="1" step="0.01" placeholder="0.0" data-doc-id="ffb.gui.setting.door.confidence"></label>
+          <label>Terrassentuer letzte Aenderung <span class="field-help">Zeitstempel der letzten bekannten Tuer-Aenderung, z.B. `2026-06-04T12:00:00Z`.</span><input id="setting-door-last-changed" autocomplete="off" placeholder="2026-06-04T12:00:00Z" data-doc-id="ffb.gui.setting.door.last.changed"></label>
         </fieldset>
-        <div class="actions"><button type="submit">Betrieb speichern</button></div>
-        <p id="app-message" class="message" role="status"></p>
+        <div class="actions"><button type="submit" data-doc-id="ffb.gui.app.form.submit">Betrieb speichern</button></div>
+        <p id="app-message" class="message" role="status" data-doc-id="ffb.gui.app.message"></p>
       </form>
     </section>
 
     <section class="split-panels view" data-view="config">
       <article class="panel">
         <div class="panel-title-row"><div><p class="section-label">Personen</p><h2>Bekannte Personen</h2></div></div>
-        <form id="face-form" class="config-form compact-form">
-          <label>Name <input id="face-name" name="name" autocomplete="off" placeholder="Name"></label>
-          <div class="actions"><button type="submit">Person anlegen</button></div>
-          <p id="face-message" class="message" role="status"></p>
+        <form id="face-form" class="config-form compact-form" aria-label="Bekannte Person anlegen" data-doc-id="ffb.gui.face.form">
+          <label>Name <input id="face-name" name="name" autocomplete="off" placeholder="Name" data-doc-id="ffb.gui.face.name"></label>
+          <div class="actions"><button type="submit" data-doc-id="ffb.gui.face.form.submit">Person anlegen</button></div>
+          <p id="face-message" class="message" role="status" data-doc-id="ffb.gui.face.message"></p>
         </form>
-        <ul id="faces-list"></ul>
+        <ul id="faces-list" data-doc-id="ffb.gui.faces.list"></ul>
       </article>
       <article class="panel">
         <div class="panel-title-row"><div><p class="section-label">Kamera</p><h2>Kamera konfigurieren</h2></div></div>
-        <form id="camera-form" class="config-form compact-form">
-          <label>Kameraname <span class="field-help">Name, unter dem Frigate die Kamera fuehrt. Leer lassen, wenn noch kein Filter gesetzt werden soll. `garage_g3_flex` war nur ein altes Beispiel, kein Pflichtwert.</span><input id="camera-name" name="name" autocomplete="off" placeholder="z.B. wohnzimmer_g3_flex"></label>
-          <label>IP-Adresse / Host <span class="field-help">Host/IP der Kamera, von UniFi Protect, Frigate oder go2rtc. `192.168.2.241` war nur ein Beispiel aus einer alten Testkonfiguration und wird nicht mehr als Default gesetzt.</span><input id="camera-host" name="host" autocomplete="off" placeholder="z.B. fossflow.localdomain"></label>
-          <label>RTSP URL <span class="value-status" id="rtsp-url-status">-</span><span class="field-help">RTSP-Quelle fuer Video. Beispiel unten kann uebernommen und angepasst werden; gespeicherte Werte werden sichtbar angezeigt, Credentials bleiben maskiert.</span><input id="camera-rtsp" name="rtsp_url" autocomplete="off" placeholder="rtsp://fossflow.localdomain:8554/wohnzimmer_g3_flex"><button type="button" class="inline-button" id="rtsp-example-button">Beispiel uebernehmen</button></label>
-          <label>Snapshot URL <span class="value-status" id="snapshot-url-status">-</span><span class="field-help">HTTP/HTTPS-Bild fuer Vorschau und schnelle Tests. Beispiel unten kann uebernommen und angepasst werden; gespeicherte Werte werden sichtbar angezeigt, Credentials bleiben maskiert.</span><input id="camera-snapshot" name="snapshot_url" autocomplete="off" placeholder="http://fossflow.localdomain:5000/api/wohnzimmer_g3_flex/latest.jpg?bbox=1"><button type="button" class="inline-button" id="snapshot-example-button">Beispiel uebernehmen</button></label>
-          <div class="actions"><button type="submit">Speichern</button><button type="button" id="rtsp-test-button">RTSP testen</button><button type="button" id="snapshot-test-button">Snapshot testen</button><button type="button" id="snapshot-button">Vorschau laden</button></div>
-          <p id="config-message" class="message" role="status"></p>
-          <p id="rtsp-test-message" class="message" role="status"></p>
-          <p id="snapshot-test-message" class="message" role="status"></p>
+        <form id="camera-form" class="config-form compact-form" aria-label="Kamera konfigurieren" data-doc-id="ffb.gui.camera.form">
+          <label>Kameraname <span class="field-help">Name, unter dem Frigate die Kamera fuehrt. Leer lassen, wenn noch kein Filter gesetzt werden soll. `garage_g3_flex` war nur ein altes Beispiel, kein Pflichtwert.</span><input id="camera-name" name="name" autocomplete="off" placeholder="z.B. wohnzimmer_g3_flex" data-doc-id="ffb.gui.camera.name"></label>
+          <label>IP-Adresse / Host <span class="field-help">Host/IP der Kamera, von UniFi Protect, Frigate oder go2rtc. `192.0.2.10` ist eine reservierte Beispieladresse und wird nicht als Default gesetzt.</span><input id="camera-host" name="host" autocomplete="off" placeholder="z.B. fossflow.localdomain" data-doc-id="ffb.gui.camera.host"></label>
+          <label>RTSP URL <span class="value-status" id="rtsp-url-status" data-doc-id="ffb.gui.rtsp.url.status">-</span><span class="field-help">RTSP-Quelle fuer Video. Beispiel unten kann uebernommen und angepasst werden; gespeicherte Werte werden sichtbar angezeigt, Credentials bleiben maskiert.</span><input id="camera-rtsp" name="rtsp_url" autocomplete="off" placeholder="rtsp://fossflow.localdomain:8554/wohnzimmer_g3_flex" data-doc-id="ffb.gui.camera.rtsp"><button type="button" class="inline-button" id="rtsp-example-button" data-doc-id="ffb.gui.rtsp.example.button">Beispiel uebernehmen</button></label>
+          <label>Snapshot URL <span class="value-status" id="snapshot-url-status" data-doc-id="ffb.gui.snapshot.url.status">-</span><span class="field-help">HTTP/HTTPS-Bild fuer Vorschau und schnelle Tests. Beispiel unten kann uebernommen und angepasst werden; gespeicherte Werte werden sichtbar angezeigt, Credentials bleiben maskiert.</span><input id="camera-snapshot" name="snapshot_url" autocomplete="off" placeholder="http://fossflow.localdomain:5000/api/wohnzimmer_g3_flex/latest.jpg?bbox=1" data-doc-id="ffb.gui.camera.snapshot"><button type="button" class="inline-button" id="snapshot-example-button" data-doc-id="ffb.gui.snapshot.example.button">Beispiel uebernehmen</button></label>
+          <div class="actions"><button type="submit" data-doc-id="ffb.gui.camera.form.submit">Speichern</button><button type="button" id="rtsp-test-button" data-doc-id="ffb.gui.rtsp.test.button">RTSP testen</button><button type="button" id="snapshot-test-button" data-doc-id="ffb.gui.snapshot.test.button">Snapshot testen</button><button type="button" id="snapshot-button" data-doc-id="ffb.gui.snapshot.button">Vorschau laden</button></div>
+          <p id="config-message" class="message" role="status" data-doc-id="ffb.gui.config.message"></p>
+          <p id="rtsp-test-message" class="message" role="status" data-doc-id="ffb.gui.rtsp.test.message"></p>
+          <p id="snapshot-test-message" class="message" role="status" data-doc-id="ffb.gui.snapshot.test.message"></p>
         </form>
         <div class="preview">
-          <img id="snapshot-preview" alt="Kamera-Vorschau" hidden>
-          <p id="snapshot-message" class="message">Fuer die Vorschau muss eine HTTP/HTTPS Snapshot URL gesetzt sein. URL-Credentials werden nicht im Formular angezeigt.</p>
+          <img id="snapshot-preview" alt="Kamera-Vorschau" hidden data-doc-id="ffb.gui.snapshot.preview">
+          <p id="snapshot-message" class="message" data-doc-id="ffb.gui.snapshot.message">Fuer die Vorschau muss eine HTTP/HTTPS Snapshot URL gesetzt sein. URL-Credentials werden nicht im Formular angezeigt.</p>
         </div>
       </article>
     </section>
@@ -448,25 +448,25 @@
     <section class="panel view" data-view="links">
       <div class="panel-title-row"><div><p class="section-label">Links</p><h2>Relevante Weboberflaechen und Projektlinks</h2></div></div>
       <div class="link-grid">
-        <a href="/" target="_blank" rel="noreferrer">Home Assistant <span>Aktuelle HA-Oberflaeche / Ingress-Kontext</span></a>
-        <a id="link-ha-ingress" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge" target="_blank" rel="noreferrer">Face Bridge Add-on Webseite <span id="link-ha-ingress-text">HA Ingress / eine zentrale Weboberflaeche</span></a>
-        <a id="link-homepage" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge" target="_blank" rel="noreferrer">Homepage Aufruf-Link <span id="link-homepage-text">Link fuer Homepage-Eintrag</span></a>
-        <a id="link-direct-status" href="http://fossflow.localdomain:8099/health" target="_blank" rel="noreferrer">Direktzugriff Status <span id="link-direct-status-text">Nur Status/Health, keine zweite Detail-Webseite</span></a>
-        <a href="api/status" target="_blank" rel="noreferrer">Bridge API Status <span>Live-Status dieser Bridge als JSON</span></a>
-        <a href="api/config" target="_blank" rel="noreferrer">Bridge API Konfiguration <span>Maskierte Laufzeit- und Rohkonfiguration</span></a>
-        <a id="link-frigate" href="#" target="_blank" rel="noreferrer">Frigate Web/API <span id="link-frigate-text">nicht konfiguriert</span></a>
-        <a id="link-go2rtc" href="#" target="_blank" rel="noreferrer">go2rtc Streams <span id="link-go2rtc-text">Frigate API URL fehlt</span></a>
-        <a href="https://github.com/thomas682/ha-frigate-face-bridge" target="_blank" rel="noreferrer">GitHub Repository <span>Quellcode und Releases</span></a>
-        <a href="https://github.com/thomas682/ha-frigate-face-bridge/issues" target="_blank" rel="noreferrer">GitHub Issues <span>Aufgaben, Fehler und Wuensche</span></a>
-        <a href="https://github.com/thomas682/ha-frigate-face-bridge/blob/main/frigate-face-bridge/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog <span>Aenderungen je Add-on-Version</span></a>
+        <a href="/" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.home-assistant">Home Assistant <span>Aktuelle HA-Oberflaeche / Ingress-Kontext</span></a>
+        <a id="link-ha-ingress" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.ha.ingress">Face Bridge Add-on Webseite <span id="link-ha-ingress-text" data-doc-id="ffb.gui.link.ha.ingress.text">HA Ingress / eine zentrale Weboberflaeche</span></a>
+        <a id="link-homepage" href="http://homeassistant.localdomain:8123/b3b46a83_frigate_face_bridge" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.homepage">Homepage Aufruf-Link <span id="link-homepage-text" data-doc-id="ffb.gui.link.homepage.text">Link fuer Homepage-Eintrag</span></a>
+        <a id="link-direct-status" href="http://fossflow.localdomain:8099/health" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.direct.status">Direktzugriff Status <span id="link-direct-status-text" data-doc-id="ffb.gui.link.direct.status.text">Nur Status/Health, keine zweite Detail-Webseite</span></a>
+        <a href="api/status" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.api-status">Bridge API Status <span>Live-Status dieser Bridge als JSON</span></a>
+        <a href="api/config" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.api-config">Bridge API Konfiguration <span>Maskierte Laufzeit- und Rohkonfiguration</span></a>
+        <a id="link-frigate" href="#" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.frigate">Frigate Web/API <span id="link-frigate-text" data-doc-id="ffb.gui.link.frigate.text">nicht konfiguriert</span></a>
+        <a id="link-go2rtc" href="#" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.go2rtc">go2rtc Streams <span id="link-go2rtc-text" data-doc-id="ffb.gui.link.go2rtc.text">Frigate API URL fehlt</span></a>
+        <a href="https://github.com/thomas682/ha-frigate-face-bridge" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.project.ha.frigate.face.bridge">GitHub Repository <span>Quellcode und Releases</span></a>
+        <a href="https://github.com/thomas682/ha-frigate-face-bridge/issues" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.project.issues">GitHub Issues <span>Aufgaben, Fehler und Wuensche</span></a>
+        <a href="https://github.com/thomas682/ha-frigate-face-bridge/blob/main/frigate-face-bridge/CHANGELOG.md" target="_blank" rel="noreferrer" data-doc-id="ffb.gui.link.project.changelog.md">Changelog <span>Aenderungen je Add-on-Version</span></a>
       </div>
     </section>
 
     <section class="panel view" data-view="debug">
       <div class="panel-title-row"><div><p class="section-label">Debug</p><h2>Hinweise und Konfigurationsstatus</h2></div></div>
       <p>Debug zeigt technische Statuswerte als Textliste. Secrets, Tokens und Kamera-Credentials werden nicht angezeigt.</p>
-      <ul class="detail-list" id="debug-list"></ul>
-      <pre id="debug" hidden></pre>
+      <ul class="detail-list" id="debug-list" data-doc-id="ffb.gui.debug.list"></ul>
+      <pre id="debug" hidden data-doc-id="ffb.gui.debug"></pre>
     </section>
   </main>
   <script src="static/app.js"></script>
