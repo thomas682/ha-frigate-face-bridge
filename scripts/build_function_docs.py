@@ -57,7 +57,7 @@ def git_head() -> str:
 def inventory_source_paths() -> list[Path]:
     paths = [
         *APP.glob("*.py"), JS, HTML, CONFIG,
-        ROOT / ".github/workflows/lint.yml", ROOT / "deploy/docker-compose.yml",
+        ROOT / "scripts/run-local-checks.sh", ROOT / "deploy/docker-compose.yml",
         ROOT / "frigate-face-bridge/Dockerfile", ROOT / "frigate-face-bridge/run.sh",
         *(ROOT / "scripts").glob("*.py"),
     ]
@@ -609,7 +609,7 @@ def route_units(python: list[dict[str, Any]], seed: dict[tuple[str, str], dict[s
 
 def operation_units(seed: dict[tuple[str, str], dict[str, Any]]) -> list[dict[str, Any]]:
     facts = {
-        ".github/workflows/lint.yml": ("Runs checkout, Python 3.12 setup, dependency installation, compilation, pytest, and this documentation validator for pushes and pull requests.", "GitHub-hosted CI runner; read repository contents and install declared packages."),
+        "scripts/run-local-checks.sh": ("Installs declared Python test dependencies, compiles the bridge, runs pytest, and validates the function catalog when a maintainer invokes it locally.", "A local Python environment with package-network access for declared test dependencies."),
         "deploy/docker-compose.yml": ("Starts the bridge container, binds its data volume, exposes the optional web port, and applies the declared restart policy.", "Docker daemon access; the exposed port must remain on a trusted network."),
         "frigate-face-bridge/Dockerfile": ("Builds the Python 3.12 Alpine add-on image, installs runtime dependencies, copies application files, exposes port 8099, and selects run.sh as entrypoint.", "Container build permission and package-network access."),
         "frigate-face-bridge/run.sh": ("Starts the Python application process; runtime version resolution is handled by the application from VERSION.", "Container process execution; no shell interpolation of user input."),

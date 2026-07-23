@@ -55,7 +55,7 @@ UNIT_SPECIFIC_FIELDS = {
 }
 CANONICAL_FIELDS = REQUIRED_FIELDS - {"tests"}
 OPERATIONAL_FILES = {
-    ".github/workflows/lint.yml",
+    "scripts/run-local-checks.sh",
     "deploy/docker-compose.yml",
     "frigate-face-bridge/Dockerfile",
     "frigate-face-bridge/run.sh",

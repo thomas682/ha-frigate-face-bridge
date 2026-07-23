@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026.07.004
+
+### Changed
+
+- Die bisherige GitHub-Lint-Automation wurde durch den manuell auszufuehrenden lokalen Pruefeinstieg `scripts/run-local-checks.sh` ersetzt ([#16](https://github.com/thomas682/ha-frigate-face-bridge/issues/16)).
+- Die Funktionsreferenz erfasst den lokalen Pruefpfad statt eines GitHub-Workflow-Schritts.
+
 ## 2026.07.003
 
 ### Fixed

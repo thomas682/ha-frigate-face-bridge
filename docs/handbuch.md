@@ -1,6 +1,6 @@
 # Frigate Face Bridge - Bedien- und technisches Handbuch
 
-Stand: Version 2026.07.003, Audit-Basis `436a6995ab957e440cac8aa2c39c2228cba67169`, fachlich und technisch abgeglichen am 2026-07-15. Der maschinenlesbare Katalog `docs/functions.yaml` ist die kanonische Inventarquelle. Die dortigen IDs bleiben stabil; dieses Handbuch erklaert Bedienung und Betrieb.
+Stand: Version 2026.07.004, Audit-Basis `436a6995ab957e440cac8aa2c39c2228cba67169`, fachlich und technisch abgeglichen am 2026-07-15. Der maschinenlesbare Katalog `docs/functions.yaml` ist die kanonische Inventarquelle. Die dortigen IDs bleiben stabil; dieses Handbuch erklaert Bedienung und Betrieb.
 
 ## Schnellstart
 
@@ -233,10 +233,10 @@ Die drei `camera.detect_*` Felder werden validiert und angezeigt, steuern im akt
 
 Home Assistant aktiviert Ingress auf 8099; die direkte Portzuordnung ist standardmaessig `null`. Das Beispiel-Compose exponiert dagegen `8099:8099`, bindet `deploy/data` nach `/data` und startet bei Fehlern/Hostneustart erneut. Dieser Port braucht einen vertrauenswuerdigen Netzbereich, weil die App keine eigene Authentifizierung besitzt.
 
-Die CI installiert Anforderungen plus pytest, kompiliert alle App-Python-Dateien und fuehrt `pytest -q` aus. Fuer die Funktionsdokumentation kommt lokal hinzu:
+Der lokale Pruefeinstieg installiert Anforderungen plus pytest, kompiliert alle App-Python-Dateien, fuehrt `pytest -q` aus und validiert den Funktionskatalog:
 
 ```bash
-python3 scripts/validate_function_docs.py
+scripts/run-local-checks.sh
 ```
 
 Der Validator benoetigt nur die Python-Standardbibliothek. Er prueft Katalogstruktur, stabile IDs, Pflichtfelder, Handbuch-/Datei-/Testreferenzen, alle eigenen Python- und JavaScript-Funktionen, Flask-Routen, Konfigurationsschemafelder, Betriebsdateien und interaktive statische beziehungsweise dynamische UI-Elemente.

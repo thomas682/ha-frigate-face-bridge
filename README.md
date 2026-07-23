@@ -28,11 +28,15 @@ Das Add-on ersetzt Frigate nicht. Frigate, Double Take, CompreFace oder eine lok
 
 ## Aktueller Stand
 
-Aktuelle Add-on-Version: `2026.07.001`.
+Aktuelle Add-on-Version: `2026.07.004`.
 
 Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. `demo_mode` ist fuer fehlende/neue Werte nicht automatisch aktiv; bestehende Nutzerwerte werden bei Start, Neustart und Update nicht automatisch ueberschrieben.
 
 Die weiteren Ausbaustufen stehen in `projekt-roadmap.md`.
+
+## Version 2026.07.004
+
+- GitHub Actions wurde durch `scripts/run-local-checks.sh` als manuellen lokalen Pruefeinstieg ersetzt; der Befehl startet weder einen Stack noch veroeffentlicht ein Release.
 
 ## Version 2026.07.001
 
