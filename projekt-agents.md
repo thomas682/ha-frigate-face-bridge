@@ -25,8 +25,8 @@ Sprache: Deutsch. Repository-Typ: Home Assistant Add-on.
 - Add-on muss ohne Kamera und ohne MQTT starten koennen.
 - `demo_mode` darf nicht automatisch aktiviert werden. Bestehende Nutzerwerte fuer `demo_mode` und andere Parameter duerfen bei Start, Neustart oder Update niemals automatisch ueberschrieben, normalisiert oder als Defaults persistiert werden.
 - Die Parameterverwaltungsregel in `docs/projekt-parameter-management.md` ist fuer neue Optionen und Config-Migrationen zu beachten.
-- Jede freigegebene Aenderung benoetigt eine Versionsanpassung in `frigate-face-bridge/config.yaml` und einen Changelog-Eintrag, sofern der Nutzer nichts anderes explizit sagt.
-- Vor Aenderungen ein GitHub-Issue mit Ziel, Umfang und Akzeptanzkriterien erstellen und die Arbeit gegen dieses Issue abschliessen.
+- Jede Aenderung an Quellcode, Skripten, Laufzeitkonfiguration oder produktiver Logik benoetigt eine Versionsanpassung in der kanonischen Root-`VERSION` und den projektspezifischen Versionsspiegeln sowie einen Changelog-Eintrag.
+- Vor jeder umsetzbaren Chat-Aufgabe ein GitHub-Issue mit dem vollstaendigen Aufgabentext unter `## Vorgaben Chat`, Ziel, Umfang und Akzeptanzkriterien erstellen und die Arbeit gegen dieses Issue abschliessen.
 - Ein aktives Issue bleibt Arbeitskontext, bis Umsetzung, Pruefung, Version/Changelog, Commit, Push und Issue-Abschluss erledigt sind. Nicht auf andere Issues umschalten, solange das aktive Issue offen ist.
 - Nach freigegebenen Aenderungen gehoeren Versionsanpassung, Commit und Push zum Abschluss, sofern der Nutzer nichts anderes sagt und keine hoeher priorisierte Regel blockiert.
 - Nach Push bei Versionsaenderung Home Assistant Update/Restart versuchen und Live-Version verifizieren, soweit Zugriff vorhanden ist. Wenn Zugriff fehlt oder der Updatepfad scheitert, den offenen Rest klar melden.
