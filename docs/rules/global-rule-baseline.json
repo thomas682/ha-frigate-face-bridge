@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-07-31T19:13:32Z",
+  "checked_at": "2026-07-31T19:18:40Z",
   "project_root": "/Users/thomasschatz/git/facebri",
   "global_rules_root": "/Users/thomasschatz/git/global",
-  "global_rules_git_revision": "72e7737",
+  "global_rules_git_revision": "26dd662",
   "global_rules_files": {
     "global-agents.md": {
       "sha256": "516277181162bdfe15c77014469a8a1d36182487201488af42e2b4cf230b206f",
