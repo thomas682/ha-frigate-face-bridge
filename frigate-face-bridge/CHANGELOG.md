@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026.10.001
+
+### Changed
+
+- Ruff ist als Python-Linter und -Formatierer eingerichtet (`pyproject.toml`, Regelsatz E, F, I, B, UP, C4, SIM, RET, PTH); alle Befunde wurden behoben statt unterdrueckt, die zwei verbleibenden Ausnahmen sind an Ort und Stelle begruendet ([#20](https://github.com/thomas682/ha-frigate-face-bridge/issues/20)).
+- ShellCheck und Biome pruefen Shell-Skripte, `app.js`, `style.css` und das neue Pruefskript ([#21](https://github.com/thomas682/ha-frigate-face-bridge/issues/21)).
+- `scripts/run-local-checks.sh` folgt der globalen Vorlage: Abbruch mit Einrichtungsbefehl statt Ueberspringen, Python-Werkzeuge aus einer projekteigenen `.venv`, dazu yamllint, gitleaks und eine Pruefung, dass `config.yaml` dieselbe Fassung traegt wie `VERSION` ([#22](https://github.com/thomas682/ha-frigate-face-bridge/issues/22)).
+- Neue Oberflaechen-Pruefung `scripts/pruefung-oberflaeche.mjs` fuehrt `app.js` vollstaendig unter einem DOM-Ersatz aus, gespeist mit echten API-Antworten der App, und loest jeden Ereignis-Horcher einmal aus.
+- `AGENTS.md`, `CLAUDE.md`, `docs/local-checks.md` und die globale Regel-Baseline auf den Vorlagenstand vom 06.10.2026 gebracht.
+
+### Fixed
+
+- `app.js`: ungenutzte Variable und ungenutzter Fehlerparameter entfernt; `endpointText` nutzt optionale Verkettung.
+- Konfigurationsfehler bei ungueltiger Confidence behalten die urspruengliche Ausnahme als Ursache (`raise ... from`).
+
 ## 2026.07.004
 
 ### Changed

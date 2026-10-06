@@ -107,13 +107,52 @@ def _defaults_from_addon_config() -> dict[str, Any]:
         "demo_mode": DEFAULT_DEMO_MODE,
         "log_level": "info",
         "event_interval_seconds": 10,
-        "mqtt": {"enabled": False, "host": "core-mosquitto", "port": 1883, "username": "", "password": "", "topic_prefix": "ha/frigate_face_bridge", "discovery": True, "discovery_prefix": "homeassistant"},
-        "frigate": {"enabled": False, "events_topic": "frigate/events", "camera_name": "", "api_url": "", "person_count_enabled": True, "person_count_interval_seconds": 5, "dog_name": "Maja"},
+        "mqtt": {
+            "enabled": False,
+            "host": "core-mosquitto",
+            "port": 1883,
+            "username": "",
+            "password": "",
+            "topic_prefix": "ha/frigate_face_bridge",
+            "discovery": True,
+            "discovery_prefix": "homeassistant",
+        },
+        "frigate": {
+            "enabled": False,
+            "events_topic": "frigate/events",
+            "camera_name": "",
+            "api_url": "",
+            "person_count_enabled": True,
+            "person_count_interval_seconds": 5,
+            "dog_name": "Maja",
+        },
         "face_recognition": {"enabled": False, "events_topic": "face_recognition/events", "min_confidence": 0.7},
-        "announcements": {"enabled": True, "announce_known": True, "announce_unknown": True, "announce_dog": True, "random_texts_enabled": True, "global_cooldown_seconds": 60, "entity_cooldown_seconds": 300, "disabled_entities": "", "custom_texts": ""},
+        "announcements": {
+            "enabled": True,
+            "announce_known": True,
+            "announce_unknown": True,
+            "announce_dog": True,
+            "random_texts_enabled": True,
+            "global_cooldown_seconds": 60,
+            "entity_cooldown_seconds": 300,
+            "disabled_entities": "",
+            "custom_texts": "",
+        },
         "terrace_door": {"enabled": False, "open": False, "confidence": 0.0, "last_changed": ""},
-        "camera": {"name": "", "host": "", "rtsp_url": "", "snapshot_url": "", "detect_width": 640, "detect_height": 360, "detect_fps": 5},
-        "known_faces": [{"name": "Thomas", "enabled": True}, {"name": "Birgit", "enabled": True}, {"name": "Marie", "enabled": True}],
+        "camera": {
+            "name": "",
+            "host": "",
+            "rtsp_url": "",
+            "snapshot_url": "",
+            "detect_width": 640,
+            "detect_height": 360,
+            "detect_fps": 5,
+        },
+        "known_faces": [
+            {"name": "Thomas", "enabled": True},
+            {"name": "Birgit", "enabled": True},
+            {"name": "Marie", "enabled": True},
+        ],
     }
 
 
@@ -204,7 +243,9 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
         face_recognition = config["face_recognition"] = {}
         errors.append("face_recognition must be an object; using defaults")
     face_recognition["enabled"] = bool(face_recognition.get("enabled", False))
-    face_recognition["events_topic"] = str(face_recognition.get("events_topic") or "face_recognition/events").strip().strip("/")
+    face_recognition["events_topic"] = (
+        str(face_recognition.get("events_topic") or "face_recognition/events").strip().strip("/")
+    )
     try:
         min_confidence = float(face_recognition.get("min_confidence", 0.7))
     except (TypeError, ValueError):
@@ -324,7 +365,9 @@ def sanitize_camera_update(payload: dict[str, Any]) -> dict[str, Any]:
         out["snapshot_url"] = _validate_url(str(camera.get("snapshot_url") or ""), {"http", "https"})
     for key in ("detect_width", "detect_height", "detect_fps"):
         if key in camera:
-            out[key] = _as_int(camera.get(key), 640 if key == "detect_width" else 360 if key == "detect_height" else 5, 1)
+            out[key] = _as_int(
+                camera.get(key), 640 if key == "detect_width" else 360 if key == "detect_height" else 5, 1
+            )
 
     if not out:
         raise ValueError("no camera fields supplied")
@@ -395,11 +438,15 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
             if "***" not in password:
                 mqtt["password"] = password
         if "topic_prefix" in mqtt_payload:
-            mqtt["topic_prefix"] = _validate_topic(str(mqtt_payload.get("topic_prefix") or "ha/frigate_face_bridge"), "ha/frigate_face_bridge")
+            mqtt["topic_prefix"] = _validate_topic(
+                str(mqtt_payload.get("topic_prefix") or "ha/frigate_face_bridge"), "ha/frigate_face_bridge"
+            )
         if "discovery" in mqtt_payload:
             mqtt["discovery"] = _as_bool(mqtt_payload.get("discovery"))
         if "discovery_prefix" in mqtt_payload:
-            mqtt["discovery_prefix"] = _validate_topic(str(mqtt_payload.get("discovery_prefix") or "homeassistant"), "homeassistant")
+            mqtt["discovery_prefix"] = _validate_topic(
+                str(mqtt_payload.get("discovery_prefix") or "homeassistant"), "homeassistant"
+            )
         if mqtt:
             out["mqtt"] = mqtt
 
@@ -411,9 +458,13 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
         if "enabled" in frigate_payload:
             frigate["enabled"] = _as_bool(frigate_payload.get("enabled"))
         if "events_topic" in frigate_payload:
-            frigate["events_topic"] = _validate_topic(str(frigate_payload.get("events_topic") or "frigate/events"), "frigate/events")
+            frigate["events_topic"] = _validate_topic(
+                str(frigate_payload.get("events_topic") or "frigate/events"), "frigate/events"
+            )
         if "camera_name" in frigate_payload:
-            frigate["camera_name"] = re.sub(r"[^A-Za-z0-9_-]+", "_", str(frigate_payload.get("camera_name") or "")).strip("_")
+            frigate["camera_name"] = re.sub(
+                r"[^A-Za-z0-9_-]+", "_", str(frigate_payload.get("camera_name") or "")
+            ).strip("_")
         if "api_url" in frigate_payload:
             api_url = str(frigate_payload.get("api_url") or "").strip().rstrip("/")
             if api_url:
@@ -424,9 +475,13 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
         if "person_count_enabled" in frigate_payload:
             frigate["person_count_enabled"] = _as_bool(frigate_payload.get("person_count_enabled"))
         if "person_count_interval_seconds" in frigate_payload:
-            frigate["person_count_interval_seconds"] = _as_int(frigate_payload.get("person_count_interval_seconds"), 5, 1)
+            frigate["person_count_interval_seconds"] = _as_int(
+                frigate_payload.get("person_count_interval_seconds"), 5, 1
+            )
         if "dog_name" in frigate_payload:
-            frigate["dog_name"] = re.sub(r"[^A-Za-z0-9 _-]+", "", str(frigate_payload.get("dog_name") or "Maja")).strip() or "Maja"
+            frigate["dog_name"] = (
+                re.sub(r"[^A-Za-z0-9 _-]+", "", str(frigate_payload.get("dog_name") or "Maja")).strip() or "Maja"
+            )
         if frigate:
             out["frigate"] = frigate
 
@@ -438,12 +493,14 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
         if "enabled" in face_payload:
             face["enabled"] = _as_bool(face_payload.get("enabled"))
         if "events_topic" in face_payload:
-            face["events_topic"] = _validate_topic(str(face_payload.get("events_topic") or "face_recognition/events"), "face_recognition/events")
+            face["events_topic"] = _validate_topic(
+                str(face_payload.get("events_topic") or "face_recognition/events"), "face_recognition/events"
+            )
         if "min_confidence" in face_payload:
             try:
                 face["min_confidence"] = min(max(float(face_payload.get("min_confidence")), 0.0), 1.0)
-            except (TypeError, ValueError):
-                raise ValueError("face_recognition.min_confidence is invalid")
+            except (TypeError, ValueError) as exc:
+                raise ValueError("face_recognition.min_confidence is invalid") from exc
         if face:
             out["face_recognition"] = face
 
@@ -459,8 +516,8 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
         if "confidence" in door_payload:
             try:
                 door["confidence"] = min(max(float(door_payload.get("confidence")), 0.0), 1.0)
-            except (TypeError, ValueError):
-                raise ValueError("terrace_door.confidence is invalid")
+            except (TypeError, ValueError) as exc:
+                raise ValueError("terrace_door.confidence is invalid") from exc
         if "last_changed" in door_payload:
             door["last_changed"] = str(door_payload.get("last_changed") or "")
         if door:
@@ -475,9 +532,13 @@ def sanitize_app_update(payload: dict[str, Any], current_options: dict[str, Any]
             if key in announcement_payload:
                 announcements[key] = _as_bool(announcement_payload.get(key))
         if "global_cooldown_seconds" in announcement_payload:
-            announcements["global_cooldown_seconds"] = _as_int(announcement_payload.get("global_cooldown_seconds"), 60, 0)
+            announcements["global_cooldown_seconds"] = _as_int(
+                announcement_payload.get("global_cooldown_seconds"), 60, 0
+            )
         if "entity_cooldown_seconds" in announcement_payload:
-            announcements["entity_cooldown_seconds"] = _as_int(announcement_payload.get("entity_cooldown_seconds"), 300, 0)
+            announcements["entity_cooldown_seconds"] = _as_int(
+                announcement_payload.get("entity_cooldown_seconds"), 300, 0
+            )
         if "disabled_entities" in announcement_payload:
             announcements["disabled_entities"] = str(announcement_payload.get("disabled_entities") or "")[:1000]
         if "custom_texts" in announcement_payload:

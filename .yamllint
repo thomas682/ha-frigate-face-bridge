@@ -1,0 +1,17 @@
+---
+# Konfiguration fuer yamllint. Sie liegt im Repository, damit die Pruefung ueberall
+# gleich ausfaellt -- auf der Kommandozeile wie in scripts/run-local-checks.sh.
+extends: default
+
+rules:
+  # 80 waere fuer Konfigurationsdateien mit Pfaden und URLs zu eng.
+  line-length:
+    max: 120
+  # Der Dreistrich am Dateianfang ist hier nicht durchgehend ueblich.
+  document-start: disable
+  # Kommentare direkt hinter dem Wert kommen in Konfigurationsdateien haeufig vor.
+  comments:
+    min-spaces-from-content: 1
+
+ignore: |
+  docs/functions.yaml

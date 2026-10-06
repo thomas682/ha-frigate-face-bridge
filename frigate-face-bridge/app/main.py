@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import signal
@@ -8,7 +9,7 @@ import sys
 import threading
 import time
 from collections import deque
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.error import URLError
@@ -20,7 +21,15 @@ from flask import Flask, Response, jsonify, request, send_from_directory
 
 from announcements import AnnouncementManager
 from camera import camera_status
-from config_loader import display_url, load_config, load_raw_options, redact_url, safe_config, save_app_config, save_camera_config
+from config_loader import (
+    display_url,
+    load_config,
+    load_raw_options,
+    redact_url,
+    safe_config,
+    save_app_config,
+    save_camera_config,
+)
 from detector import create_detector
 from face_recognition import known_face_status, parse_face_match_event, save_face, set_face_enabled
 from frigate_api import active_person_count_event
@@ -29,7 +38,7 @@ from mqtt_client import MqttPublisher
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
-STARTED_AT = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+STARTED_AT = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def read_version() -> str:
@@ -67,7 +76,11 @@ def configure_logging() -> None:
     level_name = str(config.get("log_level") or "info").upper()
     if level_name == "TRACE":
         level_name = "DEBUG"
-    logging.basicConfig(level=getattr(logging, level_name, logging.INFO), format="%(asctime)s %(levelname)s %(name)s: %(message)s", stream=sys.stdout)
+    logging.basicConfig(
+        level=getattr(logging, level_name, logging.INFO),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        stream=sys.stdout,
+    )
 
 
 configure_logging()
@@ -103,7 +116,12 @@ def handle_face_event(payload: bytes | dict[str, Any]) -> dict[str, Any] | None:
         state["event_count"] = int(state.get("event_count") or 0) + 1
         state["face_event_count"] = int(state.get("face_event_count") or 0) + 1
         record_event(event)
-    LOG.info("face event camera=%s known_faces=%s unknown_faces=%s", event.get("camera"), event.get("known_faces"), event.get("unknown_faces"))
+    LOG.info(
+        "face event camera=%s known_faces=%s unknown_faces=%s",
+        event.get("camera"),
+        event.get("known_faces"),
+        event.get("unknown_faces"),
+    )
     publisher.publish_event(event)
     return event
 
@@ -149,14 +167,16 @@ def record_event(event: dict[str, Any]) -> None:
         "status": event.get("status"),
     }
     history.append(entry)
-    announcement_history.append({
-        "timestamp": entry["timestamp"],
-        "camera": entry["camera"],
-        "text": announcement.get("log_text") or "",
-        "spoken": bool(announcement.get("should_speak")),
-        "entities": announcement.get("entities") or [],
-        "suppressed_reason": announcement.get("suppressed_reason") or "",
-    })
+    announcement_history.append(
+        {
+            "timestamp": entry["timestamp"],
+            "camera": entry["camera"],
+            "text": announcement.get("log_text") or "",
+            "spoken": bool(announcement.get("should_speak")),
+            "entities": announcement.get("entities") or [],
+            "suppressed_reason": announcement.get("suppressed_reason") or "",
+        }
+    )
 
 
 def _status() -> dict[str, Any]:
@@ -201,7 +221,9 @@ def _status() -> dict[str, Any]:
             "home_assistant": "via Ingress" if os.environ.get("SUPERVISOR_TOKEN") else "nicht erkannt",
             "go2rtc": go2rtc_status(),
             "frigate": "aktiv" if bool(config.get("frigate", {}).get("enabled")) else "deaktiviert",
-            "mqtt": "verbunden" if mqtt_status.get("connected") else ("aktiviert" if mqtt_status.get("enabled") else "deaktiviert"),
+            "mqtt": "verbunden"
+            if mqtt_status.get("connected")
+            else ("aktiviert" if mqtt_status.get("enabled") else "deaktiviert"),
             "last_error": last_error,
         },
         "communication": communication_status(mqtt_status),
@@ -249,7 +271,11 @@ def communication_status(mqtt_status: dict[str, Any] | None = None) -> dict[str,
     mqtt_port = int(mqtt_config.get("port") or 1883)
     go2rtc_state = go2rtc_status()
     rtsp_display = str(rtsp_endpoint.get("display") or "")
-    go2rtc_used = bool(frigate_endpoint.get("configured") and go2rtc_state != "nicht konfiguriert") or ":8554" in rtsp_display or "go2rtc" in rtsp_display.lower()
+    go2rtc_used = (
+        bool(frigate_endpoint.get("configured") and go2rtc_state != "nicht konfiguriert")
+        or ":8554" in rtsp_display
+        or "go2rtc" in rtsp_display.lower()
+    )
 
     return {
         "ha_ingress_url": "/b3b46a83_frigate_face_bridge",
@@ -258,7 +284,9 @@ def communication_status(mqtt_status: dict[str, Any] | None = None) -> dict[str,
         "elements": {
             "camera": {
                 "title": "Kamera / UniFi Protect",
-                "status": "konfiguriert" if camera_host or rtsp_endpoint.get("configured") or snapshot_endpoint.get("configured") else "nicht konfiguriert",
+                "status": "konfiguriert"
+                if camera_host or rtsp_endpoint.get("configured") or snapshot_endpoint.get("configured")
+                else "nicht konfiguriert",
                 "host": camera_host,
                 "rtsp": rtsp_endpoint,
                 "snapshot": snapshot_endpoint,
@@ -271,16 +299,25 @@ def communication_status(mqtt_status: dict[str, Any] | None = None) -> dict[str,
                 "status": go2rtc_state if go2rtc_used else "nicht verwendet/unklar",
                 "host": frigate_endpoint.get("host") or "",
                 "port": 8554 if go2rtc_used else None,
-                "description": "Stream-Konverter, haeufig in Frigate eingebettet. Wandelt UniFi/RTSPS-Streams in nutzbare RTSP-Streams.",
-                "exchange": "Stream-Weitergabe an Frigate; Status ueber Frigate go2rtc API, wenn Frigate API konfiguriert ist.",
+                "description": (
+                    "Stream-Konverter, haeufig in Frigate eingebettet. "
+                    "Wandelt UniFi/RTSPS-Streams in nutzbare RTSP-Streams."
+                ),
+                "exchange": (
+                    "Stream-Weitergabe an Frigate; Status ueber Frigate go2rtc API, wenn Frigate API konfiguriert ist."
+                ),
             },
             "frigate": {
                 "title": "Frigate",
-                "status": "aktiv" if bool(frigate_config.get("enabled")) else ("API konfiguriert" if frigate_endpoint.get("configured") else "deaktiviert"),
+                "status": "aktiv"
+                if bool(frigate_config.get("enabled"))
+                else ("API konfiguriert" if frigate_endpoint.get("configured") else "deaktiviert"),
                 "api": frigate_endpoint,
                 "camera_name": str(frigate_config.get("camera_name") or ""),
                 "events_topic": str(frigate_config.get("events_topic") or ""),
-                "description": "Erkennt Objekte wie Personen und Hunde und stellt Events sowie aktive Objektlisten bereit.",
+                "description": (
+                    "Erkennt Objekte wie Personen und Hunde und stellt Events sowie aktive Objektlisten bereit."
+                ),
                 "exchange": "MQTT Events, REST API fuer aktive Personen/Hunde und go2rtc-Status.",
             },
             "bridge": {
@@ -293,19 +330,26 @@ def communication_status(mqtt_status: dict[str, Any] | None = None) -> dict[str,
             },
             "mqtt": {
                 "title": "MQTT Broker",
-                "status": "verbunden" if mqtt_status.get("connected") else ("aktiviert" if mqtt_status.get("enabled") else "deaktiviert"),
+                "status": "verbunden"
+                if mqtt_status.get("connected")
+                else ("aktiviert" if mqtt_status.get("enabled") else "deaktiviert"),
                 "host": mqtt_host,
                 "port": mqtt_port,
                 "topic_prefix": str(mqtt_config.get("topic_prefix") or ""),
                 "description": "Transportiert Bridge-Sensorwerte und MQTT Discovery nach Home Assistant.",
-                "exchange": "Topics fuer person_count, known_faces, announcements, recognition_log und Discovery Configs.",
+                "exchange": (
+                    "Topics fuer person_count, known_faces, announcements, recognition_log und Discovery Configs."
+                ),
             },
             "home_assistant": {
                 "title": "Home Assistant",
                 "status": "via Ingress" if os.environ.get("SUPERVISOR_TOKEN") else "nicht erkannt",
                 "host": "homeassistant.localdomain",
                 "port": 8123,
-                "description": "Zeigt die Add-on-Weboberflaeche ueber Ingress und nutzt MQTT-Sensoren fuer Dashboard und Automationen.",
+                "description": (
+                    "Zeigt die Add-on-Weboberflaeche ueber Ingress und nutzt "
+                    "MQTT-Sensoren fuer Dashboard und Automationen."
+                ),
                 "exchange": "HA Ingress, Add-on Optionen, MQTT Sensoren und TTS/Automation-Ausgabe.",
             },
         },
@@ -321,7 +365,9 @@ def storage_status() -> dict[str, Any]:
         "mqtt_username_set": bool(str(raw_mqtt.get("username") or config.get("mqtt", {}).get("username") or "")),
         "mqtt_password_set": bool(str(raw_mqtt.get("password") or config.get("mqtt", {}).get("password") or "")),
         "rtsp_url_set": bool(str(raw_camera.get("rtsp_url") or config.get("camera", {}).get("rtsp_url") or "")),
-        "snapshot_url_set": bool(str(raw_camera.get("snapshot_url") or config.get("camera", {}).get("snapshot_url") or "")),
+        "snapshot_url_set": bool(
+            str(raw_camera.get("snapshot_url") or config.get("camera", {}).get("snapshot_url") or "")
+        ),
         "faces_registry_present": known_face_status(config) != [],
     }
 
@@ -371,7 +417,13 @@ def test_mqtt_settings(settings: dict[str, Any]) -> dict[str, Any]:
 
     def on_connect(_client: Any, _userdata: Any, _flags: Any, reason_code: Any, _properties: Any = None) -> None:
         connected = int(reason_code) == 0 if str(reason_code).isdigit() else str(reason_code) == "Success"
-        result.update({"ok": connected, "status": "MQTT Login erfolgreich" if connected else f"MQTT Login fehlgeschlagen: {reason_code}", "reason": str(reason_code)})
+        result.update(
+            {
+                "ok": connected,
+                "status": "MQTT Login erfolgreich" if connected else f"MQTT Login fehlgeschlagen: {reason_code}",
+                "reason": str(reason_code),
+            }
+        )
         event.set()
 
     def on_disconnect(_client: Any, _userdata: Any, _flags: Any, reason_code: Any, _properties: Any = None) -> None:
@@ -388,14 +440,11 @@ def test_mqtt_settings(settings: dict[str, Any]) -> dict[str, Any]:
     except Exception as exc:
         result.update({"ok": False, "status": "MQTT Test fehlgeschlagen", "error": str(exc)})
     finally:
-        try:
+        # Aufraeumen nach einem Verbindungstest darf das Testergebnis nicht ueberdecken.
+        with contextlib.suppress(Exception):
             client.disconnect()
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             client.loop_stop()
-        except Exception:
-            pass
     return result
 
 
@@ -406,7 +455,15 @@ def test_rtsp_url(url: str) -> dict[str, Any]:
     parts = urlsplit(url)
     if parts.scheme.lower() not in {"rtsp", "rtsps", "http", "https"} or not parts.hostname:
         return {"ok": False, "status": "ungueltige RTSP URL"}
-    port = parts.port or (7441 if parts.scheme.lower() == "rtsps" else 7447 if parts.scheme.lower() == "rtsp" else 443 if parts.scheme.lower() == "https" else 80)
+    port = parts.port or (
+        7441
+        if parts.scheme.lower() == "rtsps"
+        else 7447
+        if parts.scheme.lower() == "rtsp"
+        else 443
+        if parts.scheme.lower() == "https"
+        else 80
+    )
     result = _tcp_test(parts.hostname, port)
     result["url"] = redact_url(url)
     return result
@@ -427,7 +484,12 @@ def test_frigate_api_url(url: str) -> dict[str, Any]:
             with urlopen(req, timeout=5) as response:
                 content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
                 if response.status < 400:
-                    return {"ok": True, "status": f"Frigate erreichbar ({path}, HTTP {response.status})", "url": display_url(url), "content_type": content_type}
+                    return {
+                        "ok": True,
+                        "status": f"Frigate erreichbar ({path}, HTTP {response.status})",
+                        "url": display_url(url),
+                        "content_type": content_type,
+                    }
                 last_error = f"HTTP {response.status} auf {path}"
         except Exception as exc:
             last_error = str(exc)
@@ -436,10 +498,20 @@ def test_frigate_api_url(url: str) -> dict[str, Any]:
 
 def event_loop() -> None:
     interval = max(1, int(config.get("event_interval_seconds") or 10))
-    LOG.info("event loop started demo_mode=%s interval=%ss camera=%s", config.get("demo_mode"), interval, camera_status(config).get("name"))
+    LOG.info(
+        "event loop started demo_mode=%s interval=%ss camera=%s",
+        config.get("demo_mode"),
+        interval,
+        camera_status(config).get("name"),
+    )
     while state.get("running"):
         frigate = config.get("frigate", {}) if isinstance(config.get("frigate"), dict) else {}
-        if not bool(config.get("demo_mode", False)) and bool(frigate.get("enabled")) and bool(frigate.get("person_count_enabled", True)) and str(frigate.get("api_url") or "").strip():
+        if (
+            not bool(config.get("demo_mode", False))
+            and bool(frigate.get("enabled"))
+            and bool(frigate.get("person_count_enabled", True))
+            and str(frigate.get("api_url") or "").strip()
+        ):
             time.sleep(interval)
             continue
         event = detector.detect()
@@ -447,7 +519,13 @@ def event_loop() -> None:
             state["last_event"] = event
             state["event_count"] = int(state.get("event_count") or 0) + 1
             record_event(event)
-        LOG.info("event camera=%s person_count=%s known_faces=%s unknown_faces=%s", event.get("camera"), event.get("person_count"), len(event.get("known_faces") or []), event.get("unknown_faces"))
+        LOG.info(
+            "event camera=%s person_count=%s known_faces=%s unknown_faces=%s",
+            event.get("camera"),
+            event.get("person_count"),
+            len(event.get("known_faces") or []),
+            event.get("unknown_faces"),
+        )
         publisher.publish_event(event)
         time.sleep(interval)
 
@@ -465,7 +543,12 @@ def frigate_person_count_loop() -> None:
                     state["event_count"] = int(state.get("event_count") or 0) + 1
                     state["frigate_active_count"] = int(state.get("frigate_active_count") or 0) + 1
                     record_event(event)
-                LOG.info("active Frigate objects camera=%s person_count=%s dog_count=%s", event.get("camera"), event.get("person_count"), event.get("dog_count"))
+                LOG.info(
+                    "active Frigate objects camera=%s person_count=%s dog_count=%s",
+                    event.get("camera"),
+                    event.get("person_count"),
+                    event.get("dog_count"),
+                )
                 publisher.publish_event(event)
         except Exception as exc:
             publisher.last_error = f"Frigate person count failed: {exc}"
@@ -504,12 +587,29 @@ def api_last_event():
 def api_history():
     with state_lock:
         items = list(history)
-    return jsonify({"ok": True, "history": items, "person_count_series": [{"timestamp": item.get("timestamp"), "person_count": item.get("person_count", 0)} for item in items if item.get("source") == "frigate_active_objects"][-120:]})
+    return jsonify(
+        {
+            "ok": True,
+            "history": items,
+            "person_count_series": [
+                {"timestamp": item.get("timestamp"), "person_count": item.get("person_count", 0)}
+                for item in items
+                if item.get("source") == "frigate_active_objects"
+            ][-120:],
+        }
+    )
 
 
 @app.get("/api/config")
 def api_config():
-    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options()), "storage_status": storage_status()})
+    return jsonify(
+        {
+            "ok": True,
+            "config": safe_config(config),
+            "raw_config": safe_config(load_raw_options()),
+            "storage_status": storage_status(),
+        }
+    )
 
 
 @app.post("/api/config")
@@ -532,7 +632,15 @@ def api_update_config():
     if bool(config.get("mqtt", {}).get("enabled")):
         publisher.connect()
     LOG.info("application configuration updated")
-    return jsonify({"ok": True, "config": safe_config(config), "raw_config": safe_config(load_raw_options()), "storage_status": storage_status(), "status": _status()})
+    return jsonify(
+        {
+            "ok": True,
+            "config": safe_config(config),
+            "raw_config": safe_config(load_raw_options()),
+            "storage_status": storage_status(),
+            "status": _status(),
+        }
+    )
 
 
 @app.get("/api/faces")
@@ -596,16 +704,35 @@ def api_update_camera():
 @app.post("/api/test/mqtt")
 def api_test_mqtt():
     payload = request.get_json(silent=True) or {}
-    mqtt = payload.get("mqtt") if isinstance(payload.get("mqtt"), dict) else config.get("mqtt", {}) if isinstance(config.get("mqtt"), dict) else {}
+    mqtt = (
+        payload.get("mqtt")
+        if isinstance(payload.get("mqtt"), dict)
+        else config.get("mqtt", {})
+        if isinstance(config.get("mqtt"), dict)
+        else {}
+    )
     result = test_mqtt_settings(mqtt)
-    result.update({"enabled": bool(mqtt.get("enabled")), "host": str(mqtt.get("host") or ""), "port": int(mqtt.get("port") or 0), "connected": bool(publisher.status().get("connected"))})
+    result.update(
+        {
+            "enabled": bool(mqtt.get("enabled")),
+            "host": str(mqtt.get("host") or ""),
+            "port": int(mqtt.get("port") or 0),
+            "connected": bool(publisher.status().get("connected")),
+        }
+    )
     return jsonify(result), 200 if result.get("ok") else 502
 
 
 @app.post("/api/test/frigate")
 def api_test_frigate():
     payload = request.get_json(silent=True) or {}
-    frigate = payload.get("frigate") if isinstance(payload.get("frigate"), dict) else config.get("frigate", {}) if isinstance(config.get("frigate"), dict) else {}
+    frigate = (
+        payload.get("frigate")
+        if isinstance(payload.get("frigate"), dict)
+        else config.get("frigate", {})
+        if isinstance(config.get("frigate"), dict)
+        else {}
+    )
     result = test_frigate_api_url(str(frigate.get("api_url") or ""))
     return jsonify(result), 200 if result.get("ok") else 502
 
@@ -613,7 +740,13 @@ def api_test_frigate():
 @app.post("/api/test/rtsp")
 def api_test_rtsp():
     payload = request.get_json(silent=True) or {}
-    camera = payload.get("camera") if isinstance(payload.get("camera"), dict) else config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+    camera = (
+        payload.get("camera")
+        if isinstance(payload.get("camera"), dict)
+        else config.get("camera", {})
+        if isinstance(config.get("camera"), dict)
+        else {}
+    )
     result = test_rtsp_url(str(camera.get("rtsp_url") or ""))
     return jsonify(result), 200 if result.get("ok") else 502
 
@@ -621,7 +754,13 @@ def api_test_rtsp():
 @app.post("/api/test/snapshot")
 def api_test_snapshot():
     payload = request.get_json(silent=True) or {}
-    camera = payload.get("camera") if isinstance(payload.get("camera"), dict) else config.get("camera", {}) if isinstance(config.get("camera"), dict) else {}
+    camera = (
+        payload.get("camera")
+        if isinstance(payload.get("camera"), dict)
+        else config.get("camera", {})
+        if isinstance(config.get("camera"), dict)
+        else {}
+    )
     snapshot_url = str(camera.get("snapshot_url") or "").strip()
     if not snapshot_url:
         return jsonify({"ok": False, "status": "Snapshot URL nicht gesetzt"}), 400
@@ -632,7 +771,14 @@ def api_test_snapshot():
         req = Request(snapshot_url, headers={"User-Agent": "frigate-face-bridge"})
         with urlopen(req, timeout=5) as response:
             content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
-            return jsonify({"ok": response.status < 400 and content_type.startswith("image/"), "status": "Bild erreichbar" if content_type.startswith("image/") else "Antwort ist kein Bild", "content_type": content_type, "url": redact_url(snapshot_url)})
+            return jsonify(
+                {
+                    "ok": response.status < 400 and content_type.startswith("image/"),
+                    "status": "Bild erreichbar" if content_type.startswith("image/") else "Antwort ist kein Bild",
+                    "content_type": content_type,
+                    "url": redact_url(snapshot_url),
+                }
+            )
     except Exception as exc:
         LOG.warning("snapshot test failed url=%s error=%s", redact_url(snapshot_url), exc)
         return jsonify({"ok": False, "status": "Snapshot nicht erreichbar", "url": redact_url(snapshot_url)}), 502

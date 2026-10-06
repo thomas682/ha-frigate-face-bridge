@@ -1,7 +1,8 @@
 # CLAUDE.md
 
-Diese Datei wird von Claude Code beim Start **automatisch** gelesen. `AGENTS.md`
-wird es nicht — deshalb steht der Einstieg hier und zieht die Regeln nach.
+Claude Code liest beim Start ausschliesslich diese Datei, nicht `AGENTS.md`.
+Der folgende Import holt die Projektregeln nach; alles Verbindliche steht dort
+und gilt fuer Claude Code und opencode gleichermassen.
 
 @AGENTS.md
 

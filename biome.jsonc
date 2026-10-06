@@ -1,0 +1,40 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	// Geprueft wird nur eigener Oberflaechen- und Pruefcode. node_modules und der
+	// Funktionskatalog (JSON-kompatibles YAML) gehoeren nicht dazu.
+	// .venv und node_modules stehen in .gitignore und werden so ausgelassen.
+	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+	"files": {
+		"includes": [
+			"frigate-face-bridge/app/static/**/*.js",
+			"frigate-face-bridge/app/static/**/*.css",
+			"scripts/**/*.mjs"
+		]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended",
+			"complexity": {
+				// Die drei !important-Stellen sind [hidden]-Regeln und der Direktport-Modus.
+				// global-gui-rules.md verlangt genau das: hidden muss jede eigene display-Regel
+				// schlagen, sonst bleibt ein verstecktes Element als leerer Kasten stehen. Die
+				// Regel warnt vor Kaskadenumkehr - hier ist die Umkehr der Zweck.
+				"noImportantStyles": "off"
+			},
+			"style": {
+				// Meldet z. B. `.detail-list strong` nach `.stat-card.accent strong`. Die
+				// Selektoren gehoeren zu verschiedenen Karten und treffen nie dasselbe Element;
+				// die Regel zielt auf Ueberschreibungen innerhalb desselben Elements. Ein
+				// Umsortieren des Stilblatts haette hier nur Darstellungsrisiko ohne Nutzen.
+				"noDescendingSpecificity": "off"
+			}
+		}
+	},
+	// Kein Formatierer: Der Funktionskatalog (scripts/build_function_docs.py) erkennt
+	// JavaScript-Funktionen und Callbacks zeilenweise im Quelltext. Ein Neuformatieren
+	// von app.js wuerde Einheiten und damit dokumentierte IDs verschieben, ohne am
+	// Verhalten etwas zu aendern. Formatiert wird deshalb nur von Hand.
+	"formatter": { "enabled": false },
+	"assist": { "enabled": false }
+}

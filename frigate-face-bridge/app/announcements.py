@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import random
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
-
 
 RANDOM_TEXTS = [
     "{names} wurde erkannt.",
@@ -31,7 +30,7 @@ RANDOM_TEXTS = [
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _as_list(value: Any) -> list[str]:
@@ -88,20 +87,41 @@ class AnnouncementManager:
             for name in _as_list(event.get("known_faces")):
                 if name.lower() not in disabled:
                     entities.append({"key": name.lower(), "name": name, "type": "known"})
-        if bool(settings.get("announce_dog", True)) and int(event.get("dog_count") or 0) > 0 and dog_name.lower() not in disabled:
+        if (
+            bool(settings.get("announce_dog", True))
+            and int(event.get("dog_count") or 0) > 0
+            and dog_name.lower() not in disabled
+        ):
             entities.append({"key": dog_name.lower(), "name": dog_name, "type": "dog"})
         unknown_count = int(event.get("unknown_faces") or 0)
-        if bool(settings.get("announce_unknown", True)) and unknown_count > 0 and "unknown" not in disabled and "unbekannt" not in disabled:
+        if (
+            bool(settings.get("announce_unknown", True))
+            and unknown_count > 0
+            and "unknown" not in disabled
+            and "unbekannt" not in disabled
+        ):
             name = "eine unbekannte Person" if unknown_count == 1 else f"{unknown_count} unbekannte Personen"
             entities.append({"key": "unknown", "name": name, "type": "unknown"})
 
         global_cooldown = max(0, int(settings.get("global_cooldown_seconds") or 0))
         entity_cooldown = max(0, int(settings.get("entity_cooldown_seconds") or 0))
         global_blocked = bool(global_cooldown and now - self.last_global_at < global_cooldown)
-        speak_entities = [] if global_blocked else [item for item in entities if not (entity_cooldown and now - self.last_entity_at.get(item["key"], 0.0) < entity_cooldown)]
+        speak_entities = (
+            []
+            if global_blocked
+            else [
+                item
+                for item in entities
+                if not (entity_cooldown and now - self.last_entity_at.get(item["key"], 0.0) < entity_cooldown)
+            ]
+        )
 
         names = [item["name"] for item in speak_entities]
-        text = self._text(names, speak_entities, custom, bool(settings.get("random_texts_enabled", True))) if enabled and names else ""
+        text = (
+            self._text(names, speak_entities, custom, bool(settings.get("random_texts_enabled", True)))
+            if enabled and names
+            else ""
+        )
         should_speak = bool(enabled and text)
         if should_speak:
             self.last_global_at = now
@@ -131,7 +151,9 @@ class AnnouncementManager:
             "log_text": log_text,
         }
 
-    def _text(self, names: list[str], entities: list[dict[str, str]], custom: dict[str, str], random_enabled: bool) -> str:
+    def _text(
+        self, names: list[str], entities: list[dict[str, str]], custom: dict[str, str], random_enabled: bool
+    ) -> str:
         if len(entities) == 1:
             item = entities[0]
             template = custom.get(item["key"]) or custom.get(item["type"]) or custom.get("default")

@@ -1,0 +1,36 @@
+# Nur Werkzeugkonfiguration: Das Add-on wird nicht als Paket installiert, die App laeuft
+# aus frigate-face-bridge/app/ heraus. Die Laufzeitversion steht ausschliesslich in VERSION.
+
+[tool.ruff]
+# Der Bestand war durchgaengig auf lange Zeilen geschrieben. Den Zeilenumbruch fuehrt
+# seit 2026.10.001 `ruff format`; 120 ist die Grenze, die auch globale Regeln und
+# localAIBro verwenden.
+line-length = 120
+# Das Add-on-Image baut auf python:3.12-alpine, siehe frigate-face-bridge/Dockerfile.
+target-version = "py312"
+
+[tool.ruff.lint]
+# Pflichtumfang nach global-project-rules.md (E, F, I, B) plus die dort empfohlenen Regelsaetze.
+select = ["E", "F", "I", "B", "UP", "C4", "SIM", "RET", "PTH"]
+
+[tool.ruff.lint.isort]
+# Die App-Module liegen nicht in einem Paket, sondern werden ueber den Suchpfad geladen.
+# Ohne diese Angabe sortiert Ruff sie als Drittanbieter-Importe ein.
+known-first-party = [
+  "announcements", "camera", "config_loader", "detector", "face_recognition",
+  "frigate_api", "frigate_events", "mqtt_client", "build_function_docs",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Der Testlauf muss ADDON_CONFIG_FILE und OPTIONS_FILE setzen, BEVOR config_loader
+# importiert wird: das Modul liest beide beim Import. Die Importe stehen deshalb
+# absichtlich hinter dem Umgebungsaufbau.
+"tests/test_api.py" = ["E402"]
+# Der Generator des Funktionskatalogs traegt Handbuch- und Katalogtexte als lange
+# Fliesstext-Literale. E501 zielt auf lesbaren Code; ein Umbruch mitten im Satz macht
+# diese Texte schwerer pruefbar, ohne am Code etwas zu verbessern. Den Code selbst
+# bricht `ruff format` um.
+"scripts/build_function_docs.py" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

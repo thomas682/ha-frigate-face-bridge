@@ -10,10 +10,8 @@ import json
 import re
 import subprocess
 from collections import defaultdict
-from html import escape
 from pathlib import Path
 from typing import Any
-
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "frigate-face-bridge/app"
@@ -24,6 +22,8 @@ CATALOG = ROOT / "docs/functions.yaml"
 HANDBOOK = ROOT / "docs/handbuch.md"
 ID_BASELINE = ROOT / "docs/function-id-baseline.json"
 VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+
+
 def public_text(value: str) -> str:
     replacements = {
         "homeassistant.localdomain": "home-assistant.example.invalid",
@@ -44,8 +44,7 @@ def public_text(value: str) -> str:
     }
     for private, public in replacements.items():
         value = value.replace(private, public)
-    value = re.sub(r"fossflow\.loca(?:ldomain)?", "service.example.invalid", value, flags=re.IGNORECASE)
-    return value
+    return re.sub(r"fossflow\.loca(?:ldomain)?", "service.example.invalid", value, flags=re.IGNORECASE)
 
 
 def git_head() -> str:
@@ -56,9 +55,14 @@ def git_head() -> str:
 
 def inventory_source_paths() -> list[Path]:
     paths = [
-        *APP.glob("*.py"), JS, HTML, CONFIG,
-        ROOT / "scripts/run-local-checks.sh", ROOT / "deploy/docker-compose.yml",
-        ROOT / "frigate-face-bridge/Dockerfile", ROOT / "frigate-face-bridge/run.sh",
+        *APP.glob("*.py"),
+        JS,
+        HTML,
+        CONFIG,
+        ROOT / "scripts/run-local-checks.sh",
+        ROOT / "deploy/docker-compose.yml",
+        ROOT / "frigate-face-bridge/Dockerfile",
+        ROOT / "frigate-face-bridge/run.sh",
         *(ROOT / "scripts").glob("*.py"),
     ]
     return sorted({path for path in paths if path.exists()}, key=lambda path: str(path.relative_to(ROOT)))
@@ -102,14 +106,12 @@ def line_at(text: str, offset: int) -> int:
 
 def dynamic_gui_specs(text: str | None = None) -> list[dict[str, str]]:
     text = JS.read_text(encoding="utf-8") if text is None else text
-    creation = re.compile(
-        r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*document\.createElement(?:NS)?\([^;]+\);"
-    )
+    creation = re.compile(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*document\.createElement(?:NS)?\([^;]+\);")
     specs: list[dict[str, str]] = []
     seen_ids: set[str] = set()
     for match in creation.finditer(text):
         variable = match.group(1)
-        following = text[match.end():match.end() + 220]
+        following = text[match.end() : match.end() + 220]
         marker = re.search(
             rf"{re.escape(variable)}\.(?:dataset\.docId\s*=\s*['\"]([^'\"]+)['\"]|setAttribute\(\s*['\"]data-doc-id['\"]\s*,\s*['\"]([^'\"]+)['\"]\s*\))",
             following,
@@ -156,7 +158,11 @@ def return_facts(node: ast.AST, source: str) -> str:
     values: list[str] = []
     for item in ast.walk(node):
         if isinstance(item, ast.Return):
-            value = "None" if item.value is None else (ast.get_source_segment(source, item.value) or ast.dump(item.value, include_attributes=False))
+            value = (
+                "None"
+                if item.value is None
+                else (ast.get_source_segment(source, item.value) or ast.dump(item.value, include_attributes=False))
+            )
             value = re.sub(r"\s+", " ", value).strip()
             if value not in values:
                 values.append(value)
@@ -212,8 +218,18 @@ def python_units() -> list[dict[str, Any]]:
                 conditional_nodes = (ast.If, ast.IfExp) + ((ast.Match,) if hasattr(ast, "Match") else ())
                 conditionals = sum(isinstance(item, conditional_nodes) for item in ast.walk(node))
                 loops = sum(isinstance(item, (ast.For, ast.AsyncFor, ast.While)) for item in ast.walk(node))
-                raises = sorted({ast.unparse(item.exc) for item in ast.walk(node) if isinstance(item, ast.Raise) and item.exc})
-                catches = sorted({ast.unparse(kind) for item in ast.walk(node) if isinstance(item, ast.Try) for handler in item.handlers if (kind := handler.type)})
+                raises = sorted(
+                    {ast.unparse(item.exc) for item in ast.walk(node) if isinstance(item, ast.Raise) and item.exc}
+                )
+                catches = sorted(
+                    {
+                        ast.unparse(kind)
+                        for item in ast.walk(node)
+                        if isinstance(item, ast.Try)
+                        for handler in item.handlers
+                        if (kind := handler.type)
+                    }
+                )
                 call_text = ", ".join(f"`{name}`" for name in calls[:10]) or "no function calls"
                 description = (
                     f"`{ref}` accepts `{args or 'no arguments'}`. Its source contains {conditionals} conditional branch(es), "
@@ -226,7 +242,11 @@ def python_units() -> list[dict[str, Any]]:
                     short_help=f"Executes `{ref}` with `{args or 'no arguments'}` and the return contract stated in its source-reviewed entry.",
                     visibility=f"`{ref}` is internal Python behavior; results are visible only through its callers, API responses, logs, files, or MQTT output.",
                     prerequisites=f"`{ref}` requires the arguments `{args or 'none'}` and the imported dependencies named in this entry.",
-                    permissions=(f"`{ref}` needs write access to the add-on data directory." if any(name.endswith((".write_text", ".mkdir")) for name in calls) else f"`{ref}` itself requests no elevated operating-system permission."),
+                    permissions=(
+                        f"`{ref}` needs write access to the add-on data directory."
+                        if any(name.endswith((".write_text", ".mkdir")) for name in calls)
+                        else f"`{ref}` itself requests no elevated operating-system permission."
+                    ),
                     inputs=f"Exact Python signature for `{ref}`: `{args or 'no arguments'}`. Defaults and optionality are encoded in that signature.",
                     outputs=f"`{ref}`: {return_facts(node, source)}",
                     side_effects=effect_facts(node, ref),
@@ -269,7 +289,7 @@ def find_js_functions(text: str) -> list[tuple[str, int, str, str]]:
     starts = [(match.start(), match.group(2), match.group(3), bool(match.group(1))) for match in declarations]
     units: list[tuple[str, int, str, str]] = []
     ranges: list[tuple[int, int, str]] = []
-    for start, name, params, is_async in starts:
+    for start, name, params, _is_async in starts:
         open_brace = text.index("{", start)
         depth = 0
         quote = ""
@@ -301,7 +321,7 @@ def find_js_functions(text: str) -> list[tuple[str, int, str, str]]:
     ordinals: defaultdict[str, int] = defaultdict(int)
     for match in arrow_pattern.finditer(text):
         parent = next((name for start, end, name in ranges if start < match.start() < end), "module")
-        prefix = text[max(0, match.start() - 100):match.start()]
+        prefix = text[max(0, match.start() - 100) : match.start()]
         assigned = re.search(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*$", prefix)
         defaulted = re.search(r"([A-Za-z_$][\w$]*)\s*=\s*$", prefix)
         if assigned:
@@ -329,7 +349,7 @@ def find_js_functions(text: str) -> list[tuple[str, int, str, str]]:
             body = text[body_start:end]
         else:
             line_end = text.find("\n", body_start)
-            body = text[body_start:line_end if line_end >= 0 else len(text)].strip()
+            body = text[body_start : line_end if line_end >= 0 else len(text)].strip()
         units.append((name, line_at(text, match.start()), params, body))
     return sorted(units, key=lambda item: (item[1], item[0]))
 
@@ -345,18 +365,28 @@ def javascript_units() -> list[dict[str, Any]]:
         if "fetch(" in body:
             methods = sorted(set(re.findall(r"method:\s*'([A-Z]+)'", body))) or ["GET"]
             effects.add(f"HTTP network request ({'/'.join(methods)})")
-        if re.search(r"(?:textContent|innerHTML|value|checked|hidden|href|src)\s*=|\.appendChild\(|\.classList\.|\.setAttribute\(", body):
+        if re.search(
+            r"(?:textContent|innerHTML|value|checked|hidden|href|src)\s*=|\.appendChild\(|\.classList\.|\.setAttribute\(",
+            body,
+        ):
             effects.add("browser DOM/state update")
         if "localStorage." in body:
             effects.add("browser localStorage update")
         if "setInterval(" in body:
             effects.add("repeating browser timer")
-        facts[ref] = {"line": line, "params": params, "body": body, "calls": calls, "effects": effects, "delegates": set()}
+        facts[ref] = {
+            "line": line,
+            "params": params,
+            "body": body,
+            "calls": calls,
+            "effects": effects,
+            "delegates": set(),
+        }
 
     changed = True
     while changed:
         changed = False
-        for ref, fact in facts.items():
+        for fact in facts.values():
             for call in fact["calls"]:
                 if call not in known_names or call not in facts:
                     continue
@@ -371,7 +401,6 @@ def javascript_units() -> list[dict[str, Any]]:
         fact = facts[ref]
         calls = fact["calls"]
         fetches = re.findall(r"fetch\(([^,)]+)", body)
-        dom_writes = sorted(set(re.findall(r"(?:textContent|innerHTML|value|checked|hidden|href|src)\s*=", body)))
         returns = [item.strip()[:160] for item in re.findall(r"\breturn\s+([^;\n]+)", body)]
         delegates = sorted(fact["delegates"])
         effect_text = ", ".join(sorted(fact["effects"])) or "no persistent, network, timer, storage, or DOM effect"
@@ -385,7 +414,8 @@ def javascript_units() -> list[dict[str, Any]]:
             permissions=f"`{ref}` runs with the current page's browser and network permissions; it has no host OS privilege.",
             inputs=f"Parameters for `{ref}`: `{params or 'none'}`; DOM values are read only where shown in the cited body.",
             outputs=f"`{ref}` returns {', '.join(f'`{item}`' for item in returns) if returns else 'undefined'}.",
-            side_effects=f"`{ref}` causes {effect_text}{delegation_text}." + (f" Direct fetch target expression(s): {', '.join(fetches)}." if fetches else ""),
+            side_effects=f"`{ref}` causes {effect_text}{delegation_text}."
+            + (f" Direct fetch target expression(s): {', '.join(fetches)}." if fetches else ""),
             behavior={
                 "loading": f"`{ref}` {'uses await and remains pending during I/O' if 'await ' in body else 'has no asynchronous pending state'}.",
                 "success": f"`{ref}` completes the DOM/return operations listed in this entry.",
@@ -394,7 +424,11 @@ def javascript_units() -> list[dict[str, Any]]:
                 "cancel": f"`{ref}` uses no AbortController; navigation is the only external request cancellation.",
                 "retry": f"`{ref}` {'is called by the five-second timer' if 'setInterval' in body else 'has no internal retry loop'}.",
             },
-            security=(f"`{ref}` writes text with textContent/createTextNode rather than interpreting untrusted HTML; configured request targets remain trust-boundary inputs." if "innerHTML" not in body else f"`{ref}` clears existing markup with `innerHTML = ''`; dynamic untrusted values are subsequently assigned through text nodes, not parsed HTML."),
+            security=(
+                f"`{ref}` writes text with textContent/createTextNode rather than interpreting untrusted HTML; configured request targets remain trust-boundary inputs."
+                if "innerHTML" not in body
+                else f"`{ref}` clears existing markup with `innerHTML = ''`; dynamic untrusted values are subsequently assigned through text nodes, not parsed HTML."
+            ),
             dependencies=f"`{ref}` directly depends on {', '.join(f'`{item}`' for item in calls[:12]) or 'no called function'}; delegated effects are included above.",
         )
         units.append(unit)
@@ -407,11 +441,15 @@ def bind_markup() -> None:
     output: list[str] = []
     tag_pattern = re.compile(r"<(?P<tag>[a-z][a-z0-9]*)(?P<attrs>[^<>]*?)>")
     for line in text.splitlines(keepends=True):
+
         def replace(match: re.Match[str]) -> str:
             nonlocal form
             tag = match.group("tag")
             attrs = match.group("attrs")
-            attrs_simple = {key: first or second for key, first, second in re.findall(r"([:\w-]+)=(?:\"([^\"]*)\"|'([^']*)')", attrs)}
+            attrs_simple = {
+                key: first or second
+                for key, first, second in re.findall(r"([:\w-]+)=(?:\"([^\"]*)\"|'([^']*)')", attrs)
+            }
             if tag == "form" and attrs_simple.get("id"):
                 form = attrs_simple["id"]
             doc_id = ""
@@ -431,10 +469,13 @@ def bind_markup() -> None:
                     doc_id = f"ffb.gui.link.{link_names[href]}"
                 elif "github.com" in href:
                     doc_id = f"ffb.gui.link.project.{slug(href.rsplit('/', 1)[-1])}"
-            relevant = bool(doc_id) and (tag in {"a", "button", "form", "input", "select", "textarea", "img"} or element_id)
+            relevant = bool(doc_id) and (
+                tag in {"a", "button", "form", "input", "select", "textarea", "img"} or element_id
+            )
             if not relevant or "data-doc-id=" in attrs:
                 return match.group(0)
-            return f"<{tag}{attrs} data-doc-id=\"{doc_id}\">"
+            return f'<{tag}{attrs} data-doc-id="{doc_id}">'
+
         output.append(tag_pattern.sub(replace, line))
         if "</form>" in line:
             form = ""
@@ -453,21 +494,45 @@ class HtmlUnitParser:
                 id_match = re.search(r'(?:^|\s)id="([^"]+)"', attrs)
                 target = re.search(r'data-target-view="([^"]+)"', attrs)
                 stage = re.search(r'data-comm-stage="([^"]+)"', attrs)
-                unit_ref = f"#{id_match.group(1)}" if id_match else f"[data-target-view={target.group(1)}]" if target else f"[data-comm-stage={stage.group(1)}]" if stage else doc_id
-                before = line[:match.start()].rsplit("<label>", 1)[-1]
+                unit_ref = (
+                    f"#{id_match.group(1)}"
+                    if id_match
+                    else f"[data-target-view={target.group(1)}]"
+                    if target
+                    else f"[data-comm-stage={stage.group(1)}]"
+                    if stage
+                    else doc_id
+                )
+                before = line[: match.start()].rsplit("<label>", 1)[-1]
                 before = re.sub(r"<[^>]+>", " ", before).strip()
-                after = re.sub(r"<[^>]+>", " ", line[match.end():]).strip()
+                after = re.sub(r"<[^>]+>", " ", line[match.end() :]).strip()
                 attr_label = re.search(r'(?:aria-label|alt|placeholder)="([^"]+)"', attrs)
                 label = re.sub(r"\s+", " ", before or after)[:120] or (attr_label.group(1) if attr_label else tag)
                 input_type = (re.search(r'type="([^"]+)"', attrs) or [None, tag])[1]
-                option_values = re.findall(r'<option value="([^"]+)"', line[match.end():])
-                selected = re.search(r'<option value="([^"]+)" selected', line[match.end():])
-                default = "unchecked" if input_type == "checkbox" and " checked" not in attrs else selected.group(1) if selected else option_values[0] if option_values else re.search(r'value="([^"]*)"', attrs).group(1) if re.search(r'value="([^"]*)"', attrs) else "empty/markup text"
-                constraints = [f"{key}={value}" for key, value in re.findall(r'\b(min|max|step|pattern|type)="([^"]+)"', attrs)]
+                option_values = re.findall(r'<option value="([^"]+)"', line[match.end() :])
+                selected = re.search(r'<option value="([^"]+)" selected', line[match.end() :])
+                default = (
+                    "unchecked"
+                    if input_type == "checkbox" and " checked" not in attrs
+                    else selected.group(1)
+                    if selected
+                    else option_values[0]
+                    if option_values
+                    else re.search(r'value="([^"]*)"', attrs).group(1)
+                    if re.search(r'value="([^"]*)"', attrs)
+                    else "empty/markup text"
+                )
+                constraints = [
+                    f"{key}={value}" for key, value in re.findall(r'\b(min|max|step|pattern|type)="([^"]+)"', attrs)
+                ]
                 if option_values:
                     constraints.append("values=" + ",".join(option_values))
                 allowed = ", ".join(constraints) or "free text or the element's fixed action"
-                display_name = label if len(label.strip()) >= 3 and label.strip() != "-" else doc_id.replace("ffb.gui.", "").replace(".", " ").title()
+                display_name = (
+                    label
+                    if len(label.strip()) >= 3 and label.strip() != "-"
+                    else doc_id.replace("ffb.gui.", "").replace(".", " ").title()
+                )
                 unit = base_entry("gui", unit_ref, source_ref(HTML, line_number), display_name)
                 unit["id"] = doc_id
                 unit.update(
@@ -488,7 +553,11 @@ class HtmlUnitParser:
                         "cancel": f"`{unit_ref}` has no dedicated cancel action.",
                         "retry": f"`{unit_ref}` can be retried by repeating the user action or by the documented status refresh.",
                     },
-                    security=(f"`{unit_ref}` is a secret input; its value must never be reflected or logged." if input_type == "password" else f"`{unit_ref}` is rendered without HTML evaluation; URL and text values remain untrusted input."),
+                    security=(
+                        f"`{unit_ref}` is a secret input; its value must never be reflected or logged."
+                        if input_type == "password"
+                        else f"`{unit_ref}` is rendered without HTML evaluation; URL and text values remain untrusted input."
+                    ),
                     dependencies=f"`{unit_ref}` is bound by `data-doc-id={doc_id}` and any handler in `static/app.js` that references its selector.",
                     gui_refs=unit_ref,
                 )
@@ -500,12 +569,25 @@ class HtmlUnitParser:
             dynamic["id"] = spec["id"]
             dynamic.update(
                 description=f"`{spec['ref']}` is discovered from its immediate source marker. {spec['description']}",
-                short_help=spec["description"], audience="Operators using the rendered web interface.", visibility="Visible only while its owning JavaScript render state applies.",
-                prerequisites="The owning page, target container, and JavaScript renderer must be active.", permissions="Requires access to the current web session; delegated API actions retain their separate permission contract.",
-                inputs="Receives only the values read by its owning renderer at the cited source location.", outputs=spec["description"],
+                short_help=spec["description"],
+                audience="Operators using the rendered web interface.",
+                visibility="Visible only while its owning JavaScript render state applies.",
+                prerequisites="The owning page, target container, and JavaScript renderer must be active.",
+                permissions="Requires access to the current web session; delegated API actions retain their separate permission contract.",
+                inputs="Receives only the values read by its owning renderer at the cited source location.",
+                outputs=spec["description"],
                 side_effects=spec["side_effects"],
-                behavior={"loading":"The parent face action writes progress to the face status region.","success":"The current face-list state is rendered.","empty":"The empty-state item replaces face rows when the list has no entries.","error":"The previous rendered state remains and the face status region shows the request error.","cancel":"No cancellation control.","retry":"The operator can repeat the parent action."},
-                security="Dynamic values are assigned through textContent, attributes, or existing safe DOM helpers; untrusted HTML is not evaluated.", dependencies="Created by the JavaScript function containing the cited source marker; delegated behavior has an independent inventory entry.", gui_refs=spec["ref"],
+                behavior={
+                    "loading": "The parent face action writes progress to the face status region.",
+                    "success": "The current face-list state is rendered.",
+                    "empty": "The empty-state item replaces face rows when the list has no entries.",
+                    "error": "The previous rendered state remains and the face status region shows the request error.",
+                    "cancel": "No cancellation control.",
+                    "retry": "The operator can repeat the parent action.",
+                },
+                security="Dynamic values are assigned through textContent, attributes, or existing safe DOM helpers; untrusted HTML is not evaluated.",
+                dependencies="Created by the JavaScript function containing the cited source marker; delegated behavior has an independent inventory entry.",
+                gui_refs=spec["ref"],
             )
             units.append(dynamic)
         return units
@@ -543,13 +625,34 @@ def config_units(seed: dict[tuple[str, str], dict[str, Any]]) -> list[dict[str, 
         unit = base_entry("config", ref, source_ref(CONFIG, number), ref)
         unit.update(
             description=f"`{ref}` is declared as `{schema_type}` with installation default `{default}`; runtime normalization and validation are performed by `config_loader.validate_config`/`sanitize_app_update`.",
-            short_help=f"Configure `{ref}` ({schema_type}); installation default: `{default}`.", audience="Add-on operators and deployment automation.", visibility=f"`{ref}` is visible in add-on options" + (" and the web form." if any(ref.split(".")[-1].replace("_", "-") in item[1] for item in seed if item[0] == "gui") else "."),
-            prerequisites=f"`{ref}` requires a value accepted by Home Assistant schema type `{schema_type}`.", permissions=f"Changing `{ref}` requires add-on configuration permission.",
+            short_help=f"Configure `{ref}` ({schema_type}); installation default: `{default}`.",
+            audience="Add-on operators and deployment automation.",
+            visibility=f"`{ref}` is visible in add-on options"
+            + (
+                " and the web form."
+                if any(ref.split(".")[-1].replace("_", "-") in item[1] for item in seed if item[0] == "gui")
+                else "."
+            ),
+            prerequisites=f"`{ref}` requires a value accepted by Home Assistant schema type `{schema_type}`.",
+            permissions=f"Changing `{ref}` requires add-on configuration permission.",
             inputs=f"`{ref}`: schema `{schema_type}`, required={'?' not in schema_type}, default `{default}`; runtime limits are described in the handbook field table.",
-            outputs=f"`{ref}` becomes one value in the validated runtime configuration.", side_effects=f"Changing `{ref}` has no effect until saved; saving writes the add-on options file and may reconnect integrations.",
-            behavior={"loading":f"`{ref}` has no field-specific loading state.","success":f"`{ref}` is returned in masked form where sensitive.","empty":f"`{ref}` uses runtime fallback/default `{default}` when absent where supported.","error":f"Invalid `{ref}` is rejected on explicit updates or normalized with a configuration warning at startup.","cancel":f"Unsaved edits to `{ref}` can be discarded by reloading.","retry":f"Correct `{ref}` and save again."},
-            security=(f"`{ref}` is sensitive and is masked in API/UI output." if any(word in ref for word in ("password", "rtsp_url", "snapshot_url")) else f"`{ref}` is untrusted configuration; URL/host/topic values are trust-boundary inputs."),
-            dependencies=f"`{ref}` is consumed by `config_loader` and the subsystem named by its prefix.", tests=old.get("tests", "N/A: no dedicated automated test names this single schema field."),
+            outputs=f"`{ref}` becomes one value in the validated runtime configuration.",
+            side_effects=f"Changing `{ref}` has no effect until saved; saving writes the add-on options file and may reconnect integrations.",
+            behavior={
+                "loading": f"`{ref}` has no field-specific loading state.",
+                "success": f"`{ref}` is returned in masked form where sensitive.",
+                "empty": f"`{ref}` uses runtime fallback/default `{default}` when absent where supported.",
+                "error": f"Invalid `{ref}` is rejected on explicit updates or normalized with a configuration warning at startup.",
+                "cancel": f"Unsaved edits to `{ref}` can be discarded by reloading.",
+                "retry": f"Correct `{ref}` and save again.",
+            },
+            security=(
+                f"`{ref}` is sensitive and is masked in API/UI output."
+                if any(word in ref for word in ("password", "rtsp_url", "snapshot_url"))
+                else f"`{ref}` is untrusted configuration; URL/host/topic values are trust-boundary inputs."
+            ),
+            dependencies=f"`{ref}` is consumed by `config_loader` and the subsystem named by its prefix.",
+            tests=old.get("tests", "N/A: no dedicated automated test names this single schema field."),
         )
         units.append(unit)
     return units
@@ -595,13 +698,19 @@ def route_units(python: list[dict[str, Any]], seed: dict[tuple[str, str], dict[s
         old = seed.get(("route", ref), {})
         unit = base_entry("route", ref, source_ref(APP / "main.py", line_at(text, match.start())), ref)
         unit.update(
-            description=f"`{ref}` dispatches to `{implementation['unit_ref']}`. {implementation['description']}", short_help=f"HTTP `{ref}`: {function.replace('_', ' ')}.",
-            audience="Authenticated/authorized ingress clients and API integrators.", visibility=f"`{ref}` is externally reachable wherever the deployment exposes the Flask application.",
-            prerequisites=f"`{ref}` requires a running bridge and deployment-level access control.", permissions=f"`{ref}` has no in-app login; Home Assistant Ingress or network controls must authorize access.",
-            inputs=f"`{ref}` accepts the path and JSON/body inputs parsed by `{function}`; malformed values receive the cited 4xx path.", outputs=f"`{ref}` returns Flask JSON/Response values from `{function}`.",
-            side_effects=implementation["side_effects"], behavior=implementation["behavior"],
+            description=f"`{ref}` dispatches to `{implementation['unit_ref']}`. {implementation['description']}",
+            short_help=f"HTTP `{ref}`: {function.replace('_', ' ')}.",
+            audience="Authenticated/authorized ingress clients and API integrators.",
+            visibility=f"`{ref}` is externally reachable wherever the deployment exposes the Flask application.",
+            prerequisites=f"`{ref}` requires a running bridge and deployment-level access control.",
+            permissions=f"`{ref}` has no in-app login; Home Assistant Ingress or network controls must authorize access.",
+            inputs=f"`{ref}` accepts the path and JSON/body inputs parsed by `{function}`; malformed values receive the cited 4xx path.",
+            outputs=f"`{ref}` returns Flask JSON/Response values from `{function}`.",
+            side_effects=implementation["side_effects"],
+            behavior=implementation["behavior"],
             security=f"`{ref}` is a trust boundary without application authentication. Do not expose it to untrusted networks; URL-bearing requests can cause server-side connections.",
-            dependencies=f"`{ref}` calls `{implementation['unit_ref']}` and its dependencies.", tests=old.get("tests", "N/A: no dedicated route test exists."),
+            dependencies=f"`{ref}` calls `{implementation['unit_ref']}` and its dependencies.",
+            tests=old.get("tests", "N/A: no dedicated route test exists."),
         )
         units.append(unit)
     return units
@@ -609,28 +718,77 @@ def route_units(python: list[dict[str, Any]], seed: dict[tuple[str, str], dict[s
 
 def operation_units(seed: dict[tuple[str, str], dict[str, Any]]) -> list[dict[str, Any]]:
     facts = {
-        "scripts/run-local-checks.sh": ("Installs declared Python test dependencies, compiles the bridge, runs pytest, and validates the function catalog when a maintainer invokes it locally.", "A local Python environment with package-network access for declared test dependencies."),
-        "deploy/docker-compose.yml": ("Starts the bridge container, binds its data volume, exposes the optional web port, and applies the declared restart policy.", "Docker daemon access; the exposed port must remain on a trusted network."),
-        "frigate-face-bridge/Dockerfile": ("Builds the Python 3.12 Alpine add-on image, installs runtime dependencies, copies application files, exposes port 8099, and selects run.sh as entrypoint.", "Container build permission and package-network access."),
-        "frigate-face-bridge/run.sh": ("Starts the Python application process; runtime version resolution is handled by the application from VERSION.", "Container process execution; no shell interpolation of user input."),
+        "scripts/run-local-checks.sh": (
+            "Installs declared Python test dependencies, compiles the bridge, runs pytest, and validates the function catalog when a maintainer invokes it locally.",
+            "A local Python environment with package-network access for declared test dependencies.",
+        ),
+        "deploy/docker-compose.yml": (
+            "Starts the bridge container, binds its data volume, exposes the optional web port, and applies the declared restart policy.",
+            "Docker daemon access; the exposed port must remain on a trusted network.",
+        ),
+        "frigate-face-bridge/Dockerfile": (
+            "Builds the Python 3.12 Alpine add-on image, installs runtime dependencies, copies application files, exposes port 8099, and selects run.sh as entrypoint.",
+            "Container build permission and package-network access.",
+        ),
+        "frigate-face-bridge/run.sh": (
+            "Starts the Python application process; runtime version resolution is handled by the application from VERSION.",
+            "Container process execution; no shell interpolation of user input.",
+        ),
     }
     units = []
     for ref, (description, permissions) in facts.items():
         unit = base_entry("operation", ref, ref, Path(ref).name)
-        unit.update(description=f"`{ref}`: {description}", short_help=description, audience="Maintainers and operators.", visibility=f"`{ref}` is used during CI, build, deployment, or process start.", prerequisites=f"`{ref}` requires its declared runner/container tools.", permissions=f"`{ref}` requires {permissions}", inputs=f"`{ref}` consumes its checked-in declarations and documented environment variables.", outputs=f"`{ref}` produces the workflow, image, container, or application process described above.", side_effects=f"`{ref}` can install dependencies, build/start a container, expose a port, or start the application as stated above.", behavior={"loading":f"`{ref}` remains running while its process/build is active.","success":f"`{ref}` exits successfully or keeps the declared service running.","empty":f"`{ref}` has no empty-data result.","error":f"`{ref}` propagates command/build failures with a non-zero status.","cancel":f"The runner or container supervisor cancels `{ref}`.","retry":f"CI or the declared container restart policy controls retries for `{ref}`."}, security=f"`{ref}` must not embed secrets; deployment credentials belong in protected environment/secret storage.", dependencies=f"`{ref}` depends only on tools and files explicitly named in its source.")
+        unit.update(
+            description=f"`{ref}`: {description}",
+            short_help=description,
+            audience="Maintainers and operators.",
+            visibility=f"`{ref}` is used during CI, build, deployment, or process start.",
+            prerequisites=f"`{ref}` requires its declared runner/container tools.",
+            permissions=f"`{ref}` requires {permissions}",
+            inputs=f"`{ref}` consumes its checked-in declarations and documented environment variables.",
+            outputs=f"`{ref}` produces the workflow, image, container, or application process described above.",
+            side_effects=f"`{ref}` can install dependencies, build/start a container, expose a port, or start the application as stated above.",
+            behavior={
+                "loading": f"`{ref}` remains running while its process/build is active.",
+                "success": f"`{ref}` exits successfully or keeps the declared service running.",
+                "empty": f"`{ref}` has no empty-data result.",
+                "error": f"`{ref}` propagates command/build failures with a non-zero status.",
+                "cancel": f"The runner or container supervisor cancels `{ref}`.",
+                "retry": f"CI or the declared container restart policy controls retries for `{ref}`.",
+            },
+            security=f"`{ref}` must not embed secrets; deployment credentials belong in protected environment/secret storage.",
+            dependencies=f"`{ref}` depends only on tools and files explicitly named in its source.",
+        )
         units.append(unit)
     return units
 
 
 def base_entry(kind: str, ref: str, source: str, name: str) -> dict[str, Any]:
     return {
-        "id": f"ffb.{kind}.{slug(ref)}", "unit_type": kind, "unit_ref": ref, "name": name,
-        "technical_reference": ref, "category": kind, "description": "", "short_help": "",
-        "audience": "Developers and support staff.", "visibility": "", "prerequisites": "", "permissions": "",
-        "inputs": "", "outputs": "", "side_effects": "", "behavior": {}, "security": "", "dependencies": "",
-        "handbook_ref": f"docs/handbuch.md#inventory-{kind}", "gui_refs": f"N/A: `{ref}` is not a standalone GUI element.",
-        "tests": "N/A: no dedicated automated test names this individual unit.", "status": "verified",
-        "verified_version": f"{VERSION}; source review 2026-07-15", "source_ref": source,
+        "id": f"ffb.{kind}.{slug(ref)}",
+        "unit_type": kind,
+        "unit_ref": ref,
+        "name": name,
+        "technical_reference": ref,
+        "category": kind,
+        "description": "",
+        "short_help": "",
+        "audience": "Developers and support staff.",
+        "visibility": "",
+        "prerequisites": "",
+        "permissions": "",
+        "inputs": "",
+        "outputs": "",
+        "side_effects": "",
+        "behavior": {},
+        "security": "",
+        "dependencies": "",
+        "handbook_ref": f"docs/handbuch.md#inventory-{kind}",
+        "gui_refs": f"N/A: `{ref}` is not a standalone GUI element.",
+        "tests": "N/A: no dedicated automated test names this individual unit.",
+        "status": "verified",
+        "verified_version": f"{VERSION}; source review 2026-07-15",
+        "source_ref": source,
         "source_fingerprint": "set after source discovery",
         "review_evidence": f"Human source review of `{source}` on 2026-07-15 covered semantics, states, side effects, security boundaries, and test evidence.",
     }
@@ -647,8 +805,19 @@ def handbook(entries: list[dict[str, Any]]) -> str:
     existing = HANDBOOK.read_text(encoding="utf-8")
     marker = '<a id="atomic-inventory"></a>'
     intro = existing.split(marker, 1)[0].rstrip()
-    intro = public_text(intro).replace("`<add-on-data>/options.json`", "the add-on options file").replace("`<add-on-data>/faces.json`", "the add-on face registry")
-    sections = [intro, "", marker, "## Technische Funktionsreferenz", "", f"Der kanonische Katalog enthaelt {len(entries)} einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Audit-Basis, Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa."]
+    intro = (
+        public_text(intro)
+        .replace("`<add-on-data>/options.json`", "the add-on options file")
+        .replace("`<add-on-data>/faces.json`", "the add-on face registry")
+    )
+    sections = [
+        intro,
+        "",
+        marker,
+        "## Technische Funktionsreferenz",
+        "",
+        f"Der kanonische Katalog enthaelt {len(entries)} einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Audit-Basis, Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa.",
+    ]
     grouped: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
     for entry in entries:
         grouped[entry["unit_type"]].append(entry)
@@ -661,11 +830,17 @@ def handbook(entries: list[dict[str, Any]]) -> str:
         "operation": "CI, Dockerfile, Compose und Startskript sind als Betriebsfunktionen erfasst. Die Lint-CI kompiliert Python, fuehrt pytest aus und blockiert bei einem ungueltigen Funktionskatalog.",
     }
     for kind in ("python", "javascript", "route", "gui", "config", "operation"):
-        sections.extend(["", f'<a id="inventory-{kind}"></a>', f"### {kind.title()} ({len(grouped[kind])})", "", references[kind]])
-    sections.extend([
-        "", "### Integritaet und ID-Stabilitaet", "",
-        "`audited_head` ist die vollstaendige Commit-ID des vor Erstellung oder Aktualisierung des Inventars fachlich geprueften Basisstands. Sie muss existieren und Vorfahr des validierten Repository-HEAD sein; eine Gleichheit mit dem Inventar-Commit waere eine unloesbare Selbstreferenz. Der Top-Level-Quelldigest bindet stattdessen den gesamten aktuellen inventarisierten Quellumfang, und jeder Eintrag enthaelt zusaetzlich einen SHA-256-Fingerprint seiner Quelldatei und technischen Referenz. Produktquellenaenderungen nach der Audit-Basis schlagen deshalb weiterhin fehl, bis Katalog und Review aktualisiert werden. `docs/function-id-baseline.json` speichert die dauerhafte Zuordnung aus Einheit und Dokumentations-ID; Umbenennungen oder Wiederverwendung einer ID schlagen im Validator fehl und muessen bewusst migriert werden.",
-    ])
+        sections.extend(
+            ["", f'<a id="inventory-{kind}"></a>', f"### {kind.title()} ({len(grouped[kind])})", "", references[kind]]
+        )
+    sections.extend(
+        [
+            "",
+            "### Integritaet und ID-Stabilitaet",
+            "",
+            "`audited_head` ist die vollstaendige Commit-ID des vor Erstellung oder Aktualisierung des Inventars fachlich geprueften Basisstands. Sie muss existieren und Vorfahr des validierten Repository-HEAD sein; eine Gleichheit mit dem Inventar-Commit waere eine unloesbare Selbstreferenz. Der Top-Level-Quelldigest bindet stattdessen den gesamten aktuellen inventarisierten Quellumfang, und jeder Eintrag enthaelt zusaetzlich einen SHA-256-Fingerprint seiner Quelldatei und technischen Referenz. Produktquellenaenderungen nach der Audit-Basis schlagen deshalb weiterhin fehl, bis Katalog und Review aktualisiert werden. `docs/function-id-baseline.json` speichert die dauerhafte Zuordnung aus Einheit und Dokumentations-ID; Umbenennungen oder Wiederverwendung einer ID schlagen im Validator fehl und muessen bewusst migriert werden.",
+        ]
+    )
     return "\n".join(sections) + "\n"
 
 
@@ -673,21 +848,45 @@ def build_catalog_data(seed_data: dict[str, Any] | None = None) -> dict[str, Any
     seed_data = seed_data or {"functions": []}
     seed = {(item["unit_type"], item["unit_ref"]): item for item in seed_data.get("functions", [])}
     python = python_units()
-    entries = python + javascript_units() + route_units(python, seed) + HtmlUnitParser().parse() + config_units(seed) + operation_units(seed)
+    entries = (
+        python
+        + javascript_units()
+        + route_units(python, seed)
+        + HtmlUnitParser().parse()
+        + config_units(seed)
+        + operation_units(seed)
+    )
     apply_seed(entries, seed)
     attach_source_fingerprints(entries)
-    return sanitize_tree({
-        "schema_version": "4.1-review-base-bound", "project": "Frigate Face Bridge", "audited_head": git_head(),
-        "audited_source_digest": source_tree_digest(), "id_baseline": "docs/function-id-baseline.json",
-        "audit_method": "Manual review of the audited base revision plus deterministic AST/DOM extraction, transitive JavaScript effect analysis, current-tree SHA-256 source binding, and one-to-one validation; 2026-07-15.",
-        "review_evidence": "Every active unit was compared with the cited source, runtime states, security boundary, and available tests; canonical generated fields are independently recomputed by the validator.",
-        "functions": sorted(entries, key=lambda item: (item["unit_type"], item["unit_ref"])),
-        "exclusions": [
-            {"scope": "Third-party and standard-library implementations", "reason": "Only project-owned adapters and handlers are inventory units.", "evidence": "Imports were separated from project definitions by Python AST."},
-            {"scope": "Test helper functions", "reason": "Tests are evidence rather than shipped product behavior.", "evidence": "Test references are validated against tests/*.py."},
-            {"scope": "Pure CSS and structural markup without an ID or interaction", "reason": "They do not expose an independent action, input, or dynamic display.", "evidence": "All interactive controls, identified displays, and every createElement/createElementNS site require a source-local data-doc-id binding."},
-        ],
-    })
+    return sanitize_tree(
+        {
+            "schema_version": "4.1-review-base-bound",
+            "project": "Frigate Face Bridge",
+            "audited_head": git_head(),
+            "audited_source_digest": source_tree_digest(),
+            "id_baseline": "docs/function-id-baseline.json",
+            "audit_method": "Manual review of the audited base revision plus deterministic AST/DOM extraction, transitive JavaScript effect analysis, current-tree SHA-256 source binding, and one-to-one validation; 2026-07-15.",
+            "review_evidence": "Every active unit was compared with the cited source, runtime states, security boundary, and available tests; canonical generated fields are independently recomputed by the validator.",
+            "functions": sorted(entries, key=lambda item: (item["unit_type"], item["unit_ref"])),
+            "exclusions": [
+                {
+                    "scope": "Third-party and standard-library implementations",
+                    "reason": "Only project-owned adapters and handlers are inventory units.",
+                    "evidence": "Imports were separated from project definitions by Python AST.",
+                },
+                {
+                    "scope": "Test helper functions",
+                    "reason": "Tests are evidence rather than shipped product behavior.",
+                    "evidence": "Test references are validated against tests/*.py.",
+                },
+                {
+                    "scope": "Pure CSS and structural markup without an ID or interaction",
+                    "reason": "They do not expose an independent action, input, or dynamic display.",
+                    "evidence": "All interactive controls, identified displays, and every createElement/createElementNS site require a source-local data-doc-id binding.",
+                },
+            ],
+        }
+    )
 
 
 def write_id_baseline(entries: list[dict[str, Any]]) -> None:

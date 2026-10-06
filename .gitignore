@@ -6,3 +6,5 @@ __pycache__/
 secrets.md
 *.local
 ACCESS.md
+.venv/
+node_modules/
