@@ -4,15 +4,14 @@ import os
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 APP_DIR = ROOT / "frigate-face-bridge" / "app"
 os.environ.setdefault("ADDON_CONFIG_FILE", str(ROOT / "frigate-face-bridge" / "config.yaml"))
 os.environ.setdefault("OPTIONS_FILE", str(ROOT / "tests" / "missing-options.json"))
 sys.path.insert(0, str(APP_DIR))
 
-import config_loader
 import announcements
+import config_loader
 import detector
 import face_recognition
 import frigate_api
@@ -80,9 +79,24 @@ def test_read_version_returns_unknown_when_version_is_empty(tmp_path, monkeypatc
 def test_status_exposes_communication_without_secret_urls():
     original = json.loads(json.dumps(module.config))
     try:
-        module.config["camera"].update({"host": "camera.local", "rtsp_url": "rtsp://user:pass@camera.local:8554/stream", "snapshot_url": "http://camera.local/snap.jpg"})
-        module.config["frigate"].update({"enabled": True, "api_url": "http://frigate.local:5000", "events_topic": "frigate/events", "camera_name": "wohnzimmer"})
-        module.config["mqtt"].update({"enabled": True, "host": "core-mosquitto", "port": 1883, "topic_prefix": "ha/frigate_face_bridge"})
+        module.config["camera"].update(
+            {
+                "host": "camera.local",
+                "rtsp_url": "rtsp://user:pass@camera.local:8554/stream",
+                "snapshot_url": "http://camera.local/snap.jpg",
+            }
+        )
+        module.config["frigate"].update(
+            {
+                "enabled": True,
+                "api_url": "http://frigate.local:5000",
+                "events_topic": "frigate/events",
+                "camera_name": "wohnzimmer",
+            }
+        )
+        module.config["mqtt"].update(
+            {"enabled": True, "host": "core-mosquitto", "port": 1883, "topic_prefix": "ha/frigate_face_bridge"}
+        )
         client = module.app.test_client()
 
         data = client.get("/api/status").get_json()
@@ -137,7 +151,9 @@ def test_update_camera_config_writes_options(tmp_path, monkeypatch):
 
     response = client.post(
         "/api/config/camera",
-        json={"camera": {"name": "Garage G3", "host": "192.168.2.241", "snapshot_url": "http://192.168.2.241/snap.jpg"}},
+        json={
+            "camera": {"name": "Garage G3", "host": "192.168.2.241", "snapshot_url": "http://192.168.2.241/snap.jpg"}
+        },
     )
 
     assert response.status_code == 200
@@ -183,7 +199,9 @@ class _FakeSnapshotResponse:
 
 def test_snapshot_detector_captures_image(monkeypatch):
     monkeypatch.setattr(detector, "urlopen", lambda req, timeout: _FakeSnapshotResponse())
-    instance = detector.create_detector({"demo_mode": False, "camera": {"name": "garage", "snapshot_url": "http://camera/snap.jpg"}})
+    instance = detector.create_detector(
+        {"demo_mode": False, "camera": {"name": "garage", "snapshot_url": "http://camera/snap.jpg"}}
+    )
 
     event = instance.detect()
 
@@ -199,7 +217,9 @@ def test_snapshot_detector_reports_fetch_failure(monkeypatch):
         raise OSError("network down")
 
     monkeypatch.setattr(detector, "urlopen", fail)
-    instance = detector.create_detector({"demo_mode": False, "camera": {"name": "garage", "snapshot_url": "http://camera/snap.jpg"}})
+    instance = detector.create_detector(
+        {"demo_mode": False, "camera": {"name": "garage", "snapshot_url": "http://camera/snap.jpg"}}
+    )
 
     event = instance.detect()
 
@@ -220,6 +240,29 @@ def test_frigate_person_event_creates_detection_event():
     assert event["unknown_faces"] == 1
     assert event["confidence"] == 0.91
     assert event["boxes"] == [[1, 2, 3, 4]]
+
+
+def test_frigate_person_event_uses_recognized_face_sub_label():
+    event = frigate_events.parse_frigate_event(
+        '{"type":"update","after":{"id":"abc123","camera":"garage","label":"person","score":0.9,'
+        '"sub_label":["Thomas",0.93]}}',
+        {"camera": {"name": "garage"}, "frigate": {"camera_name": "garage"}},
+    )
+
+    assert event is not None
+    assert event["known_faces"] == ["Thomas"]
+    assert event["unknown_faces"] == 0
+
+
+def test_frigate_person_event_treats_unknown_sub_label_as_unknown_face():
+    event = frigate_events.parse_frigate_event(
+        '{"type":"update","after":{"id":"abc123","camera":"garage","label":"person","sub_label":"unknown"}}',
+        {"camera": {"name": "garage"}, "frigate": {"camera_name": "garage"}},
+    )
+
+    assert event is not None
+    assert event["known_faces"] == []
+    assert event["unknown_faces"] == 1
 
 
 def test_frigate_non_person_event_is_ignored():
@@ -262,7 +305,13 @@ def test_active_person_count_event_counts_in_progress_persons(monkeypatch):
             return _FakeFrigateResponse([])
         return _FakeFrigateResponse(
             [
-                {"id": "a", "camera": "garage_g3_flex", "label": "person", "end_time": None, "data": {"score": 0.81, "box": [0, 0, 1, 1]}},
+                {
+                    "id": "a",
+                    "camera": "garage_g3_flex",
+                    "label": "person",
+                    "end_time": None,
+                    "data": {"score": 0.81, "box": [0, 0, 1, 1]},
+                },
                 {"id": "b", "camera": "garage_g3_flex", "label": "person", "end_time": None, "data": {"score": 0.74}},
                 {"id": "c", "camera": "garage_g3_flex", "label": "car", "end_time": None},
                 {"id": "d", "camera": "garage_g3_flex", "label": "person", "end_time": 123.0},
@@ -273,7 +322,12 @@ def test_active_person_count_event_counts_in_progress_persons(monkeypatch):
     event = frigate_api.active_person_count_event(
         {
             "camera": {"name": "garage_g3_flex"},
-            "frigate": {"enabled": True, "camera_name": "garage_g3_flex", "api_url": "http://frigate.local:5000", "person_count_enabled": True},
+            "frigate": {
+                "enabled": True,
+                "camera_name": "garage_g3_flex",
+                "api_url": "http://frigate.local:5000",
+                "person_count_enabled": True,
+            },
         }
     )
 
@@ -288,9 +342,22 @@ def test_active_person_count_event_counts_in_progress_persons(monkeypatch):
 def test_active_object_count_event_counts_dog_and_known_face(monkeypatch):
     def fake_urlopen(req, timeout):
         if "label=person" in req.full_url:
-            return _FakeFrigateResponse([{"id": "p1", "camera": "garage_g3_flex", "label": "person", "end_time": None, "sub_label": "Thomas", "data": {"score": 0.8}}])
+            return _FakeFrigateResponse(
+                [
+                    {
+                        "id": "p1",
+                        "camera": "garage_g3_flex",
+                        "label": "person",
+                        "end_time": None,
+                        "sub_label": "Thomas",
+                        "data": {"score": 0.8},
+                    }
+                ]
+            )
         if "label=dog" in req.full_url:
-            return _FakeFrigateResponse([{"id": "d1", "camera": "garage_g3_flex", "label": "dog", "end_time": None, "data": {"score": 0.7}}])
+            return _FakeFrigateResponse(
+                [{"id": "d1", "camera": "garage_g3_flex", "label": "dog", "end_time": None, "data": {"score": 0.7}}]
+            )
         return _FakeFrigateResponse([])
 
     monkeypatch.setattr(frigate_api, "urlopen", fake_urlopen)
@@ -298,7 +365,13 @@ def test_active_object_count_event_counts_dog_and_known_face(monkeypatch):
     event = frigate_api.active_object_count_event(
         {
             "camera": {"name": "garage_g3_flex"},
-            "frigate": {"enabled": True, "camera_name": "garage_g3_flex", "api_url": "http://frigate.local:5000", "person_count_enabled": True, "dog_name": "Maja"},
+            "frigate": {
+                "enabled": True,
+                "camera_name": "garage_g3_flex",
+                "api_url": "http://frigate.local:5000",
+                "person_count_enabled": True,
+                "dog_name": "Maja",
+            },
         }
     )
 
@@ -317,7 +390,9 @@ def test_frigate_handler_updates_status_and_publishes(monkeypatch):
     published = []
     monkeypatch.setattr(module.publisher, "publish_event", lambda event: published.append(event))
 
-    module.handle_frigate_event(b'{"type":"new","after":{"id":"abc123","camera":"garage_g3_flex","label":"person","score":0.91}}')
+    module.handle_frigate_event(
+        b'{"type":"new","after":{"id":"abc123","camera":"garage_g3_flex","label":"person","score":0.91}}'
+    )
 
     status = module._status()
     assert status["last_event"]["source"] == "frigate_mqtt"
@@ -328,7 +403,17 @@ def test_frigate_handler_updates_status_and_publishes(monkeypatch):
 def test_history_endpoint_returns_recorded_events():
     module.history.clear()
     module.announcement_history.clear()
-    module.record_event({"timestamp": "2026-06-04T12:00:00Z", "camera": "garage", "source": "test", "person_count": 2, "dog_count": 1, "maja_present": True, "recognized_entities": ["Thomas", "Maja"]})
+    module.record_event(
+        {
+            "timestamp": "2026-06-04T12:00:00Z",
+            "camera": "garage",
+            "source": "test",
+            "person_count": 2,
+            "dog_count": 1,
+            "maja_present": True,
+            "recognized_entities": ["Thomas", "Maja"],
+        }
+    )
     client = module.app.test_client()
 
     response = client.get("/api/history")
@@ -343,11 +428,26 @@ def test_history_endpoint_returns_recorded_events():
 def test_announcement_manager_speaks_new_entities_and_cools_down(monkeypatch):
     monkeypatch.setattr(announcements.random, "choice", lambda items: "Hallo {names}.")
     manager = announcements.AnnouncementManager()
-    config = {"frigate": {"dog_name": "Maja"}, "announcements": {"enabled": True, "global_cooldown_seconds": 0, "entity_cooldown_seconds": 300}}
+    config = {
+        "frigate": {"dog_name": "Maja"},
+        "announcements": {"enabled": True, "global_cooldown_seconds": 0, "entity_cooldown_seconds": 300},
+    }
 
-    first = manager.build({"timestamp": "2026-06-04T12:00:00Z", "known_faces": ["Thomas"], "unknown_faces": 1, "dog_count": 1}, config, now=1000)
-    second = manager.build({"timestamp": "2026-06-04T12:00:05Z", "known_faces": ["Thomas"], "unknown_faces": 1, "dog_count": 1}, config, now=1005)
-    third = manager.build({"timestamp": "2026-06-04T12:01:00Z", "known_faces": ["Thomas", "Birgit"], "unknown_faces": 0, "dog_count": 0}, config, now=1060)
+    first = manager.build(
+        {"timestamp": "2026-06-04T12:00:00Z", "known_faces": ["Thomas"], "unknown_faces": 1, "dog_count": 1},
+        config,
+        now=1000,
+    )
+    second = manager.build(
+        {"timestamp": "2026-06-04T12:00:05Z", "known_faces": ["Thomas"], "unknown_faces": 1, "dog_count": 1},
+        config,
+        now=1005,
+    )
+    third = manager.build(
+        {"timestamp": "2026-06-04T12:01:00Z", "known_faces": ["Thomas", "Birgit"], "unknown_faces": 0, "dog_count": 0},
+        config,
+        now=1060,
+    )
 
     assert first["should_speak"] is True
     assert first["text"] == "Hallo Thomas, Maja und eine unbekannte Person."
@@ -359,7 +459,10 @@ def test_announcement_manager_speaks_new_entities_and_cools_down(monkeypatch):
 
 def test_announcement_manager_uses_custom_text_and_disabled_entities():
     manager = announcements.AnnouncementManager()
-    config = {"frigate": {"dog_name": "Maja"}, "announcements": {"enabled": True, "disabled_entities": "Maja", "custom_texts": "Thomas=Thomas ist da."}}
+    config = {
+        "frigate": {"dog_name": "Maja"},
+        "announcements": {"enabled": True, "disabled_entities": "Maja", "custom_texts": "Thomas=Thomas ist da."},
+    }
 
     event = manager.build({"known_faces": ["Thomas"], "dog_count": 1, "unknown_faces": 0}, config, now=1000)
 
@@ -407,10 +510,23 @@ def test_faces_api_rejects_invalid_name(tmp_path, monkeypatch):
 
 def test_parse_face_match_event_filters_enabled_known_faces(tmp_path, monkeypatch):
     monkeypatch.setattr(face_recognition, "FACE_REGISTRY_FILE", tmp_path / "faces.json")
-    config = {"camera": {"name": "garage"}, "known_faces": [{"name": "Thomas", "enabled": True}, {"name": "Marie", "enabled": False}], "face_recognition": {"min_confidence": 0.8}}
+    config = {
+        "camera": {"name": "garage"},
+        "known_faces": [{"name": "Thomas", "enabled": True}, {"name": "Marie", "enabled": False}],
+        "face_recognition": {"min_confidence": 0.8},
+    }
 
     event = face_recognition.parse_face_match_event(
-        {"camera": "garage", "known_faces": [{"name": "Thomas", "confidence": 0.92}, {"name": "Marie", "confidence": 0.99}, {"name": "Birgit", "confidence": 0.99}], "unknown_faces": 1, "confidence": 0.93},
+        {
+            "camera": "garage",
+            "known_faces": [
+                {"name": "Thomas", "confidence": 0.92},
+                {"name": "Marie", "confidence": 0.99},
+                {"name": "Birgit", "confidence": 0.99},
+            ],
+            "unknown_faces": 1,
+            "confidence": 0.93,
+        },
         config,
     )
 
@@ -425,7 +541,9 @@ def test_parse_face_match_event_ignores_low_confidence(tmp_path, monkeypatch):
     monkeypatch.setattr(face_recognition, "FACE_REGISTRY_FILE", tmp_path / "faces.json")
     config = {"known_faces": [{"name": "Thomas", "enabled": True}], "face_recognition": {"min_confidence": 0.8}}
 
-    event = face_recognition.parse_face_match_event({"known_faces": [{"name": "Thomas", "confidence": 0.5}], "unknown_faces": 0}, config)
+    event = face_recognition.parse_face_match_event(
+        {"known_faces": [{"name": "Thomas", "confidence": 0.5}], "unknown_faces": 0}, config
+    )
 
     assert event is None
 
@@ -435,7 +553,10 @@ def test_face_event_api_updates_last_event(tmp_path, monkeypatch):
     client = module.app.test_client()
     client.post("/api/faces", json={"name": "Thomas", "enabled": True})
 
-    response = client.post("/api/face-events", json={"camera": "garage", "known_faces": [{"name": "Thomas", "confidence": 0.95}], "unknown_faces": 0})
+    response = client.post(
+        "/api/face-events",
+        json={"camera": "garage", "known_faces": [{"name": "Thomas", "confidence": 0.95}], "unknown_faces": 0},
+    )
 
     assert response.status_code == 200
     data = response.get_json()
@@ -447,7 +568,12 @@ def test_face_event_api_updates_last_event(tmp_path, monkeypatch):
 def test_mqtt_discovery_configs_reference_existing_topics():
     publisher = mqtt_client.MqttPublisher(
         {
-            "mqtt": {"enabled": True, "topic_prefix": "ha/frigate_face_bridge", "discovery": True, "discovery_prefix": "homeassistant"},
+            "mqtt": {
+                "enabled": True,
+                "topic_prefix": "ha/frigate_face_bridge",
+                "discovery": True,
+                "discovery_prefix": "homeassistant",
+            },
             "camera": {"name": "garage_g3_flex"},
         }
     )
@@ -457,16 +583,46 @@ def test_mqtt_discovery_configs_reference_existing_topics():
     payloads = {payload["unique_id"]: payload for topic, payload in configs}
 
     assert "homeassistant/sensor/frigate_face_bridge_garage_g3_flex_person_count/config" in topics
-    assert payloads["frigate_face_bridge_garage_g3_flex_person_count"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/person_count"
-    assert payloads["frigate_face_bridge_garage_g3_flex_dog_count"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/dog_count"
-    assert payloads["frigate_face_bridge_garage_g3_flex_maja_present"]["value_template"] == "{{ 'on' if value_json.maja_present else 'off' }}"
-    assert payloads["frigate_face_bridge_garage_g3_flex_terrace_door_open"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/terrace_door_open"
-    assert payloads["frigate_face_bridge_garage_g3_flex_terrace_door_confidence"]["value_template"] == "{{ value_json.terrace_door_confidence }}"
-    assert payloads["frigate_face_bridge_garage_g3_flex_unknown_faces"]["value_template"] == "{{ value_json.unknown_faces }}"
-    assert payloads["frigate_face_bridge_garage_g3_flex_announcement_text"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/announcement_text"
-    assert payloads["frigate_face_bridge_garage_g3_flex_announcement_should_speak"]["value_template"] == "{{ 'on' if value_json.should_speak else 'off' }}"
-    assert payloads["frigate_face_bridge_garage_g3_flex_recognition_log"]["state_topic"] == "ha/frigate_face_bridge/garage_g3_flex/recognition_log"
-    assert payloads["frigate_face_bridge_garage_g3_flex_bridge_status"]["availability"]["topic"] == "ha/frigate_face_bridge/status"
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_person_count"]["state_topic"]
+        == "ha/frigate_face_bridge/garage_g3_flex/person_count"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_dog_count"]["state_topic"]
+        == "ha/frigate_face_bridge/garage_g3_flex/dog_count"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_maja_present"]["value_template"]
+        == "{{ 'on' if value_json.maja_present else 'off' }}"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_terrace_door_open"]["state_topic"]
+        == "ha/frigate_face_bridge/garage_g3_flex/terrace_door_open"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_terrace_door_confidence"]["value_template"]
+        == "{{ value_json.terrace_door_confidence }}"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_unknown_faces"]["value_template"]
+        == "{{ value_json.unknown_faces }}"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_announcement_text"]["state_topic"]
+        == "ha/frigate_face_bridge/garage_g3_flex/announcement_text"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_announcement_should_speak"]["value_template"]
+        == "{{ 'on' if value_json.should_speak else 'off' }}"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_recognition_log"]["state_topic"]
+        == "ha/frigate_face_bridge/garage_g3_flex/recognition_log"
+    )
+    assert (
+        payloads["frigate_face_bridge_garage_g3_flex_bridge_status"]["availability"]["topic"]
+        == "ha/frigate_face_bridge/status"
+    )
 
 
 def test_mqtt_publish_event_includes_terrace_door_fields():
@@ -480,9 +636,22 @@ def test_mqtt_publish_event_includes_terrace_door_fields():
     publisher.client = object()
     publisher.publish_raw = lambda topic, payload, retain=False: published.append((topic, payload))
 
-    publisher.publish_event({"camera": "garage", "timestamp": "2026-06-04T12:00:01Z", "person_count": 1, "announcement": {"text": "Thomas ist da.", "should_speak": True, "entities": ["Thomas"], "log_text": "Thomas ist da.", "timestamp": "2026-06-04T12:00:01Z"}})
+    publisher.publish_event(
+        {
+            "camera": "garage",
+            "timestamp": "2026-06-04T12:00:01Z",
+            "person_count": 1,
+            "announcement": {
+                "text": "Thomas ist da.",
+                "should_speak": True,
+                "entities": ["Thomas"],
+                "log_text": "Thomas ist da.",
+                "timestamp": "2026-06-04T12:00:01Z",
+            },
+        }
+    )
 
-    payloads = {topic: payload for topic, payload in published}
+    payloads = dict(published)
     assert payloads["ha/frigate_face_bridge/garage/terrace_door_open"]["terrace_door_open"] is True
     assert payloads["ha/frigate_face_bridge/garage/terrace_door_confidence"]["terrace_door_confidence"] == 0.87
     assert payloads["ha/frigate_face_bridge/garage/last_event"]["terrace_door_last_changed"] == "2026-06-04T12:00:00Z"
@@ -492,7 +661,9 @@ def test_mqtt_publish_event_includes_terrace_door_fields():
 
 
 def test_mqtt_history_masks_secrets_and_urls():
-    publisher = mqtt_client.MqttPublisher({"mqtt": {"enabled": True, "topic_prefix": "ha/frigate_face_bridge"}, "camera": {"name": "garage"}})
+    publisher = mqtt_client.MqttPublisher(
+        {"mqtt": {"enabled": True, "topic_prefix": "ha/frigate_face_bridge"}, "camera": {"name": "garage"}}
+    )
 
     publisher.publish_raw(
         "ha/frigate_face_bridge/garage/test",
@@ -587,7 +758,12 @@ def test_save_app_config_preserves_masked_mqtt_password(tmp_path, monkeypatch):
 def test_partial_app_config_does_not_overwrite_existing_values(tmp_path, monkeypatch):
     options_file = tmp_path / "options.json"
     options_file.write_text(
-        json.dumps({"mqtt": {"username": "bridge", "password": "real-secret", "host": "core-mosquitto"}, "frigate": {"events_topic": "frigate/events"}}),
+        json.dumps(
+            {
+                "mqtt": {"username": "bridge", "password": "real-secret", "host": "core-mosquitto"},
+                "frigate": {"events_topic": "frigate/events"},
+            }
+        ),
         encoding="utf-8",
     )
     monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)
@@ -606,7 +782,12 @@ def test_partial_app_config_does_not_overwrite_existing_values(tmp_path, monkeyp
 def test_config_api_exposes_secret_and_url_status(tmp_path, monkeypatch):
     options_file = tmp_path / "options.json"
     options_file.write_text(
-        json.dumps({"mqtt": {"username": "bridge", "password": "real-secret"}, "camera": {"rtsp_url": "rtsp://user:pass@camera/stream", "snapshot_url": "http://camera/snap.jpg"}}),
+        json.dumps(
+            {
+                "mqtt": {"username": "bridge", "password": "real-secret"},
+                "camera": {"rtsp_url": "rtsp://user:pass@camera/stream", "snapshot_url": "http://camera/snap.jpg"},
+            }
+        ),
         encoding="utf-8",
     )
     monkeypatch.setattr(config_loader, "OPTIONS_FILE", options_file)
@@ -626,7 +807,11 @@ def test_config_api_exposes_secret_and_url_status(tmp_path, monkeypatch):
 
 def test_rtsp_test_endpoint_uses_masked_url(monkeypatch):
     module.config["camera"]["rtsp_url"] = "rtsp://user:pass@camera.local:7447/private"
-    monkeypatch.setattr(module, "_tcp_test", lambda host, port, timeout=3.0: {"ok": True, "status": "TCP erreichbar", "host": host, "port": port})
+    monkeypatch.setattr(
+        module,
+        "_tcp_test",
+        lambda host, port, timeout=3.0: {"ok": True, "status": "TCP erreichbar", "host": host, "port": port},
+    )
     client = module.app.test_client()
 
     response = client.post("/api/test/rtsp")
@@ -649,7 +834,14 @@ def test_update_app_config_writes_runtime_settings(tmp_path, monkeypatch):
             "demo_mode": True,
             "log_level": "debug",
             "event_interval_seconds": 5,
-            "mqtt": {"enabled": False, "host": "core-mosquitto", "port": 1883, "topic_prefix": "ha/frigate_face_bridge", "discovery": True, "discovery_prefix": "homeassistant"},
+            "mqtt": {
+                "enabled": False,
+                "host": "core-mosquitto",
+                "port": 1883,
+                "topic_prefix": "ha/frigate_face_bridge",
+                "discovery": True,
+                "discovery_prefix": "homeassistant",
+            },
             "frigate": {"enabled": False, "events_topic": "frigate/events", "camera_name": "Garage G3"},
             "face_recognition": {"enabled": False, "events_topic": "face_recognition/events", "min_confidence": 0.82},
         },
@@ -671,7 +863,17 @@ def test_update_app_config_accepts_frigate_api_person_count(tmp_path, monkeypatc
 
     response = client.post(
         "/api/config",
-        json={"frigate": {"enabled": True, "events_topic": "frigate/events", "camera_name": "Wohnzimmer G3", "api_url": "http://fossflow.localdomain:5000/", "person_count_enabled": True, "person_count_interval_seconds": 3, "dog_name": "Maja!"}},
+        json={
+            "frigate": {
+                "enabled": True,
+                "events_topic": "frigate/events",
+                "camera_name": "Wohnzimmer G3",
+                "api_url": "http://fossflow.localdomain:5000/",
+                "person_count_enabled": True,
+                "person_count_interval_seconds": 3,
+                "dog_name": "Maja!",
+            }
+        },
     )
 
     assert response.status_code == 200
@@ -689,7 +891,9 @@ def test_update_app_config_accepts_terrace_door_fields(tmp_path, monkeypatch):
 
     response = client.post(
         "/api/config",
-        json={"terrace_door": {"enabled": True, "open": True, "confidence": 0.91, "last_changed": "2026-06-04T12:00:00Z"}},
+        json={
+            "terrace_door": {"enabled": True, "open": True, "confidence": 0.91, "last_changed": "2026-06-04T12:00:00Z"}
+        },
     )
 
     assert response.status_code == 200
@@ -706,7 +910,16 @@ def test_update_app_config_accepts_announcement_fields(tmp_path, monkeypatch):
 
     response = client.post(
         "/api/config",
-        json={"announcements": {"enabled": True, "announce_unknown": False, "global_cooldown_seconds": 30, "entity_cooldown_seconds": 120, "disabled_entities": "Klaus", "custom_texts": "Thomas=Hallo Thomas."}},
+        json={
+            "announcements": {
+                "enabled": True,
+                "announce_unknown": False,
+                "global_cooldown_seconds": 30,
+                "entity_cooldown_seconds": 120,
+                "disabled_entities": "Klaus",
+                "custom_texts": "Thomas=Hallo Thomas.",
+            }
+        },
     )
 
     assert response.status_code == 200

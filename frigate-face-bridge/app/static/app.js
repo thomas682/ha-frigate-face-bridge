@@ -138,7 +138,7 @@ function tableSearch(prefix) {
 function itemText(item) {
   try {
     return JSON.stringify(item).toLowerCase();
-  } catch (err) {
+  } catch {
     return String(item || '').toLowerCase();
   }
 }
@@ -196,7 +196,7 @@ function setLink(id, href, labelId, labelText) {
 }
 
 function endpointText(endpoint) {
-  if (!endpoint || !endpoint.configured) return 'nicht konfiguriert';
+  if (!endpoint?.configured) return 'nicht konfiguriert';
   return endpoint.display || `${endpoint.host || '-'}${endpoint.port ? `:${endpoint.port}` : ''}`;
 }
 
@@ -222,7 +222,6 @@ function renderCommunication(communication) {
   const go2rtc = elements.go2rtc || {};
   const frigate = elements.frigate || {};
   const bridge = elements.bridge || {};
-  const mqtt = elements.mqtt || {};
   const ha = elements.home_assistant || {};
 
   text('comm-camera-sub', camera.host || endpointText(camera.rtsp) || 'Kamera nicht gesetzt');

@@ -1,0 +1,17 @@
+# Konfiguration fuer gitleaks. Sie liegt im Repository, damit die Pruefung ueberall
+# gleich ausfaellt -- auf der Kommandozeile wie in scripts/run-local-checks.sh.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Bekannte, bewusst unverdaechtige Stellen"
+# Ein Scanner, der bei jedem Lauf dieselben falschen Treffer zeigt, wird nach zwei
+# Wochen ignoriert. Deshalb hier nur Pfade, die nachweislich keine Klartext-Secrets
+# enthalten koennen -- nicht bequeme Ausnahmen fuer echte Funde.
+paths = [
+  # sops-verschluesselte Dateien: der Ciphertext sieht fuer jeden Scanner nach
+  # hochentropischem Geheimnis aus und ist genau deshalb unbedenklich.
+  '''\.enc\.(ya?ml|json|env)$''',
+  # Der Funktionskatalog enthaelt Beschreibungen von Secret-Abläufen, nie Werte.
+  '''^docs/functions\.yaml$''',
+]

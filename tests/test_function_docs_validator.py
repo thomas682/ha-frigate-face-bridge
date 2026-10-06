@@ -4,7 +4,6 @@ import json
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
@@ -167,11 +166,19 @@ def test_all_dynamic_history_mqtt_announcement_topic_and_chip_states_are_discove
 
     assert errors == []
     for doc_id in (
-        "ffb.gui.history.empty", "ffb.gui.history.row", "ffb.gui.recognition.empty",
-        "ffb.gui.recognition.row", "ffb.gui.mqtt.empty", "ffb.gui.mqtt.row",
-        "ffb.gui.announcement.empty", "ffb.gui.announcement.row",
-        "ffb.gui.mqtt.topic.empty", "ffb.gui.mqtt.topic.item",
-        "ffb.gui.chip.empty", "ffb.gui.chip.item", "ffb.gui.key-value.item",
+        "ffb.gui.history.empty",
+        "ffb.gui.history.row",
+        "ffb.gui.recognition.empty",
+        "ffb.gui.recognition.row",
+        "ffb.gui.mqtt.empty",
+        "ffb.gui.mqtt.row",
+        "ffb.gui.announcement.empty",
+        "ffb.gui.announcement.row",
+        "ffb.gui.mqtt.topic.empty",
+        "ffb.gui.mqtt.topic.item",
+        "ffb.gui.chip.empty",
+        "ffb.gui.chip.item",
+        "ffb.gui.key-value.item",
     ):
         assert bindings[f'dynamic:[data-doc-id="{doc_id}"]'] == doc_id
 
@@ -239,7 +246,10 @@ def test_base_ref_rejects_coordinated_generator_catalog_baseline_rename(tmp_path
 
     errors, _counts = validator.validate()
 
-    assert any(f"base ref origin/main documentation ID changed for {unit_key}: {old_id} -> {entry['id']}" in error for error in errors)
+    assert any(
+        f"base ref origin/main documentation ID changed for {unit_key}: {old_id} -> {entry['id']}" in error
+        for error in errors
+    )
 
 
 def test_validator_rejects_source_fingerprint_tampering(tmp_path, monkeypatch):

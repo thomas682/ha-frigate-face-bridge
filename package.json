@@ -1,0 +1,8 @@
+{
+  "name": "frigate-face-bridge-checks",
+  "private": true,
+  "description": "Nur Pruefwerkzeuge fuer scripts/run-local-checks.sh; das Add-on selbst braucht kein Node.",
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15"
+  }
+}

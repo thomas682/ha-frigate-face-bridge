@@ -10,6 +10,10 @@ Wer welche Datei liest:
 | opencode | `AGENTS.md` (Projektroot, aufwaerts traversiert) | `instructions` in `opencode.json` |
 | Claude Code | `CLAUDE.md` | `@AGENTS.md` als Import darin |
 
+`AGENTS.md` ist deshalb die vollstaendige Quelle und nicht `CLAUDE.md`: opencode
+kennt kein `@`-Import in der Datei. Die Dateien der Nachschlagetabelle am Ende
+werden bei Bedarf mit dem Read-Werkzeug geoeffnet.
+
 ## Harte Regeln
 
 Diese vier gelten in jeder Sitzung, ohne Rueckfrage und ohne fachliche Ausnahme.
@@ -52,15 +56,28 @@ nachgelesen werden muessen.
 ## Befehle
 
 ```sh
-python3 -m pip install -r frigate-face-bridge/requirements.txt pytest
-python3 -m py_compile frigate-face-bridge/app/*.py
-python3 -m pytest -q
-python3 scripts/validate_function_docs.py
+# einmalig einrichten
+python3 -m venv .venv
+.venv/bin/pip install -r frigate-face-bridge/requirements.txt -r requirements-dev.txt
+npm install
+brew install shellcheck gitleaks
+
+# vor jedem Commit
 ./scripts/run-local-checks.sh
+
+# nach Quellaenderungen: Funktionskatalog und Handbuch neu erzeugen
+.venv/bin/python scripts/build_function_docs.py
 ```
 
-- `scripts/run-local-checks.sh` ist der verbindliche, manuelle lokale
-  Pruefeinstieg; er startet weder einen Stack noch veroeffentlicht ein Release.
+- `scripts/run-local-checks.sh` ist der verbindliche Ort fuer die Frage, was
+  "geprueft" bedeutet: Ruff (Lint und Format), ShellCheck, Biome, yamllint,
+  gitleaks, Oberflaechen-Pruefung unter DOM-Ersatz, pytest und
+  Funktionskatalog, nach Laufzeit sortiert. Es installiert nichts, startet
+  weder einen Stack noch veroeffentlicht ein Release.
+- Reine Dokumentations- oder Regelaenderungen brauchen mindestens
+  Plausibilitaetspruefung, Diff-Review und Secret-Check.
+- Eine nicht moegliche oder nicht sinnvolle Pruefung im Abschluss benennen und
+  begruenden, statt sie stillschweigend zu lassen.
 - Bei Docker-/Runtime-Aenderungen zusaetzlich Docker-Builds,
   Docker-Compose-/Stack-Konfigurationen und Container-Neustarts pruefen.
 
@@ -68,6 +85,8 @@ python3 scripts/validate_function_docs.py
 
 - `AGENTS.md`: diese Datei, von opencode direkt gelesen.
 - `CLAUDE.md`: Startpunkt fuer Claude Code, importiert diese Datei.
+- `opencode.json`: laedt fuer opencode `global-secrets-rules.md` zusaetzlich zu
+  dieser Datei.
 - `VERSION`: kanonische Runtime- und UI-Version; das Add-on-Metadatenfeld wird
   auf denselben Wert geprueft.
 - `repository.yaml`: Home-Assistant-Add-on-Repository-Deklaration.
@@ -87,6 +106,14 @@ python3 scripts/validate_function_docs.py
   `scripts/validate_function_docs.py`.
 - `tests/test_api.py`, `tests/test_function_docs_validator.py`.
 - `ROADMAP.md`: weitere Ausbaustufen.
+- `pyproject.toml`, `requirements-dev.txt`: Ruff- und pytest-Konfiguration,
+  Entwicklungswerkzeuge fuer die `.venv`.
+- `package.json`, `biome.jsonc`: Biome fuer `app.js`, `style.css` und `.mjs`.
+- `.yamllint`, `.gitleaks.toml`: Regeln fuer die YAML- und die Secret-Pruefung,
+  damit Kommandozeile und Pruefskript dasselbe pruefen.
+- `scripts/pruefung-oberflaeche.mjs`, `scripts/oberflaeche_daten.py`:
+  Oberflaechen-Pruefung, die `app.js` mit echten API-Antworten unter einem
+  DOM-Ersatz ausfuehrt.
 
 ## Projektregeln
 
@@ -194,6 +221,10 @@ schuetzenswert; sie werden nicht abgeschwaecht.
   lokale Aenderungen nicht zuruecksetzen und nicht mitcommitten.
 - Bei `rtk git diff` Pfadtrenner doppelt uebergeben: `rtk git diff -- --
   <pfade>`. Das erste `--` wird von RTK verbraucht, das zweite erreicht Git.
+- Neue oder geaenderte Funktionen, Eingaben und GUI-Elemente im selben
+  Arbeitsblock in `docs/functions.yaml` und `docs/handbuch.md` nachziehen.
+- `.github/workflows/` bleibt leer: Remote-CI ist ohne ausdrueckliche
+  Nutzerfreigabe untersagt, Pruefungen laufen lokal.
 
 ## Globale Regeln nachschlagen
 
@@ -235,4 +266,5 @@ Eine Aufgabe ist erst fertig, wenn Umsetzung, Pruefung, Version/Changelog,
 Funktionskatalog und Handbuch synchron, Commit, Push und Issue-Abschluss
 erledigt sind, oder ein blockierender Rest konkret benannt ist. Der
 Abschlussbericht bleibt kompakt: Issue, Version, Commit/Push, QA, Sicherheit
-und offene Restpunkte.
+und offene Restpunkte; Pruefungen, die nur der Nutzer an seiner Hardware
+ausfuehren kann, stehen dort unter `Offene Benutzerpruefungen`.

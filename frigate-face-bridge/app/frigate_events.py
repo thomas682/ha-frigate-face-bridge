@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
+
+from frigate_api import face_name_from_sub_label
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def parse_frigate_event(payload: str | bytes, config: dict[str, Any]) -> dict[str, Any] | None:
@@ -43,12 +45,17 @@ def parse_frigate_event(payload: str | bytes, config: dict[str, Any]) -> dict[st
     box = obj.get("box")
     boxes = [box] if isinstance(box, list) and len(box) == 4 else []
     camera_name = event_camera or str(camera_config.get("name") or "camera")
+    # Frigate (ab 0.16 mit eingebauter Gesichtserkennung) setzt den erkannten Namen als
+    # sub_label, meist als [name, score]. Ohne diese Auswertung zaehlte jede erkannte Person
+    # ueber den MQTT-Weg als unbekannt.
+    face = face_name_from_sub_label(obj.get("sub_label")) if active else ""
+    known_faces = [face] if face else []
 
     return {
         "camera": camera_name,
         "person_count": 1 if active else 0,
-        "known_faces": [],
-        "unknown_faces": 1 if active else 0,
+        "known_faces": known_faces,
+        "unknown_faces": 1 if active and not known_faces else 0,
         "timestamp": _timestamp(),
         "source": "frigate_mqtt",
         "demo_mode": False,

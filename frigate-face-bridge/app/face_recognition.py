@@ -4,16 +4,15 @@ import json
 import os
 import re
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 FACE_REGISTRY_FILE = Path(os.environ.get("FACE_REGISTRY_FILE", "/data/faces.json"))
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _sanitize_name(value: Any) -> str:
@@ -32,10 +31,7 @@ def _load_registry_file() -> list[dict[str, Any]]:
         data = json.loads(FACE_REGISTRY_FILE.read_text(encoding="utf-8"))
     except Exception:
         return []
-    if isinstance(data, dict):
-        faces = data.get("faces")
-    else:
-        faces = data
+    faces = data.get("faces") if isinstance(data, dict) else data
     return deepcopy(faces) if isinstance(faces, list) else []
 
 

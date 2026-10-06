@@ -261,10 +261,10 @@ Der Validator benoetigt nur die Python-Standardbibliothek. Er prueft Katalogstru
 <a id="atomic-inventory"></a>
 ## Technische Funktionsreferenz
 
-Der kanonische Katalog enthaelt 546 einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Audit-Basis, Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa.
+Der kanonische Katalog enthaelt 549 einzeln an Quellcode gebundene Einheiten. `scripts/validate_function_docs.py` prueft Audit-Basis, Quellfingerprints, stabile IDs, GUI-Bindungen, delegierte JavaScript-Effekte und alle Pflichtfelder. Detailangaben zu Signaturen, Zustandswegen, Seiteneffekten, Sicherheit und Tests stehen strukturiert in `docs/functions.yaml`; dieses Handbuch beschreibt die fuer Betrieb und Wartung relevanten Zusammenhaenge statt generierter Symbolprosa.
 
 <a id="inventory-python"></a>
-### Python (169)
+### Python (172)
 
 Python-Funktionen umfassen Konfigurationsvalidierung und -persistenz, Eventnormalisierung, MQTT-Ausgabe, Netzwerkpruefungen, Hintergrundschleifen sowie die Dokumentationswerkzeuge. Dateischreibvorgaenge wie `config_loader._write_options`, Netzwerkzugriffe und Shared-State-Mutationen werden als Seiteneffekte ausgewiesen.
 

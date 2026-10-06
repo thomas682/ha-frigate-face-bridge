@@ -1,37 +1,37 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-07-31T19:18:40Z",
+  "checked_at": "2026-10-06T11:59:59Z",
   "project_root": "/Users/thomasschatz/git/facebri",
   "global_rules_root": "/Users/thomasschatz/git/global",
-  "global_rules_git_revision": "26dd662",
+  "global_rules_git_revision": "444b65d",
   "global_rules_files": {
     "global-agents.md": {
-      "sha256": "516277181162bdfe15c77014469a8a1d36182487201488af42e2b4cf230b206f",
-      "size": 15097
+      "sha256": "462ce0fa49a570a9a44e547f6a2624dd073d41d86b720371adb493e749abcb96",
+      "size": 20030
     },
     "global-workflow-rules.md": {
-      "sha256": "8c7d8ccdcb8fd5788461cbfda56b987e776f3a635fd5a3a87bf18dbaf67cc97a",
-      "size": 19331
+      "sha256": "07766d1acbba9a70d2357878738a565aec9dcb79b89cb2d4a2a0fea50fc480dd",
+      "size": 26450
     },
     "global-security-rules.md": {
-      "sha256": "b7fe9e91e2c85ffec7c94ac052bfcb26e05ce6cb3aa853a870bd5e6485b253d2",
-      "size": 4086
+      "sha256": "b5bc7faf4fa6c990044a196037e3bfe82da6776c8612b010eccfbd2b17e7199a",
+      "size": 18704
     },
     "global-secrets-rules.md": {
-      "sha256": "2a69e07cdc17a47a48292e7728e9836e910851a0d26b1d3a8c4760c409a413ac",
-      "size": 2991
+      "sha256": "311cca2e45067e52e542d79976d08bfa837986d3866db020a8981e50393d77c4",
+      "size": 10504
     },
     "global-memory-rules.md": {
       "sha256": "68da28ca099148aa538e010ef70a49adccf4ea04f9d0876d4474a59b56365636",
       "size": 2061
     },
     "global-gui-rules.md": {
-      "sha256": "f84c249253ad034400d98b27bdd414fbd4a37ea9c249829e572643437909e1d2",
-      "size": 12412
+      "sha256": "479ce49d4fb091e318ccaa7085466a190f71d94f96aba5ed398e6eeea1a3fb8e",
+      "size": 36347
     },
     "global-project-rules.md": {
-      "sha256": "7990c3f5ee5bcb2e82d77acc87caedb48313a0c3c9c8aca88908fe5952bc762f",
-      "size": 4283
+      "sha256": "fe9d85df81dc00d371e80ac00906c7acd7269380d031b06a3cae990a7ca00b59",
+      "size": 14420
     },
     "global-documentation-rules.md": {
       "sha256": "97a18bb36fc597e8df2cc21e8c0827a0b2ec9c36faa5093d4e0568d83ab887a0",
@@ -42,12 +42,12 @@
       "size": 1511
     },
     "global-homepage-rules.md": {
-      "sha256": "f933bef7ca1c39247263f9167947f4a86cab0b32135daa3049e7bd9e80493e45",
-      "size": 2770
+      "sha256": "e9735490ddb9d89c8ed58d271ce475468c5092bec442c9b82fb3d6eda77710a2",
+      "size": 3489
     },
     "global-dns-rules.md": {
-      "sha256": "1cb5ab4c77c374b0c76aa959632679e5a1ea9d0c571500da4676a10652c864ae",
-      "size": 1495
+      "sha256": "18ca4505a1224c1d28a09b2ba3149c46c2cb5e4016ec967deba4a20e13c5e1e4",
+      "size": 2502
     },
     "global-udm-rules.md": {
       "sha256": "dcd8233ee185fb670df7d93c803e554a02980ed7d910ac239d3825d8b46ae6aa",
@@ -66,20 +66,28 @@
       "size": 13789
     },
     "global-log-rules.md": {
-      "sha256": "b7ebbc3610ada34a4910348a13f90b520bb7c15fd42c000afc8c2b13b7817168",
-      "size": 8392
+      "sha256": "76bae6cc0296b1b079bc87821534e8765b1f4d50e81659ab895a428c236a20de",
+      "size": 8897
     },
     "global-mcp-rules.md": {
-      "sha256": "766d014e26d5f7ad3d4789acdd860f94105858f4460a7823c306dbc8620f3b43",
-      "size": 8157
+      "sha256": "bca3eff59705aa967644f1ea60ecaffd232cb0449aceb39d872c7f3d373d2a93",
+      "size": 9167
     },
     "global-template-agents.md": {
-      "sha256": "33637aea00514fa29b23ef5c2ea93fd058352ed7b07c8e7b76be60afa700c2fa",
-      "size": 5446
+      "sha256": "03003386add204f91d2b29b80ad9b9fdf8e09f20f68f441f9fffcacb6e9816dd",
+      "size": 2589
+    },
+    "global-template-ios-repository.md": {
+      "sha256": "fdc3abddb316f7cbb6e0ba20d7977e2e8787e2d60c304a5ad7691daa59bf61f3",
+      "size": 8222
+    },
+    "global-template-sicherheitsaudit.md": {
+      "sha256": "b4f865777fdf2cb18e7daed9118472362ad24ac35b6d6470149e0eaa43070910",
+      "size": 7186
     }
   },
   "missing_global_rule_files": [],
   "status": "checked",
   "audit_required": false,
-  "notes": "Baseline written after Global Rule Drift workflow check."
+  "notes": "Global-Rule-Audit nach Issue #22 am 2026-10-06: Vorlagenstand repository-base uebernommen (AGENTS.md, CLAUDE.md, run-local-checks.sh, .yamllint, .gitleaks.toml), Oberflaechen-Pruefskript ergaenzt; Projektregeln einzeln geprueft und beibehalten. Geprueft gegen thomas682/global-agent-rules."
 }

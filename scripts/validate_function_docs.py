@@ -18,11 +18,9 @@ from build_function_docs import (
     build_catalog_data,
     dynamic_gui_specs,
     find_js_functions,
-    git_head,
     line_at,
     source_tree_digest,
 )
-
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "docs/functions.yaml"
@@ -37,21 +35,55 @@ ID_PATTERN = re.compile(r"^ffb\.(python|javascript|route|gui|config|operation)\.
 ROUTE_PATTERN = re.compile(r'@app\.(get|post|put|patch|delete)\("([^"]+)"\)')
 UNIT_TYPES = ("python", "javascript", "route", "gui", "config", "operation")
 REQUIRED_FIELDS = {
-    "id", "unit_type", "unit_ref", "name", "technical_reference", "category",
-    "description", "short_help", "audience", "visibility", "prerequisites",
-    "permissions", "inputs", "outputs", "side_effects", "behavior", "security",
-    "dependencies", "handbook_ref", "gui_refs", "tests", "status",
-    "verified_version", "source_ref",
-    "review_evidence", "source_fingerprint",
+    "id",
+    "unit_type",
+    "unit_ref",
+    "name",
+    "technical_reference",
+    "category",
+    "description",
+    "short_help",
+    "audience",
+    "visibility",
+    "prerequisites",
+    "permissions",
+    "inputs",
+    "outputs",
+    "side_effects",
+    "behavior",
+    "security",
+    "dependencies",
+    "handbook_ref",
+    "gui_refs",
+    "tests",
+    "status",
+    "verified_version",
+    "source_ref",
+    "review_evidence",
+    "source_fingerprint",
 }
 BEHAVIOR_FIELDS = {"loading", "success", "empty", "error", "cancel", "retry"}
 FORBIDDEN_GROUP_FIELDS = {
-    "python_symbols", "js_symbols", "api_refs", "config_refs", "script_refs",
-    "source_refs", "event_refs",
+    "python_symbols",
+    "js_symbols",
+    "api_refs",
+    "config_refs",
+    "script_refs",
+    "source_refs",
+    "event_refs",
 }
 UNIT_SPECIFIC_FIELDS = {
-    "description", "short_help", "visibility", "prerequisites", "permissions",
-    "inputs", "outputs", "side_effects", "security", "dependencies", "gui_refs",
+    "description",
+    "short_help",
+    "visibility",
+    "prerequisites",
+    "permissions",
+    "inputs",
+    "outputs",
+    "side_effects",
+    "security",
+    "dependencies",
+    "gui_refs",
 }
 CANONICAL_FIELDS = REQUIRED_FIELDS - {"tests"}
 OPERATIONAL_FILES = {
@@ -94,10 +126,7 @@ def python_units() -> dict[str, str]:
 
 def javascript_units() -> dict[str, str]:
     text = JAVASCRIPT.read_text(encoding="utf-8")
-    return {
-        name: f"{JAVASCRIPT.relative_to(ROOT)}:{line}"
-        for name, line, _params, _body in find_js_functions(text)
-    }
+    return {name: f"{JAVASCRIPT.relative_to(ROOT)}:{line}" for name, line, _params, _body in find_js_functions(text)}
 
 
 def route_units() -> dict[str, str]:
@@ -146,7 +175,9 @@ def gui_units() -> dict[str, str]:
     js_text = JAVASCRIPT.read_text(encoding="utf-8")
     for spec in dynamic_gui_specs(js_text):
         if spec["marker"] in js_text:
-            parser.units[spec["ref"]] = f"{JAVASCRIPT.relative_to(ROOT)}:{line_at(js_text, js_text.index(spec['marker']))}"
+            parser.units[spec["ref"]] = (
+                f"{JAVASCRIPT.relative_to(ROOT)}:{line_at(js_text, js_text.index(spec['marker']))}"
+            )
             parser.doc_ids[spec["ref"]] = spec["id"]
     return parser.units
 
@@ -167,7 +198,11 @@ def accessibility_errors() -> list[str]:
     for line_number, line in enumerate(text.splitlines(), 1):
         for match in re.finditer(r"<(input|select|textarea|img)([^>]*data-doc-id=\"([^\"]+)\"[^>]*)>", line):
             tag, attrs, doc_id = match.groups()
-            if tag in {"input", "select", "textarea"} and "<label" not in line and not re.search(r'aria-label(?:ledby)?="[^"]+"', attrs):
+            if (
+                tag in {"input", "select", "textarea"}
+                and "<label" not in line
+                and not re.search(r'aria-label(?:ledby)?="[^"]+"', attrs)
+            ):
                 errors.append(f"{doc_id} lacks an accessible label at line {line_number}")
             if tag == "img" and not re.search(r'alt="[^"]+"', attrs):
                 errors.append(f"{doc_id} lacks non-empty alt text at line {line_number}")
@@ -251,9 +286,7 @@ def baseline_from_base_ref(ref: str) -> dict[str, str] | None:
     return entries if isinstance(entries, dict) else None
 
 
-def compare_historical_ids(
-    historical: dict[str, str], current: dict[str, Any], label: str, errors: list[str]
-) -> None:
+def compare_historical_ids(historical: dict[str, str], current: dict[str, Any], label: str, errors: list[str]) -> None:
     for unit, historical_id in historical.items():
         if unit not in current:
             errors.append(f"{label} documentation unit disappeared without migration: {unit}")
@@ -278,13 +311,19 @@ def validate() -> tuple[list[str], Counter[str]]:
     data = load_catalog(errors)
     if not data:
         return errors, Counter()
-    for field in ("schema_version", "project", "audited_head", "audited_source_digest", "id_baseline", "audit_method", "review_evidence"):
+    for field in (
+        "schema_version",
+        "project",
+        "audited_head",
+        "audited_source_digest",
+        "id_baseline",
+        "audit_method",
+        "review_evidence",
+    ):
         if not meaningful(data.get(field)):
             errors.append(f"Top-Level-Pflichtfeld fehlt oder ist leer: {field}")
     if data.get("schema_version") != CATALOG_SCHEMA_VERSION:
-        errors.append(
-            f"schema_version must be {CATALOG_SCHEMA_VERSION!r}: {data.get('schema_version')!r}"
-        )
+        errors.append(f"schema_version must be {CATALOG_SCHEMA_VERSION!r}: {data.get('schema_version')!r}")
     audited_head = data.get("audited_head")
     if not isinstance(audited_head, str) or not audited_revision_is_ancestor(audited_head):
         errors.append(
@@ -356,7 +395,9 @@ def validate() -> tuple[list[str], Counter[str]]:
                 if entry.get(field) != canonical.get(field):
                     errors.append(f"{doc_id}: canonical field differs from source-derived value: {field}")
         if unit_type == "gui" and bindings.get(unit_ref) != doc_id:
-            errors.append(f"{doc_id}: data-doc-id binding for {unit_ref} is missing or differs ({bindings.get(unit_ref)!r})")
+            errors.append(
+                f"{doc_id}: data-doc-id binding for {unit_ref} is missing or differs ({bindings.get(unit_ref)!r})"
+            )
         if entry.get("status") != "verified":
             errors.append(f"{doc_id}: aktive Einheit muss verified sein")
         behavior = entry.get("behavior")
@@ -405,7 +446,9 @@ def validate() -> tuple[list[str], Counter[str]]:
         errors.append("Ausschluesse muessen als begruendete Liste dokumentiert sein")
     else:
         for index, exclusion in enumerate(exclusions):
-            if not isinstance(exclusion, dict) or not all(meaningful(exclusion.get(field)) for field in ("scope", "reason", "evidence")):
+            if not isinstance(exclusion, dict) or not all(
+                meaningful(exclusion.get(field)) for field in ("scope", "reason", "evidence")
+            ):
                 errors.append(f"exclusions[{index}] braucht scope, reason und evidence")
     try:
         baseline = json.loads(ID_BASELINE.read_text(encoding="utf-8"))
@@ -413,7 +456,11 @@ def validate() -> tuple[list[str], Counter[str]]:
     except (OSError, json.JSONDecodeError) as exc:
         baseline_entries = None
         errors.append(f"documentation ID baseline cannot be read: {exc}")
-    current_ids = {f"{entry.get('unit_type')}:{entry.get('unit_ref')}": entry.get("id") for entry in entries if isinstance(entry, dict)}
+    current_ids = {
+        f"{entry.get('unit_type')}:{entry.get('unit_ref')}": entry.get("id")
+        for entry in entries
+        if isinstance(entry, dict)
+    }
     if not isinstance(baseline_entries, dict):
         errors.append("documentation ID baseline must contain an entries object")
     else:
@@ -429,8 +476,15 @@ def validate() -> tuple[list[str], Counter[str]]:
 
     sensitive_docs = CATALOG.read_text(encoding="utf-8") + "\n" + handbook
     for private_pattern in (
-        r"fossflow\.loca(?:ldomain)?", r"homeassistant\.localdomain", r"192\.168\.2\.", r"/Users/", r"/var/folders/", r"/data/(?:options|faces)\.json",
-        r"\b(?:Thomas|Birgit|Marie|Maja)\b", r"\b(?:wohnzimmer|garage)[-_a-z0-9]*\b", r"b3b46a83",
+        r"fossflow\.loca(?:ldomain)?",
+        r"homeassistant\.localdomain",
+        r"192\.168\.2\.",
+        r"/Users/",
+        r"/var/folders/",
+        r"/data/(?:options|faces)\.json",
+        r"\b(?:Thomas|Birgit|Marie|Maja)\b",
+        r"\b(?:wohnzimmer|garage)[-_a-z0-9]*\b",
+        r"b3b46a83",
     ):
         if re.search(private_pattern, sensitive_docs, re.IGNORECASE):
             errors.append(f"private internal detail copied into published documentation: {private_pattern}")
