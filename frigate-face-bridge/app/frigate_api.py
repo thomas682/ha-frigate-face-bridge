@@ -39,13 +39,21 @@ def _face_name(value: Any) -> str:
     return ""
 
 
+def face_name_from_sub_label(value: Any) -> str:
+    """Liefert den erkannten Namen aus einem Frigate-sub_label oder einen leeren Text."""
+    for candidate in _as_list(value):
+        name = _face_name(candidate)
+        if name and name.lower() not in {"unknown", "none"}:
+            return name
+    return ""
+
+
 def _known_faces_from_person_events(events: list[dict[str, Any]]) -> list[str]:
     known: list[str] = []
     for item in events:
-        for candidate in _as_list(item.get("sub_label")):
-            name = _face_name(candidate)
-            if name and name.lower() not in {"unknown", "none"} and name not in known:
-                known.append(name)
+        name = face_name_from_sub_label(item.get("sub_label"))
+        if name and name not in known:
+            known.append(name)
         data = item.get("data") if isinstance(item.get("data"), dict) else {}
         for attr in _as_list(data.get("attributes")):
             name = _face_name(attr)

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026.10.002
+
+### Fixed
+
+- Frigate-MQTT-Events (`frigate/events`) werten jetzt das `sub_label` aus, das Frigate ab 0.16 mit eingebauter Gesichtserkennung setzt. Eine erkannte Person erscheint als `known_faces` statt als unbekanntes Gesicht; der API-Zaehler und der MQTT-Weg nutzen dieselbe Namensauswertung ([#23](https://github.com/thomas682/ha-frigate-face-bridge/issues/23)).
+
 ## 2026.10.001
 
 ### Changed

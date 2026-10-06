@@ -28,11 +28,15 @@ Das Add-on ersetzt Frigate nicht. Frigate, Double Take, CompreFace oder eine lok
 
 ## Aktueller Stand
 
-Aktuelle Add-on-Version: `2026.10.001`.
+Aktuelle Add-on-Version: `2026.10.002`.
 
 Lokale Bild-Personendetektion und lokale Face-Embedding-Berechnung sind noch nicht implementiert. Externe Matching-Events koennen bereits importiert werden. `demo_mode` ist fuer fehlende/neue Werte nicht automatisch aktiv; bestehende Nutzerwerte werden bei Start, Neustart und Update nicht automatisch ueberschrieben.
 
 Die weiteren Ausbaustufen stehen in `projekt-roadmap.md`.
+
+## Version 2026.10.002
+
+- Frigate-MQTT-Events uebernehmen den von Frigate erkannten Gesichtsnamen (`sub_label`) als bekannte Person statt die Person als unbekannt zu zaehlen.
 
 ## Version 2026.10.001
 

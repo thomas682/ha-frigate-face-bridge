@@ -242,6 +242,29 @@ def test_frigate_person_event_creates_detection_event():
     assert event["boxes"] == [[1, 2, 3, 4]]
 
 
+def test_frigate_person_event_uses_recognized_face_sub_label():
+    event = frigate_events.parse_frigate_event(
+        '{"type":"update","after":{"id":"abc123","camera":"garage","label":"person","score":0.9,'
+        '"sub_label":["Thomas",0.93]}}',
+        {"camera": {"name": "garage"}, "frigate": {"camera_name": "garage"}},
+    )
+
+    assert event is not None
+    assert event["known_faces"] == ["Thomas"]
+    assert event["unknown_faces"] == 0
+
+
+def test_frigate_person_event_treats_unknown_sub_label_as_unknown_face():
+    event = frigate_events.parse_frigate_event(
+        '{"type":"update","after":{"id":"abc123","camera":"garage","label":"person","sub_label":"unknown"}}',
+        {"camera": {"name": "garage"}, "frigate": {"camera_name": "garage"}},
+    )
+
+    assert event is not None
+    assert event["known_faces"] == []
+    assert event["unknown_faces"] == 1
+
+
 def test_frigate_non_person_event_is_ignored():
     event = frigate_events.parse_frigate_event(
         '{"type":"new","after":{"id":"abc123","camera":"garage_g3_flex","label":"car","score":0.91}}',

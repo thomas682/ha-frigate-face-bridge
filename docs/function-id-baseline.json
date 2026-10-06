@@ -418,6 +418,7 @@
     "python:frigate_api._timestamp": "ffb.python.frigate.api.timestamp",
     "python:frigate_api.active_object_count_event": "ffb.python.frigate.api.active.object.count.event",
     "python:frigate_api.active_person_count_event": "ffb.python.frigate.api.active.person.count.event",
+    "python:frigate_api.face_name_from_sub_label": "ffb.python.frigate.api.face.name.from.sub.label",
     "python:frigate_events._timestamp": "ffb.python.frigate.events.timestamp",
     "python:frigate_events.parse_frigate_event": "ffb.python.frigate.events.parse.frigate.event",
     "python:main._endpoint_from_url": "ffb.python.main.endpoint.from.url",
